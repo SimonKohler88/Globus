@@ -13,7 +13,9 @@
 
 /* Write command structure: [ 1 byte command ][ 1 byte addr ] [ 4 byte value ] */
 #define FPGA_WRITE_COMMAND       ( uint8_t ) 3
-#define FPGA_WRITE_COMMAND_SIZE_BYTES 6 //1+1+4
+
+/*1+1+4*/
+#define FPGA_WRITE_COMMAND_SIZE_BYTES  ( 6 )    
 
 #define FPGA_ADDR_LEDS           ( uint8_t ) 0
 #define FPGA_ADDR_IMAGE_WIDTH    ( uint8_t ) 1

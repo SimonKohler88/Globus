@@ -19,7 +19,13 @@ struct {
 } typedef fpga_status_t;
 
 
-void fpga_ctrl_init( fpga_status_t* status );
+struct {
+	uint32_t missed_spi_command_writes;
+	uint32_t missed_spi_status_reads;
+} typedef fpga_task_status_t;
+
+void fpga_ctrl_init( fpga_status_t* status, fpga_task_status_t* fpga_task_status_ptr );
 void fpga_ctrl_task( void *pvParameters );
+uint8_t fpga_ctrl_set_leds( uint8_t leds );
 
 #endif /* MAIN_FPGA_CTRL_TASK_H_ */

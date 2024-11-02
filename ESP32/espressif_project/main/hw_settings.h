@@ -13,7 +13,9 @@
 
 
 /* Freertos */
-#define FREERTOS_STACK_SIZE                 4096
+#define FREERTOS_STACK_SIZE_FPGA_CTRL       4096 * 2
+#define FREERTOS_STACK_SIZE_STATUS_CTRL     4096 * 2
+#define FREERTOS_STACK_SIZE_WIFI            4096
 
 /* Status Control task */
 #define STAT_CTRL_QUEUE_NUMBER_OF_COMMANDS  5
@@ -23,6 +25,8 @@
 #define STAT_CTRL_PIN_RESERVE_3             4
 #define STAT_CTRL_PIN_RESET_FPGA            7
 
+#define STAT_CTRL_PIN_DEV_1                 43
+#define STAT_CTRL_PIN_DEV_2                 44
 
 /* QSPI */
 #define QSPI_PIN_HD_D3                      9
@@ -69,8 +73,8 @@
 #endif
 
 #define ENC_PIN_EXP_0                       21
-#define ENC_PIN_EXP_1                       35
-#define ENC_PIN_EXP_2                       36
+#define ENC_PIN_EXP_1                       1
+#define ENC_PIN_EXP_2                       2
 #define ENC_PIN_EXP_3                       47
 
 /* PSRAM FIFO */

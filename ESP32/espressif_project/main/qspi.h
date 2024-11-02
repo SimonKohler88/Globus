@@ -20,6 +20,7 @@ struct
 
 void qspi_init( qspi_status_t *status_ptr );
 void qspi_DMA_write( void );
+void qspi_DMA_write_debug_test( uint8_t* buffer, uint8_t size );
 
 
 #endif /* MAIN_QSPI_H_ */

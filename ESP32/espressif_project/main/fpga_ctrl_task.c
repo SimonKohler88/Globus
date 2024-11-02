@@ -14,10 +14,9 @@
 
 #define SPI_TAG "SPI"
 
-#define FPGA_STATUS_READ_SIZE_BYTES 1 + sizeof( fpga_status_t )
+#define FPGA_STATUS_READ_SIZE_BYTES ( 1 + sizeof( fpga_status_t ) )
 
 static void spi_post_transaction_cb( spi_transaction_t *trans );
-static void init_spi();
 
 static TaskHandle_t fpga_ctrl_task_handle_internal = NULL;
 
@@ -37,14 +36,13 @@ static spi_transaction_t FPGA_sc_transaction =
 	.tx_buffer = NULL,
 	.rx_buffer = NULL,
 };
-
 /* structure and buffer for command queue */
 struct {
 	uint8_t addr;
 	uint32_t value;
 } typedef fpga_cmd_t;
-static fpga_cmd_t cmd_buffer;
 
+static fpga_cmd_t cmd_buffer;
 
 /* static memory allocation for Queues */
 StaticQueue_t xQueueBuffer_fpga_cmd;
@@ -53,25 +51,30 @@ uint8_t fpga_cmd_queue_buffer[ SPI_CMD_QUEUE_SIZE * sizeof( fpga_cmd_t ) ];
 /* internal */
 struct {
 	fpga_status_t *status;
+	fpga_task_status_t* fpga_task_status;
 	QueueHandle_t fpga_cmd_queue_handle;
 } typedef fpga_ctrl_t;
 
 static fpga_ctrl_t fpga_ctrl;
 
 
-void fpga_ctrl_init( fpga_status_t* status )
+
+void fpga_ctrl_init( fpga_status_t* status, fpga_task_status_t* fpga_task_status_ptr )
 {
 	fpga_ctrl.status = status;
-	init_spi();
-}
-
-static void init_spi()
-{
+	fpga_ctrl.fpga_task_status = fpga_task_status_ptr;
+	
 	esp_err_t ret;
     ESP_LOGI( SPI_TAG, "Initializing bus SPI3..." );
     
-    spi_device_interface_config_t FPGA_spi_device_interface_config =
-	{
+   
+    
+    FPGA_sc_transaction.tx_buffer = tx_buffer_ptr;
+    FPGA_sc_transaction.rx_buffer = rx_buffer_ptr;
+    
+    fpga_ctrl.fpga_cmd_queue_handle = xQueueCreateStatic( SPI_CMD_QUEUE_SIZE ,sizeof( fpga_cmd_t ), &fpga_cmd_queue_buffer[ 0 ], &xQueueBuffer_fpga_cmd );
+    
+    spi_device_interface_config_t FPGA_spi_device_interface_config = {
 		.command_bits = 0,
 		.address_bits = 0,
 		.dummy_bits = 0,
@@ -85,19 +88,14 @@ static void init_spi()
 		.post_cb = spi_post_transaction_cb,
 	};
     
-    spi_bus_config_t buscfg = {
-      	.miso_io_num = SPI_MISO,
-      	.mosi_io_num = SPI_MOSI ,
-        .sclk_io_num = QSPI_PIN_CLK,
-        .quadhd_io_num = -1,
-        .quadwp_io_num = -1,
-        
-        .max_transfer_sz = SPI_MAX_TRANSFER_BYTES,
-         
-    };
-    
-    FPGA_sc_transaction.tx_buffer = tx_buffer_ptr;
-    FPGA_sc_transaction.rx_buffer = rx_buffer_ptr;
+	spi_bus_config_t buscfg = {
+	  	.miso_io_num = SPI_MISO,
+	  	.mosi_io_num = SPI_MOSI ,
+	    .sclk_io_num = SPI_CLK,
+	    .quadhd_io_num = -1,
+	    .quadwp_io_num = -1,
+	    .max_transfer_sz = SPI_MAX_TRANSFER_BYTES,
+	};
     
     //Initialize the SPI bus
     ret = spi_bus_initialize( SPI_HOST, &buscfg, SPI_DMA_DISABLED );
@@ -113,11 +111,19 @@ static esp_err_t spi_start_read_status( void )
 	esp_err_t spi_ret;
 	tx_buffer[ 0 ] = FPGA_READ_ALL_COMMAND;
 	
-	FPGA_sc_transaction.length = FPGA_STATUS_READ_SIZE_BYTES;
+	FPGA_sc_transaction.length = FPGA_STATUS_READ_SIZE_BYTES * 8;
+	FPGA_sc_transaction.rxlength = 0;
+	/*
+	t.length = 8+8*len;
+    t.rxlength = 8*len;
+	*/
 	
-	spi_ret = spi_device_queue_trans( spi_handle, &FPGA_sc_transaction, 2 );
+	spi_ret = spi_device_acquire_bus( spi_handle, portMAX_DELAY );
+	if( spi_ret != ESP_OK ) ESP_LOGI( SPI_TAG, "Aquire Bus Fail: %d", spi_ret );
+	if( spi_ret == ESP_OK ) spi_ret = spi_device_queue_trans( spi_handle, &FPGA_sc_transaction, 2 );
 	
-	if( spi_ret != ESP_OK ) ESP_LOGI(SPI_TAG, "Read Status Fail: %d", spi_ret);
+	if( spi_ret != ESP_OK ) ESP_LOGI( SPI_TAG, "Read Status Fail: %d", spi_ret );
+	
 	return spi_ret;
 }
 
@@ -128,9 +134,12 @@ static esp_err_t spi_start_write_command( fpga_cmd_t* command )
 	tx_buffer[ 1 ] = command->addr;
 	tx_buffer[ 2 ] = command->value; // 4 Byte
 	
-	FPGA_sc_transaction.length = FPGA_WRITE_COMMAND_SIZE_BYTES;
+	FPGA_sc_transaction.length = FPGA_WRITE_COMMAND_SIZE_BYTES * 8;
+	FPGA_sc_transaction.rxlength = 0;
 	
-	spi_ret = spi_device_queue_trans( spi_handle, &FPGA_sc_transaction, 2 );
+	spi_ret = spi_device_acquire_bus( spi_handle, portMAX_DELAY );
+	if( spi_ret != ESP_OK ) ESP_LOGI( SPI_TAG, "Aquire Bus Fail: %d", spi_ret );
+	if( spi_ret == ESP_OK ) spi_ret = spi_device_queue_trans( spi_handle, &FPGA_sc_transaction, 2 );
 	
 	if( spi_ret != ESP_OK ) ESP_LOGI(SPI_TAG, "Read Status Fail: %d", spi_ret);
 	return spi_ret;
@@ -148,30 +157,36 @@ static void spi_readback_buffer_to_struct( void )
 static void spi_post_transaction_cb( spi_transaction_t *trans )
 {
 	 BaseType_t xHigherPriorityTaskWoken = pdFALSE;  
-	 
+	
+	spi_device_release_bus( spi_handle );
 	// notify task
 	vTaskNotifyGiveFromISR(fpga_ctrl_task_handle_internal, &xHigherPriorityTaskWoken);
 	portYIELD_FROM_ISR( xHigherPriorityTaskWoken ); 
 }
 
 
-void fpga_ctrl_set_leds( uint8_t leds )
+uint8_t fpga_ctrl_set_leds( uint8_t leds )
 {
 	fpga_cmd_t cmd = {
 		.addr = FPGA_ADDR_LEDS,
 		.value = leds,
 	};
-	
-	xQueueSend( fpga_ctrl.fpga_cmd_queue_handle, (void*)&cmd, 0 );
+	if(uxQueueSpacesAvailable( fpga_ctrl.fpga_cmd_queue_handle ) > 0 )
+	{
+		xQueueSend( fpga_ctrl.fpga_cmd_queue_handle, (void*)&cmd, 0 );
+		return 1;
+	}
+	return 0;
 }
 
 void fpga_ctrl_task( void *pvParameters )
 {
+	ESP_LOGI( "SPI fpga", "fpga_control_cycle" );
 	TickType_t xLastWakeTime = xTaskGetTickCount();
-	const TickType_t xPeriod_ms = 10;
+	const TickType_t xPeriod_ms = 1000; //TODO: set to 10ms
 	esp_err_t err;
 
-	fpga_ctrl.fpga_cmd_queue_handle = xQueueCreateStatic( SPI_CMD_QUEUE_SIZE ,sizeof( fpga_cmd_t ), &fpga_cmd_queue_buffer[ 0 ], &xQueueBuffer_fpga_cmd );
+	//fpga_ctrl.fpga_cmd_queue_handle = xQueueCreateStatic( SPI_CMD_QUEUE_SIZE ,sizeof( fpga_cmd_t ), &fpga_cmd_queue_buffer[ 0 ], &xQueueBuffer_fpga_cmd );
 	fpga_ctrl_task_handle_internal = xTaskGetCurrentTaskHandle();
 	
 	while( 1 )
@@ -182,21 +197,32 @@ void fpga_ctrl_task( void *pvParameters )
 		err = spi_start_read_status();
 		if( err == ESP_OK )
 		{
-			xTaskNotifyWait( 0x01, 0, NULL, 2); // wait for ISR to notify us
+			ulTaskNotifyTake( pdTRUE, 2 );
 			spi_readback_buffer_to_struct();
+		}
+		else 
+		{
+			fpga_ctrl.fpga_task_status->missed_spi_status_reads ++;
+			//TODO: maybe lock still up...
 		}
 
 		
 		/* Write all waiting commands */
 		if( uxQueueMessagesWaiting( fpga_ctrl.fpga_cmd_queue_handle ) > 0 )
 		{
+			//ESP_LOGI( "SPI fpga", "writing command" );
 			while ( xQueueReceive( fpga_ctrl.fpga_cmd_queue_handle, &cmd_buffer, 0 ) )
 			{
 				err = spi_start_write_command( &cmd_buffer );
 				if( err == ESP_OK )
 				{
 					xTaskNotifyWait( 0x01, 0, NULL, 1); // wait for ISR to notify us
-				}		
+				}
+				else
+				{
+					fpga_ctrl.fpga_task_status->missed_spi_command_writes ++;
+				}
+				//spi_device_release_bus( spi_handle );
 			}
 		}	
 	}

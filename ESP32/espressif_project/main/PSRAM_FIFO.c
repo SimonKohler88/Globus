@@ -51,11 +51,9 @@ void fifo_init( fifo_status_t* status )
 	
 	uint32_t frame_size_bytes = IMAGE_MAX_PIXEL_HEIGHT * IMAGE_MAX_PIXEL_WIDTH * IMAGE_BYTES_PER_PIXEL;
 	
-	
 	/* Create Freertos queues. threadsafe fifo  */
 	fifo_control.free_frames = xQueueCreateStatic( FIFO_NUMBER_OF_FRAMES, sizeof( fifo_frame_t ), &free_frames[ 0 ], &xQueueBuffer_free_frames );
 	fifo_control.ready_4_fpga_frames = xQueueCreateStatic( FIFO_NUMBER_OF_FRAMES, sizeof( fifo_frame_t ), &frames_4_fpga[ 0 ], &xQueueBuffer_frames_4_fpga );
-	
 	
 	for( int i = 0; i < FIFO_NUMBER_OF_FRAMES; i++ )
 	{
@@ -70,7 +68,6 @@ void fifo_init( fifo_status_t* status )
 			ESP_LOGI(TAG, "Allocated Frame Buffer %"PRIu8" , size %"PRIu32" Bytes", i, frame_size_bytes);
 		}
 		else ESP_LOGE(TAG, "Failed to allocate PSRAM Memory, frame %d", i);
-		
 	}
 }
 
@@ -141,7 +138,6 @@ void fifo_mark_free_frame_done( void )
 		fifo_control.frame_2_fpga_in_progress = 0;
 		
 		fifo_control.status->ready_4_fpga_frames ++;
-		
 	}
 }
 
@@ -149,7 +145,5 @@ void fifo_update_stats( void )
 {
 	fifo_control.status->free_frames = uxQueueMessagesWaiting( fifo_control.free_frames );
 	fifo_control.status->ready_4_fpga_frames = uxQueueMessagesWaiting( fifo_control.free_frames );
-	
-
 }
 
