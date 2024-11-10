@@ -9,6 +9,7 @@
 #define MAIN_QSPI_H_
 
 #include "stdint.h"
+#include "freertos/FreeRTOS.h"
 
 // TODO: put frame request pin to interrupt and call qspi_DMA_write
 struct 
@@ -19,8 +20,12 @@ struct
 } typedef qspi_status_t;
 
 void qspi_init( qspi_status_t *status_ptr );
-void qspi_DMA_write( void );
-void qspi_DMA_write_debug_test( uint8_t* buffer, uint8_t size );
+//void qspi_DMA_write( void );
+//void qspi_DMA_write_debug_test( uint8_t* buffer, uint8_t size );
+
+BaseType_t qspi_request_frame( void );
+
+void fpga_qspi_task( void* pvParameter );
 
 
 #endif /* MAIN_QSPI_H_ */

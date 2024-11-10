@@ -25,8 +25,7 @@
 #define STAT_CTRL_PIN_RESERVE_3             4
 #define STAT_CTRL_PIN_RESET_FPGA            7
 
-#define STAT_CTRL_PIN_DEV_1                 43
-#define STAT_CTRL_PIN_DEV_2                 44
+
 
 /* QSPI */
 #define QSPI_PIN_HD_D3                      9
@@ -93,6 +92,7 @@
 //#define CONFIG_WIFI_PASSWORD                "mypassword"
 #define CONFIG_WIFI_IPV4_ADDR               "192.168.0.22" 
 #define CONFIG_UDP_PORT		                1234
+#define CONFIG_UDP_FRAME_PACKET_SIZE        1024
 
 
 #endif /* MAIN_HW_SETTINGS_H_ */

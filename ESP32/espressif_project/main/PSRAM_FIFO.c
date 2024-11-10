@@ -69,81 +69,91 @@ void fifo_init( fifo_status_t* status )
 		}
 		else ESP_LOGE(TAG, "Failed to allocate PSRAM Memory, frame %d", i);
 	}
+	fifo_update_stats();
 }
 
 uint8_t fifo_has_frame_4_fpga( void )
 {
-	if( uxQueueMessagesWaiting( fifo_control.ready_4_fpga_frames ) > 0 ) return 1;
-	return 0;
+	return uxQueueMessagesWaiting( fifo_control.ready_4_fpga_frames );
 }
 
-uint8_t fifo_get_frame_4_fpga(fifo_frame_t* frame_info)
+uint8_t fifo_is_frame_2_fpga_in_progress( void )
 {
-	if( fifo_control.frame_2_fpga_in_progress == 1 ) return 0;
+	return fifo_control.frame_2_fpga_in_progress;
+}
+
+fifo_frame_t* fifo_get_frame_4_fpga( void )
+{
+	if( fifo_control.frame_2_fpga_in_progress == 1 ) return NULL;
 	
 	uint8_t has_frame = xQueueReceive( fifo_control.ready_4_fpga_frames, &fifo_control.current_frame_4_fpga, 0 );
-	if( has_frame == pdFALSE ) return 0;
+	if( has_frame == pdFALSE ) return NULL;
 	
-	*frame_info = fifo_control.current_frame_4_fpga;
 	fifo_control.frame_2_fpga_in_progress = 1;
 	
-	if( fifo_control.status->ready_4_fpga_frames > 0 ) fifo_control.status->ready_4_fpga_frames --;
-	return 1;
+	fifo_update_stats();
+	return &fifo_control.current_frame_4_fpga;
 }
-/*
-fifo_control.status->free_frames = uxQueueMessagesWaiting( fifo_control.free_frames );
-	fifo_control.status->ready_4_fpga_frames = 
-*/
+
 void fifo_mark_frame_4_fpga_done( void )
 {
-	/* from DMA -> QSPI transfer finished. most likely called from ISR */
+	/* from QSPI task */
 	if( fifo_control.frame_2_fpga_in_progress )
 	{
 		fifo_control.current_frame_4_fpga.current_ptr = fifo_control.current_frame_4_fpga.frame_start_ptr;
 		fifo_control.current_frame_4_fpga.size = 0; 
-		xQueueSendFromISR( fifo_control.free_frames, ( void* )&fifo_control.current_frame_4_fpga, 0 );
+		xQueueSend( fifo_control.free_frames, ( void* )&fifo_control.current_frame_4_fpga, 0 );
 		fifo_control.frame_2_fpga_in_progress = 0;
 		
-		fifo_control.status->free_frames ++;
+		fifo_update_stats();
 	}
 }
 
+
 uint8_t fifo_has_free_frame( void )
 {
-	if( uxQueueMessagesWaiting( fifo_control.free_frames ) > 0 ) return 1;
-	return 0;
+	return uxQueueMessagesWaiting( fifo_control.free_frames );
 }
 
-uint8_t fifo_get_free_frame( fifo_frame_t* frame_info )
+fifo_frame_t* fifo_get_free_frame( void )
 {
-	if( fifo_control.frame_rpi_2_fifo_in_progress == 1 ) return 0;
+	if( fifo_control.frame_rpi_2_fifo_in_progress == 1 ) return NULL;
 	
 	uint8_t has_frame = xQueueReceive( fifo_control.free_frames, &fifo_control.current_frame_from_rpi, 0 );
-	if( has_frame == pdFALSE ) return 0;
+	if( has_frame == pdFALSE ) return NULL;
 	
-	*frame_info = fifo_control.current_frame_from_rpi;
 	fifo_control.frame_rpi_2_fifo_in_progress = 1; 
 	
-	if( fifo_control.status->free_frames ) fifo_control.status->free_frames --;
+	fifo_update_stats();
 	
-	return 1; 
+	return &fifo_control.current_frame_from_rpi; 
+}
+
+void fifo_return_free_frame( void )
+{
+	xQueueSend( fifo_control.free_frames, &fifo_control.current_frame_from_rpi, 0 );
+	fifo_control.frame_rpi_2_fifo_in_progress = 0;
+	fifo_update_stats();
 }
 
 void fifo_mark_free_frame_done( void )
 {
-	/* from DMA -> TFTP transfer finished. most likely called from ISR */
+	ESP_LOGI( "FIFO", "fifo_mark_free_frame_done %d ", fifo_control.frame_rpi_2_fifo_in_progress  );
+
 	if( fifo_control.frame_rpi_2_fifo_in_progress )
 	{
-		xQueueSendFromISR(fifo_control.ready_4_fpga_frames, ( void * )&fifo_control.current_frame_from_rpi, 0);
-		fifo_control.frame_2_fpga_in_progress = 0;
+		xQueueSend(fifo_control.ready_4_fpga_frames, ( void * )&fifo_control.current_frame_from_rpi, 0);
+		fifo_control.frame_rpi_2_fifo_in_progress = 0;
 		
-		fifo_control.status->ready_4_fpga_frames ++;
+		fifo_update_stats();
 	}
 }
 
 void fifo_update_stats( void )
 {
 	fifo_control.status->free_frames = uxQueueMessagesWaiting( fifo_control.free_frames );
-	fifo_control.status->ready_4_fpga_frames = uxQueueMessagesWaiting( fifo_control.free_frames );
+	fifo_control.status->ready_4_fpga_frames = uxQueueMessagesWaiting( fifo_control.ready_4_fpga_frames );
+	fifo_control.status->current_frame_2_esp = fifo_control.frame_rpi_2_fifo_in_progress;
+	fifo_control.status->current_frame_2_esp = fifo_control.frame_2_fpga_in_progress; 
 }
 

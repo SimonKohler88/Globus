@@ -21,6 +21,7 @@ if_struct_t registered_status_structs[ MAX_STATUS_STRUCTS ];
 static uint8_t num_status_structs = 0;
 
 //todo: make parameterstuff
+// list with id (1Byte) and value (4 Bytes)
 
 void register_status_struct( void* if_struct, uint32_t size )
 {
@@ -51,7 +52,8 @@ uint32_t get_status_data( void* data_ptr )
 	
 	if( HW_SETTINGS_DEBUG )
 	{
-		ESP_LOGI( "WIFI", "num: %" PRIu8 "\n", num_status_structs );
+//		ESP_LOGI( "WIFI", "num: %" PRIu8 "\n", num_status_structs );
+//		ESP_LOGI( "WIFI", "size: %" PRIu32 "\n", size );
 	}
 	//if( size > 0 ) memcpy(data_ptr, registered_status_structs, size);
 	//for (uint16_t i = 0; i < size; i++ ) ptr[ i ] = i; 

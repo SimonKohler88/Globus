@@ -151,7 +151,9 @@ static void spi_readback_buffer_to_struct( void )
 	fpga_ctrl.status->leds = rx_buffer[ 1 ];
 	fpga_ctrl.status->brightness = ( uint32_t ) rx_buffer[ 5 ];
 	fpga_ctrl.status->height = ( uint32_t ) rx_buffer[ 9 ];
-	fpga_ctrl.status->width = ( uint32_t ) rx_buffer[ 13 ];
+//	fpga_ctrl.status->width = ( uint32_t ) rx_buffer[ 13 ];
+	fpga_ctrl.status->width ++;
+	fpga_ctrl.status->current_speed ++; // TODO: only for debug
 }
 
 static void spi_post_transaction_cb( spi_transaction_t *trans )

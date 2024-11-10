@@ -16,8 +16,15 @@ struct {
 	uint32_t width;
 	uint32_t height;
 	uint32_t brightness;
+	uint32_t current_speed;
 } typedef fpga_status_t;
 
+//struct {
+//	uint32_t leds;
+//	uint32_t width;
+//	uint32_t height;
+//	uint32_t brightness;
+//} typedef fpga_parameter_t;
 
 struct {
 	uint32_t missed_spi_command_writes;

@@ -33,6 +33,10 @@ StaticTask_t xWifiTaskBuffer;
 StackType_t xWifiStack[ FREERTOS_STACK_SIZE_WIFI ];
 TaskHandle_t wifi_task_handle = NULL;
 
+StaticTask_t xWifiSendTaskBuffer;
+StackType_t xWifiSendStack[ FREERTOS_STACK_SIZE_WIFI ];
+TaskHandle_t wifi_send_task_handle = NULL;
+
 StaticTask_t xFPGACtrlTaskBuffer;
 StackType_t xFPGACtrlStack[ FREERTOS_STACK_SIZE_FPGA_CTRL ];
 TaskHandle_t FPGA_ctrl_task_handle = NULL;
@@ -40,6 +44,10 @@ TaskHandle_t FPGA_ctrl_task_handle = NULL;
 StaticTask_t xStatusControlTaskBuffer;
 StackType_t xStatusControlStack[ FREERTOS_STACK_SIZE_STATUS_CTRL ];
 TaskHandle_t status_control_task_handle = NULL;
+
+StaticTask_t xFPGAQSPITaskBuffer;
+StackType_t xFPGAQSPIStack[ FREERTOS_STACK_SIZE_STATUS_CTRL ];
+TaskHandle_t FPGA_QSPI_task_handle = NULL;
 
 
 /* Interface structures initialisation */
@@ -93,6 +101,16 @@ void app_main( void )
                       xFPGACtrlStack,          /* Array to use as the task's stack. */
                       &xFPGACtrlTaskBuffer , /* Variable to hold the task's data structure. */
                       0);  /* Core which executes the task*/      
+     
+     FPGA_QSPI_task_handle = xTaskCreateStaticPinnedToCore(
+                      fpga_qspi_task,       /* Function that implements the task. */
+                      "fpga_qspi_task",          /* Text name for the task. */
+                      FREERTOS_STACK_SIZE_STATUS_CTRL,      /* Number of indexes in the xStack array. */
+                      ( void * ) 1,    /* Parameter passed into the task. */
+                      tskIDLE_PRIORITY + 5 ,/* Priority at which the task is created. */
+                      xFPGAQSPIStack,          /* Array to use as the task's stack. */
+                      &xFPGAQSPITaskBuffer , /* Variable to hold the task's data structure. */
+                      0);  /* Core which executes the task*/  
                       
      status_control_task_handle = xTaskCreateStaticPinnedToCore(
                       status_control_task,       /* Function that implements the task. */
@@ -113,6 +131,16 @@ void app_main( void )
                       tskIDLE_PRIORITY + 6 ,/* Priority at which the task is created. */
                       xWifiStack,          /* Array to use as the task's stack. */
                       &xWifiTaskBuffer , /* Variable to hold the task's data structure. */
+                      1);  /* Core which executes the task*/  
+     
+     wifi_send_task_handle = xTaskCreateStaticPinnedToCore(
+                      wifi_send_udp_task,       /* Function that implements the task. */
+                      "udp_tx_task",          /* Text name for the task. */
+                      FREERTOS_STACK_SIZE_WIFI,      /* Number of indexes in the xStack array. */
+                      ( void * ) 1,    /* Parameter passed into the task. */
+                      tskIDLE_PRIORITY + 4 ,/* Priority at which the task is created. */
+                      xWifiSendStack,          /* Array to use as the task's stack. */
+                      &xWifiSendTaskBuffer , /* Variable to hold the task's data structure. */
                       1);  /* Core which executes the task*/  
 }
 
