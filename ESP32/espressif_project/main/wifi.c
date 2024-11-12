@@ -13,6 +13,7 @@
 #include "wifi.h"
 
 #include "PSRAM_FIFO.h"
+#include "inttypes.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
@@ -448,7 +449,7 @@ bool wifi_receive_packet()
 							{
 								/* last packet received */
 								uint16_t size = wifi_stat.current_frame_download->size;
-								ESP_LOGI( "WIFI", "Frame Recv Finished %d bytes", size );
+								ESP_LOGI( "WIFI", "Frame Recv Finished %" PRIu32 " bytes", size );
 								
 								fifo_mark_free_frame_done();							
 								wifi_stat.current_frame_download->current_ptr = wifi_stat.current_frame_download->frame_start_ptr;
