@@ -448,7 +448,7 @@ bool wifi_receive_packet()
 							if( data_len != CONFIG_UDP_FRAME_PACKET_SIZE )
 							{
 								/* last packet received */
-								uint16_t size = wifi_stat.current_frame_download->size;
+								uint32_t size = wifi_stat.current_frame_download->size;
 								ESP_LOGI( "WIFI", "Frame Recv Finished %" PRIu32 " bytes", size );
 								
 								fifo_mark_free_frame_done();							
