@@ -1,4 +1,4 @@
--- new_component.vhd
+-- qspi_interface.vhd
 
 -- This file was auto-generated as a prototype implementation of a module
 -- created in component editor.  It ties off all outputs to ground and
@@ -12,7 +12,7 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
-entity new_component is
+entity qspi_interface is
 	port (
 		aso_out0_data          : out std_logic_vector(7 downto 0);                    --          aso_out0.data
 		aso_out0_endofpacket   : out std_logic;                                       --                  .endofpacket
@@ -26,9 +26,9 @@ entity new_component is
 		conduit_qspi_cs        : in  std_logic                    := '0';             --                  .qspi_cs
 		conduit_ping_pong      : out std_logic                                        -- conduit_ping_pong.new_signal
 	);
-end entity new_component;
+end entity qspi_interface;
 
-architecture rtl of new_component is
+architecture rtl of qspi_interface is
 begin
 
 	-- TODO: Auto-generated HDL template
@@ -43,4 +43,4 @@ begin
 
 	conduit_ping_pong <= '0';
 
-end architecture rtl; -- of new_component
+end architecture rtl; -- of qspi_interface

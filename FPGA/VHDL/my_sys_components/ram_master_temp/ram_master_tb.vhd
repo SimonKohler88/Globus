@@ -12,7 +12,13 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
-entity ram_master is
+entity ram_master_tb is
+
+end entity ram_master_tb;
+
+architecture rtl of ram_master_tb is
+
+	component ram_master is
 	generic (
 		image_cols : integer := 256;
 		image_rows : integer := 0
@@ -52,41 +58,82 @@ entity ram_master is
 		avs_s1_writedata         : in  std_logic_vector(31 downto 0) := (others => '0'); --                     .writedata
 		avs_s1_waitrequest       : out std_logic                                         --                     .waitrequest
 	);
-end entity ram_master;
+end component;
 
-architecture rtl of ram_master is
+	signal s_clock_clk                : std_ulogic;
+	signal s_reset_reset              : std_ulogic;
+	signal s_conduit_ping_or_pong     : std_ulogic;
+	signal s_avm_m0_address           : std_logic_vector(24 downto 0);
+	signal s_avm_m0_read              : std_ulogic;
+	signal s_avm_m0_waitrequest       : std_ulogic;
+	signal s_avm_m0_readdata          : std_logic_vector(15 downto 0);
+	signal s_avm_m0_readdatavalid     : std_ulogic;
+	signal s_avm_m0_write             : std_ulogic;
+	signal s_avm_m0_writedata         : std_logic_vector(15 downto 0);
+	signal s_asi_in0_data             : std_logic_vector(7 downto 0);
+	signal s_asi_in0_ready            : std_ulogic;
+	signal s_asi_in0_valid            : std_ulogic;
+	signal s_asi_in0_endofpacket      : std_ulogic;
+	signal s_asi_in0_startofpacket    : std_ulogic;
+	signal s_conduit_col_info_col_nr  : std_logic_vector(8 downto 0);
+	signal s_conduit_col_info_fire    : std_ulogic;
+	signal s_aso_out1_B_data          : std_logic_vector(23 downto 0);
+	signal s_aso_out1_B_endofpacket   : std_ulogic;
+	signal s_aso_out1_B_ready         : std_ulogic;
+	signal s_aso_out1_B_startofpacket : std_ulogic;
+	signal s_aso_out1_B_valid         : std_ulogic;
+	signal s_aso_out0_startofpacket_1 : std_ulogic;
+	signal s_aso_out0_endofpacket_1   : std_ulogic;
+	signal s_aso_out0_A_data          : std_logic_vector(23 downto 0);
+	signal s_aso_out0_A_ready         : std_ulogic;
+	signal s_aso_out0_A_valid         : std_ulogic;
+	signal s_avs_s1_address           : std_logic_vector(7 downto 0);
+	signal s_avs_s1_read              : std_ulogic;
+	signal s_avs_s1_readdata          : std_logic_vector(31 downto 0);
+	signal s_avs_s1_write             : std_ulogic;
+	signal s_avs_s1_writedata         : std_logic_vector(31 downto 0);
+	signal s_avs_s1_waitrequest       : std_ulogic;
+
+
 begin
 
-	-- TODO: Auto-generated HDL template
+	dut: ram_master port map (
+		clock_clk                => s_clock_clk                ,
+		reset_reset              => s_reset_reset              ,
+		conduit_ping_or_pong     => s_conduit_ping_or_pong     ,
+		avm_m0_address           => s_avm_m0_address           ,
+		avm_m0_read              => s_avm_m0_read              ,
+		avm_m0_waitrequest       => s_avm_m0_waitrequest       ,
+		avm_m0_readdata          => s_avm_m0_readdata          ,
+		avm_m0_readdatavalid     => s_avm_m0_readdatavalid     ,
+		avm_m0_write             => s_avm_m0_write             ,
+		avm_m0_writedata         => s_avm_m0_writedata         ,
+		asi_in0_data             => s_asi_in0_data             ,
+		asi_in0_ready            => s_asi_in0_ready            ,
+		asi_in0_valid            => s_asi_in0_valid            ,
+		asi_in0_endofpacket      => s_asi_in0_endofpacket      ,
+		asi_in0_startofpacket    => s_asi_in0_startofpacket    ,
+		conduit_col_info_col_nr  => s_conduit_col_info_col_nr  ,
+		conduit_col_info_fire    => s_conduit_col_info_fire    ,
+		aso_out1_B_data          => s_aso_out1_B_data          ,
+		aso_out1_B_endofpacket   => s_aso_out1_B_endofpacket   ,
+		aso_out1_B_ready         => s_aso_out1_B_ready         ,
+		aso_out1_B_startofpacket => s_aso_out1_B_startofpacket ,
+		aso_out1_B_valid         => s_aso_out1_B_valid         ,
+		aso_out0_startofpacket_1 => s_aso_out0_startofpacket_1 ,
+		aso_out0_endofpacket_1   => s_aso_out0_endofpacket_1   ,
+		aso_out0_A_data          => s_aso_out0_A_data          ,
+		aso_out0_A_ready         => s_aso_out0_A_ready         ,
+		aso_out0_A_valid         => s_aso_out0_A_valid         ,
+		avs_s1_address           => s_avs_s1_address           ,
+		avs_s1_read              => s_avs_s1_read              ,
+		avs_s1_readdata          => s_avs_s1_readdata          ,
+		avs_s1_write             => s_avs_s1_write             ,
+		avs_s1_writedata         => s_avs_s1_writedata         ,
+		avs_s1_waitrequest       => s_avs_s1_waitrequest
+	);
 
-	avm_m0_address <= "0000000000000000000000000";
 
-	avm_m0_read <= '0';
 
-	avm_m0_write <= '0';
-
-	avm_m0_writedata <= "0000000000000000";
-
-	asi_in0_ready <= '0';
-
-	aso_out1_B_valid <= '0';
-
-	aso_out1_B_data <= "000000000000000000000000";
-
-	aso_out1_B_startofpacket <= '0';
-
-	aso_out1_B_endofpacket <= '0';
-
-	aso_out0_A_valid <= '0';
-
-	aso_out0_A_data <= "000000000000000000000000";
-
-	aso_out0_startofpacket_1 <= '0';
-
-	aso_out0_endofpacket_1 <= '0';
-
-	avs_s1_readdata <= "00000000000000000000000000000000";
-
-	avs_s1_waitrequest <= '0';
 
 end architecture rtl; -- of ram_master

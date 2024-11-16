@@ -1,4 +1,4 @@
--- new_component.vhd
+-- led_interface.vhd
 
 -- This file was auto-generated as a prototype implementation of a module
 -- created in component editor.  It ties off all outputs to ground and
@@ -12,7 +12,7 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
-entity new_component is
+entity led_interface is
 	generic (
 		num_led_A  : integer := 30;
 		num_led_B  : integer := 30;
@@ -53,9 +53,9 @@ entity new_component is
 		asi_in0_startofpacket       : in  std_logic                     := '0';             --                     .startofpacket
 		asi_in0_endofpacket         : in  std_logic                     := '0'              --                     .endofpacket
 	);
-end entity new_component;
+end entity led_interface;
 
-architecture rtl of new_component is
+architecture rtl of led_interface is
 begin
 
 	-- TODO: Auto-generated HDL template
@@ -88,4 +88,4 @@ begin
 
 	asi_in0_ready <= '0';
 
-end architecture rtl; -- of new_component
+end architecture rtl; -- of led_interface

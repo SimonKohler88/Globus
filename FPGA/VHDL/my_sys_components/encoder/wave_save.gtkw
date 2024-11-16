@@ -1,0 +1,42 @@
+[*]
+[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
+[*] Sat Nov 16 21:31:07 2024
+[*]
+[dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\encoder\func.vcd"
+[dumpfile_mtime] "Sat Nov 16 21:29:20 2024"
+[dumpfile_size] 2637937
+[savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\encoder\wave_save.gtkw"
+[timestart] 334550
+[size] 1920 1017
+[pos] -1 -1
+*-11.000000 171433 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] new_encoder_tb.
+[sst_width] 348
+[signals_width] 395
+[sst_expanded] 1
+[sst_vpaned_height] 300
+@28
+new_encoder_tb.clk
+new_encoder_tb.dut.conduit_encoder_a
+new_encoder_tb.dut.conduit_encoder_b
+new_encoder_tb.dut.conduit_encoder_index
+new_encoder_tb.dut.reset_reset
+new_encoder_tb.dut.sync_a_reg[2:0]
+new_encoder_tb.dut.sync_a
+new_encoder_tb.dut.sync_b
+new_encoder_tb.dut.enc_clk
+new_encoder_tb.dut.enc_direction
+new_encoder_tb.dut.rising_edge_a_reg[1:0]
+new_encoder_tb.dut.conduit_intern_col_fire
+@420
+new_encoder_tb.dut.conduit_intern_col_nr[8:0]
+@28
+new_encoder_tb.dut.i_valid
+@24
+new_encoder_tb.indexcount[8:0]
+@28
+new_encoder_tb.s_conduit_encoder_sim_pulse
+@29
+new_encoder_tb.s_conduit_encoder_sim_switch
+[pattern_trace] 1
+[pattern_trace] 0
