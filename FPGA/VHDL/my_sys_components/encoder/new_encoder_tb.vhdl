@@ -15,11 +15,6 @@ use IEEE.numeric_std.all;
 entity new_encoder_tb is
 end entity new_encoder_tb;
 
--- Known behaviour (2024.16.11) sik:
--- when changing
-
-
-
 architecture rtl of new_encoder_tb is
 
 	component new_encoder is

@@ -13,6 +13,9 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
+
+--known maybe-issue: if direction changed, there is maybe a column-jump by one
+
 entity new_encoder is
 	generic (
 		input_pulse_per_rev : integer := 512;
