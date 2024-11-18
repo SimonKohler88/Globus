@@ -15,12 +15,13 @@ use IEEE.numeric_std.all;
 entity ram_master is
 	generic (
 		image_cols : integer := 256;
-		image_rows : integer := 0
+		image_rows : integer := 120
 	);
 	port (
 		clock_clk                : in  std_logic                     := '0';             --                clock.clk
 		reset_reset              : in  std_logic                     := '0';             --                reset.reset
 		conduit_ping_or_pong     : in  std_logic                     := '0';             -- conduit_ping_or_pong.new_signal
+
 		avm_m0_address           : out std_logic_vector(24 downto 0);                    --               avm_m0.address
 		avm_m0_read              : out std_logic;                                        --                     .read
 		avm_m0_waitrequest       : in  std_logic                     := '0';             --                     .waitrequest
@@ -28,7 +29,8 @@ entity ram_master is
 		avm_m0_readdatavalid     : in  std_logic                     := '0';             --                     .readdatavalid
 		avm_m0_write             : out std_logic;                                        --                     .write
 		avm_m0_writedata         : out std_logic_vector(15 downto 0);                    --                     .writedata
-		asi_in0_data             : in  std_logic_vector(7 downto 0)  := (others => '0'); --              asi_in0.data
+
+		asi_in0_data             : in  std_logic_vector(23 downto 0) := (others => '0'); --              asi_in0.data
 		asi_in0_ready            : out std_logic;                                        --                     .ready
 		asi_in0_valid            : in  std_logic                     := '0';             --                     .valid
 		asi_in0_endofpacket      : in  std_logic                     := '0';             --                     .endofpacket
@@ -57,36 +59,6 @@ end entity ram_master;
 architecture rtl of ram_master is
 begin
 
-	-- TODO: Auto-generated HDL template
 
-	avm_m0_address <= "0000000000000000000000000";
-
-	avm_m0_read <= '0';
-
-	avm_m0_write <= '0';
-
-	avm_m0_writedata <= "0000000000000000";
-
-	asi_in0_ready <= '0';
-
-	aso_out1_B_valid <= '0';
-
-	aso_out1_B_data <= "000000000000000000000000";
-
-	aso_out1_B_startofpacket <= '0';
-
-	aso_out1_B_endofpacket <= '0';
-
-	aso_out0_A_valid <= '0';
-
-	aso_out0_A_data <= "000000000000000000000000";
-
-	aso_out0_startofpacket_1 <= '0';
-
-	aso_out0_endofpacket_1 <= '0';
-
-	avs_s1_readdata <= "00000000000000000000000000000000";
-
-	avs_s1_waitrequest <= '0';
 
 end architecture rtl; -- of ram_master

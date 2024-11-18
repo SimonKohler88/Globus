@@ -4,9 +4,20 @@ REM set MODULE with your module name
 Set MODULE=ram_master
 
 REM Don't touch following:
-Set FILES=%MODULE%.vhd %MODULE%_tb.vhd
-ghdl -a %FILES%
-ghdl -r %MODULE%_tb --vcd=func.vcd
+Set FILES=%MODULE%_tb.vhd  %MODULE%.vhd %MODULE%_verify.vhd
+ghdl -a  --std=08 %FILES% 
+
+if %ERRORLEVEL%==1 (
+	PAUSE
+	goto end
+)
+ghdl -r --std=08 --time-resolution=ns %MODULE%_tb --vcd=func.vcd --stop-time=600us
+
+if %ERRORLEVEL%==1 (
+	PAUSE
+) else (
+	gtkwave func.vcd wave_save.gtkw
+)
+:end
 
 
-PAUSE

@@ -16,23 +16,15 @@ library std;
 use std.textio.all;
 
 
-entity qspi_interface_verify is
+entity qspi_simulate is
 	port (
-		aso_out0_data          : in   std_ulogic_vector(23 downto 0);
-        aso_out0_endofpacket   : in   std_ulogic                   ;
-        aso_out0_ready         : out  std_ulogic                   ;
-        aso_out0_startofpacket : in   std_ulogic                   ;
-        aso_out0_valid         : in   std_ulogic                   ;
-        clock_clk              : out  std_ulogic                   ;
-        reset_reset            : out  std_ulogic                   ;
         conduit_qspi_data      : out  std_ulogic_vector(3 downto 0);
         conduit_qspi_clk       : out  std_ulogic                   ;
-        conduit_qspi_cs        : out  std_ulogic                   ;
-        conduit_ping_pong      : in   std_ulogic
+        conduit_qspi_cs        : out  std_ulogic
 	);
-end entity qspi_interface_verify;
+end entity qspi_simulate;
 
-architecture rtl of qspi_interface_verify is
+architecture rtl of qspi_simulate is
 
     procedure qspi_write_pixel(
         constant c_data    : in std_ulogic_vector(23 downto 0);
@@ -59,30 +51,14 @@ architecture rtl of qspi_interface_verify is
     constant c_cycle_time_qspi : time := 38 ns; --26M
 
     signal internal_qspi_clock: std_ulogic;
+    signal enable :boolean:=true;
 
-    signal enable         : boolean := true;
     file input_file : text open read_mode is "./Earth_relief_120x256_raw2.txt";
     file output_file : text open write_mode is "./stream_received.txt";
-    constant c_pixel_to_send : integer := 5;
+    constant c_pixel_to_send : integer := 45;
 
 
 begin
-
-    reset_reset <= transport '1', '0' after 5 ns;
-
-
-	-- 100MHz
-	p_system_clk : process
-	begin
-		while enable loop
-            clock_clk <= '0';
-            wait for c_cycle_time_100M/2;
-            clock_clk <= '1';
-            wait for c_cycle_time_100M/2;
-		end loop;
-		wait;  -- don't do it again
-	end process p_system_clk;
-
 	-- qspi_clk
 	p_qspi_clk : process
 	begin
@@ -94,9 +70,6 @@ begin
 		end loop;
 		wait;  -- don't do it again
 	end process p_qspi_clk;
-
-	aso_out0_ready <= '1';
-
 
 
     p_stimuli: process
@@ -112,7 +85,7 @@ begin
 
         conduit_qspi_cs <= '0';
         wait for 2 ns;
-        for i in 0 to c_pixel_to_send-1 loop
+        for i in 0 to c_pixel_to_send loop
             readline(input_file, v_input_line);
             hread(v_input_line, v_write_data);
             qspi_write_pixel(v_write_data, internal_qspi_clock, conduit_qspi_clk, conduit_qspi_data );
@@ -123,29 +96,7 @@ begin
         wait;
     end process p_stimuli;
 
-    p_store_stream: process(all) --untested yet
-        variable v_output_line : line;
-    begin
-
-        if rising_edge(clock_clk) then
-            if aso_out0_ready = '1' and aso_out0_valid ='1' then
-                write(v_output_line, to_hstring(aso_out0_data));
-                writeline(output_file, v_output_line);
-            end if;
-        end if;
-
-    end process p_store_stream;
-
-    p_monitor: process
-
-    begin
-
-		wait for 400 us;
-		enable <= false;
-		write(output, "all tested");
-		wait;
-    end process p_monitor;
-
+    
 
 
 

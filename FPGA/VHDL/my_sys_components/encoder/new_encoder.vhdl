@@ -139,7 +139,7 @@ begin
 				else
 					column_counter <= column_counter - 1;
 				end if;
-				conduit_intern_col_nr(7 downto 0) <= std_ulogic_vector(column_counter(8 downto 1));
+				conduit_intern_col_nr(7 downto 0) <= std_logic_vector(column_counter(8 downto 1));
 			end if;
         end if;
 	end process col_counter_proc;

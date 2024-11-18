@@ -1,0 +1,31 @@
+[*]
+[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
+[*] Mon Nov 18 20:40:57 2024
+[*]
+[dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\func.vcd"
+[dumpfile_mtime] "Mon Nov 18 20:39:58 2024"
+[dumpfile_size] 2489600
+[savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\wave_save.gtkw"
+[timestart] 0
+[size] 1920 1017
+[pos] -1 -1
+*-11.000000 1162 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] integration_tb.
+[sst_width] 333
+[signals_width] 198
+[sst_expanded] 1
+[sst_vpaned_height] 180
+@28
+integration_tb.s_clock_clk
+@22
+integration_tb.dut_qspi.aso_out0_data[23:0]
+@28
+integration_tb.dut_qspi.aso_out0_valid
+@22
+integration_tb.dut_ram_master.asi_in0_data[23:0]
+@28
+integration_tb.dut_ram_master.asi_in0_ready
+integration_tb.dut_ram_master.asi_in0_startofpacket
+integration_tb.dut_ram_master.asi_in0_endofpacket
+[pattern_trace] 1
+[pattern_trace] 0

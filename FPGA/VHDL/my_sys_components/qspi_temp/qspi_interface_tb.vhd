@@ -19,7 +19,7 @@ architecture rtl of qspi_interface_tb is
 
 	component qspi_interface is
 	port (
-		aso_out0_data          : out std_logic_vector(7 downto 0);                    --          aso_out0.data
+		aso_out0_data          : out std_logic_vector(23 downto 0);                    --          aso_out0.data
 		aso_out0_endofpacket   : out std_logic;                                       --                  .endofpacket
 		aso_out0_ready         : in  std_logic                    := '0';             --                  .ready
 		aso_out0_startofpacket : out std_logic;                                       --                  .startofpacket
@@ -35,7 +35,7 @@ architecture rtl of qspi_interface_tb is
 
 	component qspi_interface_verify is
 	port (
-		aso_out0_data          : in   std_ulogic_vector(7 downto 0);
+		aso_out0_data          : in   std_ulogic_vector(23 downto 0);
 		aso_out0_endofpacket   : in   std_ulogic;
 		aso_out0_ready         : out  std_ulogic                   ;
 		aso_out0_startofpacket : in   std_ulogic;
@@ -49,7 +49,7 @@ architecture rtl of qspi_interface_tb is
 	);
 	end component;
 
-	signal s_aso_out0_data          : std_ulogic_vector(7 downto 0);
+	signal s_aso_out0_data          : std_ulogic_vector(23 downto 0);
 	signal s_aso_out0_endofpacket   : std_ulogic                   ;
 	signal s_aso_out0_ready         : std_ulogic                   ;
 	signal s_aso_out0_startofpacket : std_ulogic                   ;
