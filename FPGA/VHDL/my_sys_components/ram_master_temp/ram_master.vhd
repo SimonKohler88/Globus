@@ -59,6 +59,12 @@ end entity ram_master;
 architecture rtl of ram_master is
 begin
 
+	avm_m0_address <= (others => '0');
+	avm_m0_read <= '0';
+	avm_m0_write <= '0';
+	avm_m0_writedata <= (others => '0');
+
+
 
 
 end architecture rtl; -- of ram_master

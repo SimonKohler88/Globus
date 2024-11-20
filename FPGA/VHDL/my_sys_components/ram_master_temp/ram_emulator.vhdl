@@ -2,6 +2,10 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+
+library std;
+use std.textio.all;
+
 entity avalon_slave_ram_emulator is
 	port (
 		rst : in std_ulogic;
@@ -11,8 +15,9 @@ entity avalon_slave_ram_emulator is
         waitrequest   : out std_ulogic;
         readdata      : out std_ulogic_vector(15 downto 0);
         readdatavalid : out std_ulogic;
-        write         : in  std_ulogic;
-        writedata     : in  std_ulogic_vector(15 downto 0)
+        write_en         : in  std_ulogic;
+        writedata     : in  std_ulogic_vector(15 downto 0);
+        dump_ram      : in std_ulogic
 	);
 end entity avalon_slave_ram_emulator;
 
@@ -21,13 +26,18 @@ architecture rtl of avalon_slave_ram_emulator is
   signal access_cnt : unsigned(1 downto 0);
   signal delay_cnt : unsigned(2 downto 0);
   signal enable_delay_cnt : std_ulogic;
-  constant RAM_ADDR_BITS : integer := 18;
+
+  signal dump_ram_ff :std_ulogic_vector(1 downto 0);
+
+  -- constant RAM_ADDR_BITS : integer := 18;
+  constant RAM_ADDR_BITS : integer := 7;
   --type t_mem is array (0 to 2**24-1) of std_ulogic_vector(15 downto 0);
-  type t_mem is array (0 to 2** RAM_ADDR_BITS -1) of std_ulogic_vector(15 downto 0);
+  -- type t_mem is array (0 to 2** RAM_ADDR_BITS -1) of std_ulogic_vector(15 downto 0);
+  type t_mem is array (0 to 255) of std_ulogic_vector(15 downto 0);
   signal mem : t_mem;
 
  -- file input_file : text open read_mode is "./ram_content.txt";
- --    file output_file : text open write_mode is "./ram_content.txt";
+  file output_file : text open write_mode is "./ram_dumps/ram_content_verify_ram_qspi.txt";
 begin
 
   p_delay : process(rst, clk)
@@ -35,7 +45,7 @@ begin
     if rst = '1' then
       access_d <= '0';
     elsif rising_edge(clk) then
-      access_d <= write or read;
+      access_d <= write_en or read;
     end if;
   end process p_delay;
 
@@ -45,7 +55,7 @@ begin
     if rst = '1' then
       access_cnt <= (others => '0');
     elsif rising_edge(clk) then
-      if ((write or read) and not(access_d)) = '1' then  -- rising-edge(wr or rd)
+      if ((write_en or read) and not(access_d)) = '1' then  -- rising-edge(wr or rd)
         if access_cnt = 2 then
           access_cnt <= (others => '0');
         else
@@ -81,13 +91,38 @@ begin
 
   waitrequest <= '1' when delay_cnt /= 0 else '0';
 
+  p_dump_ram:process(all)
+    variable v_output_line : line;
+  begin
+    if rst = '1' then
+      dump_ram_ff <= (others => '0');
+
+    elsif rising_edge(clk) then
+      dump_ram_ff <= dump_ram_ff(0) & dump_ram;
+
+      if dump_ram_ff= "01" then
+
+        for i in 0 to t_mem'length-1 loop
+          -- write(v_output_line, i, left, 8);                          -- schreibt 1. Wert auf Zeile
+          write(v_output_line, to_string(i), left, 6);                      -- schreibt 3. Wert
+          write(v_output_line, "0x"&to_hstring(mem(i)));             -- schreibt 5. Wert
+          writeline(output_file, v_output_line);                       -- schreibt Zeile in "output_file"
+        end loop;
+      end if;
+
+    end if;
+
+  end process p_dump_ram;
+
+
+
   -- write:
   p_store : process(rst, clk)
   begin
     if rst = '1' then
       mem <= (others => (others => '0'));
     elsif rising_edge(clk) then
-      if waitrequest = '0' and write = '1' then
+      if waitrequest = '0' and write_en = '1' then
         mem(to_integer(unsigned(address(RAM_ADDR_BITS downto 0)))) <= writedata;
       end if;
     end if;

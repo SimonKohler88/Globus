@@ -147,6 +147,8 @@ architecture rtl of integration_tb is
 	signal s_avs_s1_waitrequest       : std_ulogic;
 
 
+
+
 	signal s_conduit_qspi_data      : std_ulogic_vector(3 downto 0);
     signal s_conduit_qspi_clk       : std_ulogic                   ;
     signal s_conduit_qspi_cs        : std_ulogic                   ;

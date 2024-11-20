@@ -56,8 +56,9 @@ architecture rtl of integration_verify_ram_qspi is
         waitrequest   : out std_ulogic;
         readdata      : out std_ulogic_vector(15 downto 0);
         readdatavalid : out std_ulogic;
-        write         : in  std_ulogic;
-        writedata     : in  std_ulogic_vector(15 downto 0)
+        write_en         : in  std_ulogic;
+        writedata     : in  std_ulogic_vector(15 downto 0);
+		dump_ram      : in  std_ulogic
 	);
     end component avalon_slave_ram_emulator;
 
@@ -68,13 +69,30 @@ architecture rtl of integration_verify_ram_qspi is
 	signal s_avm_m0_readdatavalid     : std_ulogic;
 	signal s_avm_m0_write             : std_ulogic;
 	signal s_avm_m0_writedata         : std_logic_vector(15 downto 0);
+	signal s_dump_ram                 :std_ulogic;
+
 
     constant c_cycle_time_100M : time := 10 ns;
     signal enable :boolean:=true;
 
+	file output_file_stream_A : text open write_mode is "./testio_verify_ram_qspi/stream_received_A.txt";
+	file output_file_stream_B : text open write_mode is "./testio_verify_ram_qspi/stream_received_B.txt";
 
 
 begin
+	 helper_ram_emulator: avalon_slave_ram_emulator port map (
+		rst           => reset_reset               ,
+		clk           => clock_clk               ,
+        address       => s_avm_m0_address           ,
+        read          => s_avm_m0_read              ,
+        waitrequest   => s_avm_m0_waitrequest       ,
+        readdata      => s_avm_m0_readdata          ,
+        readdatavalid => s_avm_m0_readdatavalid     ,
+        write_en         => s_avm_m0_write             ,
+        writedata     => s_avm_m0_writedata,
+        dump_ram      => s_dump_ram
+	);
+	--s_dump_ram <= '0';
 
 -- 100MHz
 	p_system_clk : process
@@ -90,6 +108,29 @@ begin
 
     reset_reset <= transport '1', '0' after 5 ns;
 
+     p_store_stream_A: process(all) --untested yet
+        variable v_output_line : line;
+    begin
+        if rising_edge(clock_clk) then
+            if aso_out0_A_ready = '1' and aso_out0_A_valid ='1' then
+                write(v_output_line, to_hstring(aso_out0_A_data));
+                writeline(output_file_stream_A, v_output_line);
+            end if;
+        end if;
+    end process p_store_stream_A;
+
+     p_store_stream_B: process(all) --untested yet
+        variable v_output_line : line;
+    begin
+        if rising_edge(clock_clk) then
+            if aso_out1_B_ready = '1' and aso_out1_B_valid ='1' then
+                write(v_output_line, to_hstring(aso_out1_B_data));
+                writeline(output_file_stream_B, v_output_line);
+            end if;
+        end if;
+    end process p_store_stream_B;
+
+
     p_stimuli: process
     begin
         wait for 200 us;
@@ -103,7 +144,12 @@ begin
     p_monitor: process
 
     begin
+		s_dump_ram <= '0';
 
+		wait for 60 ns;
+		s_dump_ram <= '1';
+		wait for 20 ns;
+		s_dump_ram <= '0';
 		wait for 400 us;
 		enable <= false;
 		write(output, "all tested");
@@ -112,17 +158,7 @@ begin
 
 
 
-    helper_ram_emulator: avalon_slave_ram_emulator port map (
-		rst           => clock_clk                ,
-		clk           => reset_reset              ,
-        address       => s_avm_m0_address           ,
-        read          => s_avm_m0_read              ,
-        waitrequest   => s_avm_m0_waitrequest       ,
-        readdata      => s_avm_m0_readdata          ,
-        readdatavalid => s_avm_m0_readdatavalid     ,
-        write         => s_avm_m0_write             ,
-        writedata     => s_avm_m0_writedata
-	);
+
 
 
 

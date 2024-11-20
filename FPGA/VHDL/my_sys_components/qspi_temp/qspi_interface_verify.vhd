@@ -123,7 +123,7 @@ begin
         wait;
     end process p_stimuli;
 
-    p_store_stream: process(all) --untested yet
+    p_store_stream: process(all) 
         variable v_output_line : line;
     begin
 
