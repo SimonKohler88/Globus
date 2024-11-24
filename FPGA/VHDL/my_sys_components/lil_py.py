@@ -10,3 +10,4 @@ if __name__ == '__main__':
 
     with open('ram_content.txt', 'w') as f:
         f.write(s)
+    

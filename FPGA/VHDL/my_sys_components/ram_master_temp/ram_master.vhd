@@ -35,34 +35,504 @@ entity ram_master is
 		asi_in0_valid            : in  std_logic                     := '0';             --                     .valid
 		asi_in0_endofpacket      : in  std_logic                     := '0';             --                     .endofpacket
 		asi_in0_startofpacket    : in  std_logic                     := '0';             --                     .startofpacket
+
 		conduit_col_info_col_nr  : in  std_logic_vector(8 downto 0)  := (others => '0'); --     conduit_col_info.col_nr
 		conduit_col_info_fire    : in  std_logic                     := '0';             --                     .fire
+
 		aso_out1_B_data          : out std_logic_vector(23 downto 0);                    --           aso_out1_B.data
 		aso_out1_B_endofpacket   : out std_logic;                                        --                     .endofpacket
 		aso_out1_B_ready         : in  std_logic                     := '0';             --                     .ready
 		aso_out1_B_startofpacket : out std_logic;                                        --                     .startofpacket
 		aso_out1_B_valid         : out std_logic;                                        --                     .valid
+
 		aso_out0_startofpacket_1 : out std_logic;                                        --           aso_out0_A.startofpacket
 		aso_out0_endofpacket_1   : out std_logic;                                        --                     .endofpacket
 		aso_out0_A_data          : out std_logic_vector(23 downto 0);                    --                     .data
 		aso_out0_A_ready         : in  std_logic                     := '0';             --                     .ready
 		aso_out0_A_valid         : out std_logic;                                        --                     .valid
+
 		avs_s1_address           : in  std_logic_vector(7 downto 0)  := (others => '0'); --               avs_s1.address
 		avs_s1_read              : in  std_logic                     := '0';             --                     .read
 		avs_s1_readdata          : out std_logic_vector(31 downto 0);                    --                     .readdata
 		avs_s1_write             : in  std_logic                     := '0';             --                     .write
 		avs_s1_writedata         : in  std_logic_vector(31 downto 0) := (others => '0'); --                     .writedata
 		avs_s1_waitrequest       : out std_logic                                         --                     .waitrequest
-	);
+	);--avs_s1_waitrequest
 end entity ram_master;
 
 architecture rtl of ram_master is
-begin
 
-	avm_m0_address <= (others => '0');
-	avm_m0_read <= '0';
-	avm_m0_write <= '0';
-	avm_m0_writedata <= (others => '0');
+	signal SystemEnable                  : std_ulogic;
+
+	type state_main is (main_write, main_read_A, main_write_2, main_read_B);
+	signal main_state : state_main;
+	signal next_main_state : state_main;
+
+	type state_AVM_write is (idle, wait_write_1, write_1, wait_write_2, write_2, end_write);
+	signal write_state        : state_AVM_write := idle;
+	signal next_write_state        : state_AVM_write := idle;
+
+	type state_AVM_read is (idle, wait_read_1, read_1, wait_read_2, read_2, end_read);
+	signal read_state : state_AVM_read := idle;
+	signal next_read_state : state_AVM_read := idle;
+
+	signal write_address: unsigned(24 downto 0) := (others => '0');
+	signal read_address: unsigned(24 downto 0) := (others => '0');
+
+	signal data_in_buffer:  std_logic_vector(23 downto 0) := (others => '0');
+	signal data_out_buffer:  std_logic_vector(23 downto 0) := (others => '0');
+
+	constant BASE_ADDR_1: unsigned(24 downto 0):= (others => '0');
+	constant BASE_ADDR_2: unsigned(24 downto 0):= '0' & X"000080"; --TODO: change in real design
+	signal active_base_addr :std_ulogic;
+
+	signal end_packet_ff :std_ulogic_vector(1 downto 0);
+
+	signal current_address_write: unsigned(24 downto 0) := (others => '0');
+	signal current_address_read: unsigned(24 downto 0) := (others => '0');
+
+	signal active_aso_startofpacket : std_ulogic;
+	signal active_aso_endofpacket   : std_ulogic;
+	signal active_aso_data          : std_ulogic_vector(23 downto 0);
+	signal active_aso_ready         : std_ulogic;
+	signal active_aso_valid         : std_ulogic;
+
+	signal col_fire_ff : std_ulogic_vector(1 downto 0);
+	signal fire_pending: std_ulogic;
+
+	signal dummy : std_ulogic;
+
+begin
+	avs_s1_waitrequest <= '1'; -- not implemented
+
+	avm_m0_address <= std_ulogic_vector(write_address)  when main_state = main_write  else
+					  std_ulogic_vector(read_address)  when main_state = main_read_A or main_state=main_read_B else
+					  (others=>'0');
+
+
+
+
+	--TODO: make startup delay
+	SystemEnable <= '1';
+ --Startup Delay for the RAM Controller
+    -- InitialDelay : process(clk, rst) is
+    --     variable delayCount : unsigned(9 downto 0);
+    -- begin
+    --     if rst = '1' then
+    --         delayCount   := (others => '1');
+    --         SystemEnable <= '0';
+    --     elsif rising_edge(clk) then
+    --         if delayCount = 0 then
+    --             SystemEnable <= '1';
+    --         else
+    --             SystemEnable <= '0';
+    --             delayCount   := delayCount - 1;
+    --         end if;
+    --     end if;
+    -- end process InitialDelay;
+
+	--avm_m0_address <= (others => '0');
+	--avm_m0_read <= '1';
+	--avm_m0_write <= '1';
+	--avm_m0_writedata <= (others => '0');
+
+
+	-- p_end_packet_switch :process(all)
+	-- begin
+	-- 	if reset_reset = '1' then
+	-- 	elsif rising_edge(clock_clk) then
+	-- 	end if;
+	-- end process p_end_packet_switch;
+
+	-- TODO: make main state logic
+	--main_state <= read_A;
+
+	--*************************************** Main State Machine ***************************************************************
+	p_main_state_clocked :process(all)
+	begin
+		if reset_reset = '1' then
+		main_state <= main_write;
+		col_fire_ff <= (others => '0');
+		fire_pending <= '0';
+
+
+		elsif rising_edge(clock_clk) then
+			main_state <= next_main_state;
+
+			col_fire_ff <= col_fire_ff(0) & conduit_col_info_fire;
+
+			if col_fire_ff = "01" then
+				fire_pending <= '1';
+			end if;
+
+			if main_state = main_read_A or main_state = main_write_2 then
+				fire_pending <= '0';
+			end if;
+
+		end if;
+	end process p_main_state_clocked;
+
+	p_main_state_statemachine: process(all)
+	begin
+	--(write, read_A, write_2, read_B);
+
+		case main_state is
+			when main_write =>
+				if fire_pending='1' and (write_state=idle or write_state=wait_write_1) then
+					next_main_state <= main_read_A;
+				end if;
+
+			when main_read_A =>
+				if read_state = end_read then
+					next_main_state <= main_write_2;
+				end if;
+
+			when main_write_2 =>
+				next_main_state <= main_read_B; --TODO
+
+			when main_read_B =>
+				if read_state = end_read then
+					next_main_state <= main_write;
+				end if;
+
+		end case;
+
+		case main_state is
+			when main_write =>
+				aso_out0_startofpacket_1 <=  active_aso_startofpacket  ;
+				aso_out0_endofpacket_1   <=  active_aso_endofpacket    ;
+				aso_out0_A_data          <=  active_aso_data           ;
+				aso_out0_A_valid         <=  active_aso_valid          ;
+
+				active_aso_ready <= aso_out0_A_ready;
+
+			when main_read_A =>
+				aso_out0_startofpacket_1 <=  active_aso_startofpacket  ;
+				aso_out0_endofpacket_1   <=  active_aso_endofpacket    ;
+				aso_out0_A_data          <=  active_aso_data           ;
+				aso_out0_A_valid         <=  active_aso_valid          ;
+
+				active_aso_ready <= aso_out0_A_ready;
+
+
+			when main_write_2 =>
+				aso_out0_startofpacket_1 <=  active_aso_startofpacket  ;
+				aso_out0_endofpacket_1   <=  active_aso_endofpacket    ;
+				aso_out0_A_data          <=  active_aso_data           ;
+				aso_out0_A_valid         <=  active_aso_valid          ;
+
+				active_aso_ready <= aso_out0_A_ready;
+
+			when main_read_B =>
+				aso_out1_B_startofpacket <=  active_aso_startofpacket  ;
+				aso_out1_B_endofpacket   <=  active_aso_endofpacket    ;
+				aso_out1_B_data          <=  active_aso_data           ;
+				aso_out1_B_valid         <=  active_aso_valid          ;
+
+				active_aso_ready <= aso_out1_B_ready;
+
+		end case;
+
+
+	end process p_main_state_statemachine;
+
+	--*************************************** Read from ram processes ***************************************************************
+
+	--type state_AVM_read is (idle, wait_read_1, read_1, wait_read_2, read_2, end_read);
+	p_read_ram_clocked :process(all)
+	begin
+		if reset_reset = '1' then
+		read_state <= idle;
+		elsif rising_edge(clock_clk) then
+			read_state <= next_read_state;
+
+			if next_read_state=read_1 then
+				current_address_read <= current_address_read + 1;
+			end if;
+
+			if next_read_state= read_2 then
+				current_address_read <= current_address_read + 1;
+			end if;
+
+		end if;
+	end process p_read_ram_clocked;
+
+
+-- 	avm_m0_address
+-- avm_m0_read
+-- avm_m0_waitrequest
+-- avm_m0_readdata
+-- avm_m0_readdatavalid
+
+	p_AVM_Read_statemachine: process(all) is
+	variable pix_count: integer;
+	constant PIX_PER_ASO: integer:= 20; --TODO:check value. must be 60 in real design
+    begin
+		if main_state = main_read_A or main_state = main_read_B then
+			case read_state is
+				when idle =>
+					if main_state = main_read_A or main_state = main_read_B then
+						next_read_state <= wait_read_1;
+					end if;
+
+				when wait_read_1 =>
+					-- if active_aso_ready='1' and avm_m0_readdatavalid='1' and avm_m0_waitrequest='0' then
+					if active_aso_ready='1' and avm_m0_waitrequest='0' then
+						next_read_state <= read_1;
+					end if;
+				when read_1 =>
+					if avm_m0_waitrequest='0' and avm_m0_readdatavalid='1' then
+						next_read_state <= read_2;
+					else
+						next_read_state <= wait_read_2;
+					end if;
+				when wait_read_2 =>
+					if avm_m0_waitrequest='0' and avm_m0_readdatavalid='1' then
+						next_read_state <= read_2;
+					end if;
+				when read_2 =>
+					if pix_count < PIX_PER_ASO then
+						if avm_m0_waitrequest='1' then
+							next_read_state <= wait_read_1;
+						else
+							next_read_state <= read_1;
+						end if;
+					else
+						next_read_state <= end_read;
+					end if;
+				when end_read =>
+					next_read_state <= idle;
+
+				when others =>
+					next_read_state <= idle;
+			end case;
+
+			case read_state is
+				when idle =>
+					read_address <= (others =>'0');
+					avm_m0_read <= '1';
+					pix_count := 0;
+					active_aso_valid <= '0';
+					active_aso_startofpacket <= '0';
+					active_aso_endofpacket <= '0';
+
+				when wait_read_1 =>
+					read_address <= current_address_read;
+					avm_m0_read <= '0';
+					active_aso_valid <= '0';
+					active_aso_startofpacket <= '0';
+					active_aso_endofpacket <= '0';
+
+				when read_1 =>
+					read_address <= current_address_read;
+					avm_m0_read <= '0';
+					active_aso_valid <= '0';
+					active_aso_data <= avm_m0_readdata & X"00";
+
+				when wait_read_2 =>
+					read_address <= current_address_read;
+					avm_m0_read <= '0';
+					active_aso_valid <= '0';
+
+				when read_2 =>
+					active_aso_data(7 downto 0) <= avm_m0_readdata(15 downto 8);
+					read_address <= current_address_read;
+					avm_m0_read <= '0';
+					active_aso_valid <= '1';
+
+					pix_count := pix_count +1;
+
+					if pix_count=0 then
+						active_aso_startofpacket <= '1';
+					elsif pix_count >= PIX_PER_ASO-1 then
+						active_aso_endofpacket <= '1';
+					end if;
+
+				when end_read =>
+					read_address <= (others =>'0');
+					avm_m0_read <= '1';
+					pix_count := 0;
+					active_aso_valid <= '0';
+					active_aso_startofpacket <= '0';
+					active_aso_endofpacket <= '0';
+
+				when others =>
+					read_address <= (others =>'0');
+					avm_m0_read <= '1';
+					active_aso_valid <= '0';
+					active_aso_startofpacket <= '0';
+					active_aso_endofpacket <= '0';
+			end case;
+		else
+			avm_m0_read <= '1';
+			active_aso_valid <= '0';
+			active_aso_startofpacket <= '0';
+			active_aso_endofpacket <= '0';
+			active_aso_data <= (others=>'0');
+		end if;
+
+	end process p_AVM_Read_statemachine;
+
+	--*************************************** Write to ram processes ***************************************************************
+
+	asi_in0_ready <= '1' when main_state=main_write and ( write_state=idle or write_state = wait_write_1 ) and SystemEnable='1' else '0';
+
+	--control input (but not state) of "write to ram" statemachine
+	p_write_ram_clocked : PROCESS(all)
+	variable addr_switch_pending: std_ulogic;
+	BEGIN
+		IF reset_reset = '1' THEN
+			write_state <= idle; -- Zustand nach reset
+			end_packet_ff <= (others=>'0');
+			active_base_addr <= '0';
+			data_in_buffer <= (others =>'0');
+			addr_switch_pending := '0';
+			current_address_write <= BASE_ADDR_1;
+
+		ELSIF rising_edge(clock_clk)THEN
+			write_state <= next_write_state;
+
+			-- buffering data in. we dont know if we can write it already
+			if asi_in0_valid = '1' then
+				data_in_buffer <= asi_in0_data;
+			end if;
+
+			-- remember end of packet -> switch to other buffer
+			end_packet_ff <= end_packet_ff(0) & asi_in0_endofpacket;
+			if end_packet_ff = "01" then
+				active_base_addr <= not active_base_addr;
+				addr_switch_pending := '1';
+			end if;
+
+			-- switch to other buffer: set base address and increments of addr
+			if addr_switch_pending='1' and (write_state=idle or write_state=wait_write_1) then
+				current_address_write <= BASE_ADDR_1 when active_base_addr='0' else BASE_ADDR_2;
+				addr_switch_pending := '0';
+
+			elsif next_write_state=write_2 or next_write_state=end_write then
+				current_address_write <= current_address_write + 1;
+			end if;
+
+		END IF;
+	END PROCESS p_write_ram_clocked;
+
+	  --Interface that communicates with RAM controller over Avalon-MM
+    p_AVM_Write_statemachine : process(all) is
+    begin
+--set_base_addr, idle, wait_write_1, write_1, wait_write_2, write_2, end_write
+
+		if main_state = main_write or main_state = main_write_2 then
+			case write_state is
+				when idle =>
+						if main_state = main_write or main_state = main_write_2 then
+							next_write_state <= wait_write_1;
+						end if;
+
+				when wait_write_1 =>
+					if asi_in0_valid='1' and avm_m0_waitrequest='0' then
+						next_write_state <= write_1;
+					end if;
+
+				when write_1 =>
+					if avm_m0_waitrequest='0' then
+						next_write_state <= write_2;
+					else
+						next_write_state <= wait_write_2;
+					end if;
+
+				when wait_write_2 =>
+					if avm_m0_waitrequest='0' then
+						next_write_state <= write_2;
+					end if;
+
+				when write_2 =>
+					next_write_state <= end_write;
+
+				when end_write =>
+					next_write_state <= idle;
+
+				when others =>
+					next_write_state <= idle;
+			end case;
+
+			case write_state is
+				when idle => --Idle, setup_write, write_1, write_2, end_write
+					write_address <= (others => '0');
+					avm_m0_write <= '1';
+					avm_m0_writedata <= (others => '0');
+
+				when wait_write_1 =>
+					write_address <=  (others => '0');
+					avm_m0_write <= '1';
+					avm_m0_writedata <= (others => '0');
+
+				when write_1 =>
+					write_address <=  current_address_write;
+					avm_m0_write <= '0';
+					avm_m0_writedata <= data_in_buffer(23 downto 8);
+
+				when wait_write_2 =>
+					write_address <= (others => '0');
+					avm_m0_write <= '1';
+					avm_m0_writedata <= (others => '0');
+
+				when write_2 =>
+					write_address <=  current_address_write;
+					-- write_address <= (others => '0');
+					avm_m0_write <= '0';
+					avm_m0_writedata(15 downto 8) <= data_in_buffer(7 downto 0);
+					avm_m0_writedata(7 downto 0) <= (others => '0');
+
+				when end_write =>
+					write_address <= (others => '0');
+					avm_m0_write <= '1';
+					avm_m0_writedata <= (others => '0');
+
+				when others =>
+					write_address <= (others => '0');
+					avm_m0_write <= '1';
+					avm_m0_writedata <= (others => '0');
+			end case;
+		else
+			avm_m0_write <= '1';
+
+		end if;
+
+    end process p_AVM_Write_statemachine;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -92,6 +92,17 @@ begin
         end loop;
         conduit_qspi_cs <= '1';
 
+        wait for 50 us;
+
+        conduit_qspi_cs <= '0';
+        wait for 2 ns;
+        for i in 0 to c_pixel_to_send loop
+            readline(input_file, v_input_line);
+            hread(v_input_line, v_write_data);
+            qspi_write_pixel(v_write_data, internal_qspi_clock, conduit_qspi_clk, conduit_qspi_data );
+        end loop;
+        conduit_qspi_cs <= '1';
+
 
         wait;
     end process p_stimuli;

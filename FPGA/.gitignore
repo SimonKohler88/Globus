@@ -1,3 +1,10 @@
 *.bak
 *.vcd
 *.cf
+*.ghw
+*.do
+*.wlf
+*transcript
+
+
+/VHDL/my_sys_components/work/

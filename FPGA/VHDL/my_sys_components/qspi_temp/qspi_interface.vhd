@@ -92,6 +92,8 @@ begin
 		end if;
 	end process p_sync;
 
+	conduit_ping_pong <= '0'; --not used
+
 	sync_spi_clk     <= sync_spi_clk_reg(1);
 	sync_spi_cs      <= sync_spi_cs_reg(1);
 	sync_spi_data    <= sync_spi_d3_reg(1) & sync_spi_d2_reg(1) & sync_spi_d1_reg(1) & sync_spi_d0_reg(1);
@@ -202,7 +204,7 @@ begin
 				end if;
 
 			-- since we dont know
-			elsif pixel_count = last_pix then
+			elsif pixel_count = last_pix and pixel_count > 0 then
 				aso_out0_endofpacket <= '1';
 				aso_out0_valid <= '1';
 				last_pix <= 0;

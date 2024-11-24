@@ -23,8 +23,6 @@ entity integration_verify_ram_qspi is
 		avm_m0_write             : in std_logic;                                        --                     .write
 		avm_m0_writedata         : in std_logic_vector(15 downto 0);                    --                     .writedata
 
-		conduit_col_info_col_nr  : out  std_logic_vector(8 downto 0)  := (others => '0'); --     conduit_col_info.col_nr
-		conduit_col_info_fire    : out  std_logic                     := '0';             --                     .fire
 		aso_out1_B_data          : in std_logic_vector(23 downto 0);                    --           aso_out1_B.data
 		aso_out1_B_endofpacket   : in std_logic;                                        --                     .endofpacket
 		aso_out1_B_ready         : out  std_logic                     := '0';             --                     .ready
@@ -40,7 +38,15 @@ entity integration_verify_ram_qspi is
 		avs_s1_readdata          : in std_logic_vector(31 downto 0);                    --                     .readdata
 		avs_s1_write             : out  std_logic                     := '0';             --                     .write
 		avs_s1_writedata         : out  std_logic_vector(31 downto 0) := (others => '0'); --                     .writedata
-		avs_s1_waitrequest       : in std_logic                                         --                     .waitrequest
+		avs_s1_waitrequest       : in std_logic ;                                        --                     .waitrequest
+
+		conduit_encoder_A          : out  std_logic                     := '0';             --         conduit_encoder.enc_a
+		conduit_encoder_B          : out  std_logic                     := '0';             --                        .enc_b
+		conduit_encoder_index      : out  std_logic                     := '0';             --                        .enc_index
+		conduit_encoder_sim_switch : out  std_logic                     := '0';             --                        .sim_switch
+		conduit_encoder_sim_pulse  : out  std_logic                     := '0';            --                        .sim_pulse
+
+		col_fire : in std_ulogic
 	);
 end entity integration_verify_ram_qspi;
 
@@ -62,15 +68,8 @@ architecture rtl of integration_verify_ram_qspi is
 	);
     end component avalon_slave_ram_emulator;
 
-    signal s_avm_m0_address           : std_logic_vector(24 downto 0);
-	signal s_avm_m0_read              : std_ulogic;
-	signal s_avm_m0_waitrequest       : std_ulogic;
-	signal s_avm_m0_readdata          : std_logic_vector(15 downto 0);
-	signal s_avm_m0_readdatavalid     : std_ulogic;
-	signal s_avm_m0_write             : std_ulogic;
-	signal s_avm_m0_writedata         : std_logic_vector(15 downto 0);
-	signal s_dump_ram                 :std_ulogic;
 
+	signal s_dump_ram                 : std_ulogic;
 
     constant c_cycle_time_100M : time := 10 ns;
     signal enable :boolean:=true;
@@ -78,18 +77,28 @@ architecture rtl of integration_verify_ram_qspi is
 	file output_file_stream_A : text open write_mode is "./testio_verify_ram_qspi/stream_received_A.txt";
 	file output_file_stream_B : text open write_mode is "./testio_verify_ram_qspi/stream_received_B.txt";
 
+	signal A :std_ulogic_vector(3 downto 0) := "1100";
+	signal B :std_ulogic_vector(3 downto 0) := "0110";
+	signal indexCount : unsigned(8 downto 0) := (others => '0');
+	signal enable_a_b         : std_ulogic := '1';
+	-- constant c_enc_S_time : time := 49 ns;
+	constant c_enc_S_time : time := 3000 ns; -- real: 1/16896/4 = 1.47964e-5 = 14796.4e-9 = 14796 ns = 14,796 us
+	-- time between fires @ 512 cols: 58599 ns => 5859.9 clock ccles @ 100 Mhz
+	-- 2 clock per pix fetch from ram, 120 pix needed = 240 clocks (  )
+	-- incoming pix: 1 pix per 22 clocks
+
 
 begin
 	 helper_ram_emulator: avalon_slave_ram_emulator port map (
 		rst           => reset_reset               ,
 		clk           => clock_clk               ,
-        address       => s_avm_m0_address           ,
-        read          => s_avm_m0_read              ,
-        waitrequest   => s_avm_m0_waitrequest       ,
-        readdata      => s_avm_m0_readdata          ,
-        readdatavalid => s_avm_m0_readdatavalid     ,
-        write_en         => s_avm_m0_write             ,
-        writedata     => s_avm_m0_writedata,
+        address       => avm_m0_address           ,
+        read          => avm_m0_read              ,
+        waitrequest   => avm_m0_waitrequest       ,
+        readdata      => avm_m0_readdata          ,
+        readdatavalid => avm_m0_readdatavalid     ,
+        write_en      => avm_m0_write             ,
+        writedata     => avm_m0_writedata,
         dump_ram      => s_dump_ram
 	);
 	--s_dump_ram <= '0';
@@ -130,29 +139,86 @@ begin
         end if;
     end process p_store_stream_B;
 
+	stim_proc_encoder: process
+	begin
+		-- A before B
+		-- From AMTS datasheet
+		-- T = 1/(360/512 * 33.33) = 0.042s
+		-- P = T/2 = 0.0213 s
+		-- S = P/2 = 0.0106 s
+		indexCount <= "000000000";
+		--indexCount  <= indexCount + 1;
+		while enable loop
+			if enable_a_b='1' then
+				wait for c_enc_S_time;
+				A <= A(2 downto 0) & A(3);
+				B <= B(2 downto 0) & B(3);
+				wait for c_enc_S_time;
+				A <= A(2 downto 0) & A(3);
+				B <= B(2 downto 0) & B(3);
+				wait for c_enc_S_time;
+				A <= A(2 downto 0) & A(3);
+				B <= B(2 downto 0) & B(3);
+				wait for c_enc_S_time;
+				A <= A(2 downto 0) & A(3);
+				B <= B(2 downto 0) & B(3);
+				indexCount   <= indexCount + 1;
+
+			else
+				wait for c_enc_S_time;
+				A <= A(0) & A(3 downto 1);
+				B <= B(0) & B(3 downto 1);
+				wait for c_enc_S_time;
+				A <= A(0) & A(3 downto 1);
+				B <= B(0) & B(3 downto 1);
+				wait for c_enc_S_time;
+				A <= A(0) & A(3 downto 1);
+				B <= B(0) & B(3 downto 1);
+				wait for c_enc_S_time;
+				A <= A(0) & A(3 downto 1);
+				B <= B(0) & B(3 downto 1);
+				indexCount   <= indexCount - 1;
+			end if;
+		end loop;
+        wait;
+    end process stim_proc_encoder;
+
+	conduit_encoder_A <= A(0);
+	conduit_encoder_B <= B(0);
+	conduit_encoder_index <= '1' when indexCount = 1 else '0';
+
+
 
     p_stimuli: process
     begin
+		conduit_encoder_sim_switch <= '0';
+		conduit_encoder_sim_pulse <= '0';
+
+		wait for 50 ns;
+		aso_out0_A_ready <= '1';
+		aso_out1_B_ready <= '1';
+
+
         wait for 200 us;
 
         wait;
     end process p_stimuli;
-
-
-
 
     p_monitor: process
 
     begin
 		s_dump_ram <= '0';
 
-		wait for 60 ns;
+
+		wait until col_fire='1';
 		s_dump_ram <= '1';
 		wait for 20 ns;
 		s_dump_ram <= '0';
-		wait for 400 us;
+
+		wait for 120 us;
 		enable <= false;
-		write(output, "all tested");
+		enable_a_b <= '0';
+		write(output, "all tested " & to_string(now) & lf);
 		wait;
     end process p_monitor;
 
