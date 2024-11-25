@@ -18,11 +18,11 @@ architecture rtl of integration_tb is
 		reset_reset              : in  std_logic                     := '0';             --                reset.reset
 		conduit_ping_or_pong     : in  std_logic                     := '0';             -- conduit_ping_or_pong.new_signal
 		avm_m0_address           : out std_logic_vector(24 downto 0);                    --               avm_m0.address
-		avm_m0_read              : out std_logic;                                        --                     .read
+		avm_m0_read_n            : out std_logic;                                        --                     .read
 		avm_m0_waitrequest       : in  std_logic                     := '0';             --                     .waitrequest
 		avm_m0_readdata          : in  std_logic_vector(15 downto 0) := (others => '0'); --                     .readdata
 		avm_m0_readdatavalid     : in  std_logic                     := '0';             --                     .readdatavalid
-		avm_m0_write             : out std_logic;                                        --                     .write
+		avm_m0_write_n           : out std_logic;                                        --                     .write
 		avm_m0_writedata         : out std_logic_vector(15 downto 0);                    --                     .writedata
 		asi_in0_data             : in  std_logic_vector(23 downto 0)  := (others => '0'); --              asi_in0.data
 		asi_in0_ready            : out std_logic;                                        --                     .ready
@@ -272,11 +272,11 @@ begin
 		reset_reset              => s_reset_reset              ,
 		conduit_ping_or_pong     => s_conduit_ping_or_pong     ,
 		avm_m0_address           => s_avm_m0_address           ,
-		avm_m0_read              => s_avm_m0_read              ,
+		avm_m0_read_n            => s_avm_m0_read              ,
 		avm_m0_waitrequest       => s_avm_m0_waitrequest       ,
 		avm_m0_readdata          => s_avm_m0_readdata          ,
 		avm_m0_readdatavalid     => s_avm_m0_readdatavalid     ,
-		avm_m0_write             => s_avm_m0_write             ,
+		avm_m0_write_n           => s_avm_m0_write             ,
 		avm_m0_writedata         => s_avm_m0_writedata         ,
 		asi_in0_data             => s_asi_in0_data             ,
 		asi_in0_ready            => s_asi_in0_ready            ,

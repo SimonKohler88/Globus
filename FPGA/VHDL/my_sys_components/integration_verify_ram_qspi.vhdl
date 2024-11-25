@@ -122,6 +122,7 @@ begin
     begin
         if rising_edge(clock_clk) then
             if aso_out0_A_ready = '1' and aso_out0_A_valid ='1' then
+                write(v_output_line, to_string(now), left, 16);
                 write(v_output_line, to_hstring(aso_out0_A_data));
                 writeline(output_file_stream_A, v_output_line);
             end if;
@@ -133,6 +134,7 @@ begin
     begin
         if rising_edge(clock_clk) then
             if aso_out1_B_ready = '1' and aso_out1_B_valid ='1' then
+                write(v_output_line, to_string(now), left, 16);
                 write(v_output_line, to_hstring(aso_out1_B_data));
                 writeline(output_file_stream_B, v_output_line);
             end if;
@@ -210,7 +212,8 @@ begin
 		s_dump_ram <= '0';
 
 
-		wait until col_fire='1';
+		-- wait until col_fire='1';
+		wait for 100 us;
 		s_dump_ram <= '1';
 		wait for 20 ns;
 		s_dump_ram <= '0';

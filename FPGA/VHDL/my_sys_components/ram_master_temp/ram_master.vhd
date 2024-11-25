@@ -15,7 +15,8 @@ use IEEE.numeric_std.all;
 entity ram_master is
 	generic (
 		image_cols : integer := 256;
-		image_rows : integer := 120
+		-- image_rows : integer := 120
+		image_rows : integer := 20
 	);
 	port (
 		clock_clk                : in  std_logic                     := '0';             --                clock.clk
@@ -23,11 +24,11 @@ entity ram_master is
 		conduit_ping_or_pong     : in  std_logic                     := '0';             -- conduit_ping_or_pong.new_signal
 
 		avm_m0_address           : out std_logic_vector(24 downto 0);                    --               avm_m0.address
-		avm_m0_read              : out std_logic;                                        --                     .read
+		avm_m0_read_n            : out std_logic;                                        --                     .read
 		avm_m0_waitrequest       : in  std_logic                     := '0';             --                     .waitrequest
 		avm_m0_readdata          : in  std_logic_vector(15 downto 0) := (others => '0'); --                     .readdata
 		avm_m0_readdatavalid     : in  std_logic                     := '0';             --                     .readdatavalid
-		avm_m0_write             : out std_logic;                                        --                     .write
+		avm_m0_write_n           : out std_logic;                                        --                     .write
 		avm_m0_writedata         : out std_logic_vector(15 downto 0);                    --                     .writedata
 
 		asi_in0_data             : in  std_logic_vector(23 downto 0) := (others => '0'); --              asi_in0.data
@@ -64,11 +65,11 @@ architecture rtl of ram_master is
 
 	signal SystemEnable                  : std_ulogic;
 
-	type state_main is (main_write, main_read_A, main_write_2, main_read_B);
+	type state_main is (main_write, main_read_A, main_read_B);
 	signal main_state : state_main;
 	signal next_main_state : state_main;
 
-	type state_AVM_write is (idle, wait_write_1, write_1, wait_write_2, write_2, end_write);
+	type state_AVM_write is (idle, wait_valid, write_1, write_2, end_write);
 	signal write_state        : state_AVM_write := idle;
 	signal next_write_state        : state_AVM_write := idle;
 
@@ -83,8 +84,21 @@ architecture rtl of ram_master is
 	signal data_out_buffer:  std_logic_vector(23 downto 0) := (others => '0');
 
 	constant BASE_ADDR_1: unsigned(24 downto 0):= (others => '0');
-	constant BASE_ADDR_2: unsigned(24 downto 0):= '0' & X"000080"; --TODO: change in real design
+
+	-- 60'000 pixel need addr range of 120'000          (= 0x01E000)
+	-- constant BASE_ADDR_2: unsigned(24 downto 0):= '0' & X"100000"; --TODO: this in real design
+	constant BASE_ADDR_2: unsigned(24 downto 0):= '0' & X"001000"; -- only for testing
 	signal active_base_addr :std_ulogic;
+
+	constant addr_row_to_row_offset: integer := 2* image_cols -1;
+	constant addr_b_col_shift_offset : integer := image_cols/2;
+	signal addr_ab_converter : unsigned (7 downto 0); -- TODO: only valid for 256 cols
+
+	signal addr_ready :std_ulogic;
+	signal addr_valid :std_ulogic;
+	signal addr_a_preload : unsigned(24 downto 0) := (others => '0');
+	signal addr_b_preload : unsigned(24 downto 0) := (others => '0');
+	signal addr_adder : unsigned(24 downto 0) := (others => '0');
 
 	signal end_packet_ff :std_ulogic_vector(1 downto 0);
 
@@ -100,6 +114,9 @@ architecture rtl of ram_master is
 	signal col_fire_ff : std_ulogic_vector(1 downto 0);
 	signal fire_pending: std_ulogic;
 
+	signal load_addr_B_addr_ff :std_ulogic_vector( 1 downto 0 );
+	signal main_state_b_active :std_ulogic;
+
 	signal dummy : std_ulogic;
 
 begin
@@ -112,7 +129,7 @@ begin
 
 
 
-	--TODO: make startup delay
+	--TODO: uncomment startup delay
 	SystemEnable <= '1';
  --Startup Delay for the RAM Controller
     -- InitialDelay : process(clk, rst) is
@@ -144,17 +161,73 @@ begin
 	-- 	end if;
 	-- end process p_end_packet_switch;
 
-	-- TODO: make main state logic
-	--main_state <= read_A;
+
+	p_calculate_new_read_addr: process(all)
+	variable stage : natural range 0 to 5;
+	begin
+	-- constant addr_row_to_row_offset: integer := 2* image_cols;
+	-- constant addr_b_col_shift_offset : integer := image_cols/2;
+	-- signal addr_ab_converter : unsigned (7 downto 0); -- TODO: only valid for 256 cols
+
+		if reset_reset = '1' then
+			addr_ab_converter <= (others=>'0');
+			addr_a_preload <= (others => '0');
+			addr_b_preload <= (others => '0');
+			stage := 0;
+			addr_ready <= '0';
+			addr_valid <= '0';
+
+		elsif rising_edge(clock_clk) then
+			if conduit_col_info_fire='1' and stage=0 then
+				addr_a_preload <= (others => '0');
+				addr_b_preload <= (others => '0');
+
+				addr_valid <= '0';
+				stage := 1;
+
+			elsif stage=1 then
+
+				addr_adder <= BASE_ADDR_1 when active_base_addr='1' else BASE_ADDR_2;
+
+				-- addr_a_preload(9 downto 1) <= unsigned(conduit_col_info_col_nr); -- *2 --TODO: need this
+				-- addr_a_preload(0) <= '0';
+				addr_a_preload(8 downto 0) <= unsigned(conduit_col_info_col_nr);
+
+				addr_ab_converter <= unsigned(conduit_col_info_col_nr( 7 downto 0 )); -- TODO: case 512 cols: need all bits
+
+
+
+				addr_valid <= '0';
+				stage:=2;
+			elsif stage=2 then
+				addr_a_preload <= addr_a_preload + addr_adder;
+				-- addr_b_preload(9 downto 0) <= (addr_ab_converter - addr_b_col_shift_offset) & "0"; -- let wrap around and shift for *2 for 512
+				-- addr_b_preload(8 downto 0) <= (addr_ab_converter - addr_b_col_shift_offset) & "0"; -- let wrap around and shift for *2
+				addr_b_preload(7 downto 0) <= (addr_ab_converter - addr_b_col_shift_offset);
+
+				addr_valid <= '0';
+				stage:=3;
+
+			elsif stage=3 then
+				addr_b_preload <= addr_b_preload + addr_adder + image_cols; -- TODO:does that work when addr is doubled?
+				addr_ready <= '1';
+				addr_valid <= '0';
+				stage := 0;
+			else
+				addr_ready <= '0';
+				addr_valid <= '1';
+			end if;
+		end if;
+	end process p_calculate_new_read_addr;
 
 	--*************************************** Main State Machine ***************************************************************
+
 	p_main_state_clocked :process(all)
 	begin
 		if reset_reset = '1' then
 		main_state <= main_write;
 		col_fire_ff <= (others => '0');
 		fire_pending <= '0';
-
 
 		elsif rising_edge(clock_clk) then
 			main_state <= next_main_state;
@@ -165,12 +238,13 @@ begin
 				fire_pending <= '1';
 			end if;
 
-			if main_state = main_read_A or main_state = main_write_2 then
+			if main_state = main_read_A then
 				fire_pending <= '0';
 			end if;
 
 		end if;
 	end process p_main_state_clocked;
+
 
 	p_main_state_statemachine: process(all)
 	begin
@@ -178,17 +252,14 @@ begin
 
 		case main_state is
 			when main_write =>
-				if fire_pending='1' and (write_state=idle or write_state=wait_write_1) then
+				if fire_pending='1' and (write_state=idle or write_state=wait_valid) and addr_valid='1' then
 					next_main_state <= main_read_A;
 				end if;
 
 			when main_read_A =>
 				if read_state = end_read then
-					next_main_state <= main_write_2;
+					next_main_state <= main_read_B;
 				end if;
-
-			when main_write_2 =>
-				next_main_state <= main_read_B; --TODO
 
 			when main_read_B =>
 				if read_state = end_read then
@@ -206,22 +277,24 @@ begin
 
 				active_aso_ready <= aso_out0_A_ready;
 
+				aso_out1_B_startofpacket <= '0'           ;
+				aso_out1_B_endofpacket   <= '0'           ;
+				aso_out1_B_data          <= (others =>'0');
+				aso_out1_B_valid         <= '0'           ;
+
 			when main_read_A =>
 				aso_out0_startofpacket_1 <=  active_aso_startofpacket  ;
 				aso_out0_endofpacket_1   <=  active_aso_endofpacket    ;
 				aso_out0_A_data          <=  active_aso_data           ;
 				aso_out0_A_valid         <=  active_aso_valid          ;
 
-				active_aso_ready <= aso_out0_A_ready;
-
-
-			when main_write_2 =>
-				aso_out0_startofpacket_1 <=  active_aso_startofpacket  ;
-				aso_out0_endofpacket_1   <=  active_aso_endofpacket    ;
-				aso_out0_A_data          <=  active_aso_data           ;
-				aso_out0_A_valid         <=  active_aso_valid          ;
 
 				active_aso_ready <= aso_out0_A_ready;
+
+				aso_out1_B_startofpacket <= '0'           ;
+				aso_out1_B_endofpacket   <= '0'           ;
+				aso_out1_B_data          <= (others =>'0');
+				aso_out1_B_valid         <= '0'           ;
 
 			when main_read_B =>
 				aso_out1_B_startofpacket <=  active_aso_startofpacket  ;
@@ -231,6 +304,11 @@ begin
 
 				active_aso_ready <= aso_out1_B_ready;
 
+				aso_out0_startofpacket_1 <= '0'           ;
+				aso_out0_endofpacket_1   <= '0'           ;
+				aso_out0_A_data          <= (others =>'0');
+				aso_out0_A_valid         <= '0'           ;
+
 		end case;
 
 
@@ -238,20 +316,30 @@ begin
 
 	--*************************************** Read from ram processes ***************************************************************
 
+	main_state_b_active <= '1' when main_state=main_read_B else '0';
 	--type state_AVM_read is (idle, wait_read_1, read_1, wait_read_2, read_2, end_read);
 	p_read_ram_clocked :process(all)
 	begin
 		if reset_reset = '1' then
-		read_state <= idle;
+			read_state <= idle;
+			load_addr_B_addr_ff <= (others =>'0');
+
 		elsif rising_edge(clock_clk) then
 			read_state <= next_read_state;
 
-			if next_read_state=read_1 then
-				current_address_read <= current_address_read + 1;
-			end if;
+			load_addr_B_addr_ff <= load_addr_B_addr_ff(0) &  main_state_b_active;
 
-			if next_read_state= read_2 then
-				current_address_read <= current_address_read + 1;
+			if addr_ready='1' then
+				current_address_read <= addr_a_preload;
+
+			elsif main_state=main_read_A and read_state=end_read then
+				current_address_read <= addr_b_preload;
+
+			elsif next_read_state=read_1 then
+				current_address_read <= current_address_read + 1; --todo:mus have correct offset
+
+			elsif next_read_state= read_2 then
+				current_address_read <= current_address_read + addr_row_to_row_offset;
 			end if;
 
 		end if;
@@ -266,7 +354,8 @@ begin
 
 	p_AVM_Read_statemachine: process(all) is
 	variable pix_count: integer;
-	constant PIX_PER_ASO: integer:= 20; --TODO:check value. must be 60 in real design
+	constant PIX_PER_ASO: integer:= image_rows/2;
+	-- constant PIX_PER_ASO: integer:= 20; --TODO:check value. must be 60 in real design
     begin
 		if main_state = main_read_A or main_state = main_read_B then
 			case read_state is
@@ -310,7 +399,7 @@ begin
 			case read_state is
 				when idle =>
 					read_address <= (others =>'0');
-					avm_m0_read <= '1';
+					avm_m0_read_n <= '1';
 					pix_count := 0;
 					active_aso_valid <= '0';
 					active_aso_startofpacket <= '0';
@@ -318,39 +407,39 @@ begin
 
 				when wait_read_1 =>
 					read_address <= current_address_read;
-					avm_m0_read <= '0';
+					avm_m0_read_n <= '0';
 					active_aso_valid <= '0';
 					active_aso_startofpacket <= '0';
 					active_aso_endofpacket <= '0';
 
 				when read_1 =>
 					read_address <= current_address_read;
-					avm_m0_read <= '0';
+					avm_m0_read_n <= '0';
 					active_aso_valid <= '0';
 					active_aso_data <= avm_m0_readdata & X"00";
 
 				when wait_read_2 =>
 					read_address <= current_address_read;
-					avm_m0_read <= '0';
+					avm_m0_read_n <= '0';
 					active_aso_valid <= '0';
 
 				when read_2 =>
 					active_aso_data(7 downto 0) <= avm_m0_readdata(15 downto 8);
 					read_address <= current_address_read;
-					avm_m0_read <= '0';
+					avm_m0_read_n <= '0';
 					active_aso_valid <= '1';
 
 					pix_count := pix_count +1;
 
-					if pix_count=0 then
+					if pix_count=0 and (next_read_state=read_1 or next_read_state=wait_read_1) then
 						active_aso_startofpacket <= '1';
-					elsif pix_count >= PIX_PER_ASO-1 then
+					elsif pix_count >= PIX_PER_ASO-1 and next_read_state=end_read then
 						active_aso_endofpacket <= '1';
 					end if;
 
 				when end_read =>
 					read_address <= (others =>'0');
-					avm_m0_read <= '1';
+					avm_m0_read_n <= '1';
 					pix_count := 0;
 					active_aso_valid <= '0';
 					active_aso_startofpacket <= '0';
@@ -358,13 +447,13 @@ begin
 
 				when others =>
 					read_address <= (others =>'0');
-					avm_m0_read <= '1';
+					avm_m0_read_n <= '1';
 					active_aso_valid <= '0';
 					active_aso_startofpacket <= '0';
 					active_aso_endofpacket <= '0';
 			end case;
 		else
-			avm_m0_read <= '1';
+			avm_m0_read_n <= '1';
 			active_aso_valid <= '0';
 			active_aso_startofpacket <= '0';
 			active_aso_endofpacket <= '0';
@@ -375,7 +464,7 @@ begin
 
 	--*************************************** Write to ram processes ***************************************************************
 
-	asi_in0_ready <= '1' when main_state=main_write and ( write_state=idle or write_state = wait_write_1 ) and SystemEnable='1' else '0';
+	asi_in0_ready <= '1' when main_state=main_write and ( write_state = wait_valid ) and SystemEnable='1' else '0';
 
 	--control input (but not state) of "write to ram" statemachine
 	p_write_ram_clocked : PROCESS(all)
@@ -405,7 +494,7 @@ begin
 			end if;
 
 			-- switch to other buffer: set base address and increments of addr
-			if addr_switch_pending='1' and (write_state=idle or write_state=wait_write_1) then
+			if addr_switch_pending='1' and (write_state=idle or write_state=wait_valid) then
 				current_address_write <= BASE_ADDR_1 when active_base_addr='0' else BASE_ADDR_2;
 				addr_switch_pending := '0';
 
@@ -421,26 +510,18 @@ begin
     begin
 --set_base_addr, idle, wait_write_1, write_1, wait_write_2, write_2, end_write
 
-		if main_state = main_write or main_state = main_write_2 then
+		if main_state = main_write then
 			case write_state is
 				when idle =>
-						if main_state = main_write or main_state = main_write_2 then
-							next_write_state <= wait_write_1;
+						if main_state = main_write then
+							next_write_state <= wait_valid;
 						end if;
-
-				when wait_write_1 =>
-					if asi_in0_valid='1' and avm_m0_waitrequest='0' then
+				when wait_valid =>
+					if asi_in0_valid='1' then
 						next_write_state <= write_1;
 					end if;
 
 				when write_1 =>
-					if avm_m0_waitrequest='0' then
-						next_write_state <= write_2;
-					else
-						next_write_state <= wait_write_2;
-					end if;
-
-				when wait_write_2 =>
 					if avm_m0_waitrequest='0' then
 						next_write_state <= write_2;
 					end if;
@@ -458,43 +539,38 @@ begin
 			case write_state is
 				when idle => --Idle, setup_write, write_1, write_2, end_write
 					write_address <= (others => '0');
-					avm_m0_write <= '1';
+					avm_m0_write_n <= '1';
 					avm_m0_writedata <= (others => '0');
 
-				when wait_write_1 =>
+				when wait_valid =>
 					write_address <=  (others => '0');
-					avm_m0_write <= '1';
+					avm_m0_write_n <= '1';
 					avm_m0_writedata <= (others => '0');
 
 				when write_1 =>
 					write_address <=  current_address_write;
-					avm_m0_write <= '0';
+					avm_m0_write_n <= '0';
 					avm_m0_writedata <= data_in_buffer(23 downto 8);
-
-				when wait_write_2 =>
-					write_address <= (others => '0');
-					avm_m0_write <= '1';
-					avm_m0_writedata <= (others => '0');
 
 				when write_2 =>
 					write_address <=  current_address_write;
 					-- write_address <= (others => '0');
-					avm_m0_write <= '0';
+					avm_m0_write_n <= '0';
 					avm_m0_writedata(15 downto 8) <= data_in_buffer(7 downto 0);
 					avm_m0_writedata(7 downto 0) <= (others => '0');
 
 				when end_write =>
 					write_address <= (others => '0');
-					avm_m0_write <= '1';
+					avm_m0_write_n <= '1';
 					avm_m0_writedata <= (others => '0');
 
 				when others =>
 					write_address <= (others => '0');
-					avm_m0_write <= '1';
+					avm_m0_write_n <= '1';
 					avm_m0_writedata <= (others => '0');
 			end case;
 		else
-			avm_m0_write <= '1';
+			avm_m0_write_n <= '1';
 
 		end if;
 

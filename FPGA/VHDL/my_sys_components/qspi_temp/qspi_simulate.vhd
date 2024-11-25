@@ -54,8 +54,7 @@ architecture rtl of qspi_simulate is
     signal enable :boolean:=true;
 
     file input_file : text open read_mode is "./Earth_relief_120x256_raw2.txt";
-    file output_file : text open write_mode is "./stream_received.txt";
-    constant c_pixel_to_send : integer := 45;
+    constant c_pixel_to_send : integer := 4*20;
 
 
 begin
