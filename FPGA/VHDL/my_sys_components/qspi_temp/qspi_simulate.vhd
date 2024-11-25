@@ -53,7 +53,7 @@ architecture rtl of qspi_simulate is
     signal internal_qspi_clock: std_ulogic;
     signal enable :boolean:=true;
 
-    file input_file : text open read_mode is "./Earth_relief_120x256_raw2.txt";
+    file input_file : text open read_mode is "./row_col_num.txt";
     constant c_pixel_to_send : integer := 4*20;
 
 

@@ -36,7 +36,10 @@ entity new_encoder is
 		conduit_encoder_sim_switch : in  std_logic                     := '0';             --                        .sim_switch
 		conduit_encoder_sim_pulse  : in  std_logic                     := '0';             --                        .sim_pulse
 		conduit_intern_col_nr      : out std_logic_vector(8 downto 0);                     -- conduit_intern_col_info.col_nr
-		conduit_intern_col_fire    : out std_logic                                         --                        .fire
+		conduit_intern_col_fire    : out std_logic                    ;                     --                        .fire
+
+		conduit_debug_enc_out    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_enc.enc_dbg_out
+		conduit_debug_enc_in     : in   std_logic_vector(31 downto 0)  := (others => '0') --                         .led_dbg_in
 	);
 end entity new_encoder;
 
@@ -163,6 +166,9 @@ begin
 
 		end if;
 	end process fire_pulse_proc;
+
+	conduit_debug_enc_out(7 downto 0) <= conduit_intern_col_fire & std_logic_vector(column_counter(7 downto 1));
+
 
 	-- avalon slave not yet implemented
 	avs_s0_readdata <= "00000000000000000000000000000000";

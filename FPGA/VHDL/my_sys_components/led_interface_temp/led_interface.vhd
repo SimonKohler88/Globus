@@ -51,7 +51,10 @@ entity led_interface is
 		asi_in0_ready               : out std_logic;                                        --                     .ready
 		asi_in0_valid               : in  std_logic                     := '0';             --                     .valid
 		asi_in0_startofpacket       : in  std_logic                     := '0';             --                     .startofpacket
-		asi_in0_endofpacket         : in  std_logic                     := '0'              --                     .endofpacket
+		asi_in0_endofpacket         : in  std_logic                     := '0';              --                     .endofpacket
+
+		conduit_debug_led_out    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_led.led_dbg_out
+		conduit_debug_led_in     : in   std_logic_vector(31 downto 0)  := (others => '0') --                         .led_dbg_in
 	);
 end entity led_interface;
 
@@ -84,8 +87,8 @@ begin
 
 	avs_s0_waitrequest <= '0';
 
-	asi_in1_ready <= '0';
+	asi_in1_ready <= '1';
 
-	asi_in0_ready <= '0';
+	asi_in0_ready <= '1';
 
 end architecture rtl; -- of led_interface

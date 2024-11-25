@@ -15,7 +15,7 @@ entity integration_verify_ram_qspi is
 	port (
 		clock_clk                : out  std_logic                     := '0';             --                clock.clk
 		reset_reset              : out  std_logic                     := '0';             --                reset.reset
-		avm_m0_address           : in std_logic_vector(24 downto 0);                    --               avm_m0.address
+		avm_m0_address           : in std_logic_vector(23 downto 0);                    --               avm_m0.address
 		avm_m0_read              : in std_logic;                                        --                     .read
 		avm_m0_waitrequest       : out  std_logic                     := '0';             --                     .waitrequest
 		avm_m0_readdata          : out  std_logic_vector(15 downto 0) := (others => '0'); --                     .readdata
@@ -57,7 +57,7 @@ architecture rtl of integration_verify_ram_qspi is
 	port (
 		rst : in std_ulogic;
 		clk : in std_ulogic;
-        address       : in  std_ulogic_vector(24 downto 0);
+        address       : in  std_ulogic_vector(23 downto 0);
         read          : in  std_ulogic;
         waitrequest   : out std_ulogic;
         readdata      : out std_ulogic_vector(15 downto 0);

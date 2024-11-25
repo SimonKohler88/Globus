@@ -23,7 +23,7 @@ entity ram_master is
 		reset_reset              : in  std_logic                     := '0';             --                reset.reset
 		conduit_ping_or_pong     : in  std_logic                     := '0';             -- conduit_ping_or_pong.new_signal
 
-		avm_m0_address           : out std_logic_vector(24 downto 0);                    --               avm_m0.address
+		avm_m0_address           : out std_logic_vector(23 downto 0);                    --               avm_m0.address
 		avm_m0_read_n            : out std_logic;                                        --                     .read
 		avm_m0_waitrequest       : in  std_logic                     := '0';             --                     .waitrequest
 		avm_m0_readdata          : in  std_logic_vector(15 downto 0) := (others => '0'); --                     .readdata
@@ -57,73 +57,75 @@ entity ram_master is
 		avs_s1_readdata          : out std_logic_vector(31 downto 0);                    --                     .readdata
 		avs_s1_write             : in  std_logic                     := '0';             --                     .write
 		avs_s1_writedata         : in  std_logic_vector(31 downto 0) := (others => '0'); --                     .writedata
-		avs_s1_waitrequest       : out std_logic                                         --                     .waitrequest
+		avs_s1_waitrequest       : out std_logic;                                         --                     .waitrequest
+
+		conduit_debug_ram_out    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_ram.ram_out
+		conduit_debug_ram_in     : in   std_logic_vector(31 downto 0)  := (others => '0') --                         .ram_in
 	);--avs_s1_waitrequest
 end entity ram_master;
 
 architecture rtl of ram_master is
 
-	signal SystemEnable                  : std_ulogic;
+	signal SystemEnable                  : std_logic;
 
 	type state_main is (main_write, main_read_A, main_read_B);
-	signal main_state : state_main;
-	signal next_main_state : state_main;
+	signal main_state         : state_main;
+	signal next_main_state    : state_main;
 
 	type state_AVM_write is (idle, wait_valid, write_1, write_2, end_write);
 	signal write_state        : state_AVM_write := idle;
-	signal next_write_state        : state_AVM_write := idle;
+	signal next_write_state   : state_AVM_write := idle;
 
 	type state_AVM_read is (idle, wait_read_1, read_1, wait_read_2, read_2, end_read);
-	signal read_state : state_AVM_read := idle;
-	signal next_read_state : state_AVM_read := idle;
+	signal read_state         : state_AVM_read := idle;
+	signal next_read_state    : state_AVM_read := idle;
 
-	signal write_address: unsigned(24 downto 0) := (others => '0');
-	signal read_address: unsigned(24 downto 0) := (others => '0');
+	signal write_address      : unsigned(23 downto 0) := (others => '0');
+	signal read_address       : unsigned(23 downto 0) := (others => '0');
 
-	signal data_in_buffer:  std_logic_vector(23 downto 0) := (others => '0');
-	signal data_out_buffer:  std_logic_vector(23 downto 0) := (others => '0');
+	signal data_in_buffer     : std_logic_vector(23 downto 0) := (others => '0');
+	signal data_out_buffer    : std_logic_vector(23 downto 0) := (others => '0');
 
-	constant BASE_ADDR_1: unsigned(24 downto 0):= (others => '0');
+	constant BASE_ADDR_1      : unsigned(23 downto 0):= (others => '0');
 
 	-- 60'000 pixel need addr range of 120'000          (= 0x01E000)
 	-- constant BASE_ADDR_2: unsigned(24 downto 0):= '0' & X"100000"; --TODO: this in real design
-	constant BASE_ADDR_2: unsigned(24 downto 0):= '0' & X"001000"; -- only for testing
-	signal active_base_addr :std_ulogic;
+	constant BASE_ADDR_2      : unsigned(23 downto 0):=  X"001000"; -- only for testing
+	signal active_base_addr   : std_logic;
 
-	constant addr_row_to_row_offset: integer := 2* image_cols -1;
+	constant addr_row_to_row_offset  : integer := 2* image_cols -1;
 	constant addr_b_col_shift_offset : integer := image_cols/2;
-	signal addr_ab_converter : unsigned (7 downto 0); -- TODO: only valid for 256 cols
+	signal addr_ab_converter         : unsigned (7 downto 0); -- TODO: only valid for 256 cols
 
-	signal addr_ready :std_ulogic;
-	signal addr_valid :std_ulogic;
-	signal addr_a_preload : unsigned(24 downto 0) := (others => '0');
-	signal addr_b_preload : unsigned(24 downto 0) := (others => '0');
-	signal addr_adder : unsigned(24 downto 0) := (others => '0');
+	signal addr_ready                : std_logic;
+	signal addr_valid                : std_logic;
+	signal addr_a_preload            : unsigned(23 downto 0) := (others => '0');
+	signal addr_b_preload            : unsigned(23 downto 0) := (others => '0');
+	signal addr_adder                : unsigned(23 downto 0) := (others => '0');
 
-	signal end_packet_ff :std_ulogic_vector(1 downto 0);
+	signal end_packet_ff             : std_logic_vector(1 downto 0);
 
-	signal current_address_write: unsigned(24 downto 0) := (others => '0');
-	signal current_address_read: unsigned(24 downto 0) := (others => '0');
+	signal current_address_write     : unsigned(23 downto 0) := (others => '0');
+	signal current_address_read      : unsigned(23 downto 0) := (others => '0');
 
-	signal active_aso_startofpacket : std_ulogic;
-	signal active_aso_endofpacket   : std_ulogic;
-	signal active_aso_data          : std_ulogic_vector(23 downto 0);
-	signal active_aso_ready         : std_ulogic;
-	signal active_aso_valid         : std_ulogic;
+	signal active_aso_startofpacket  : std_logic;
+	signal active_aso_endofpacket    : std_logic;
+	signal active_aso_data           : std_logic_vector(23 downto 0);
+	signal active_aso_ready          : std_logic;
+	signal active_aso_valid          : std_logic;
 
-	signal col_fire_ff : std_ulogic_vector(1 downto 0);
-	signal fire_pending: std_ulogic;
+	signal col_fire_ff               : std_logic_vector(1 downto 0);
+	signal fire_pending              : std_logic;
 
-	signal load_addr_B_addr_ff :std_ulogic_vector( 1 downto 0 );
-	signal main_state_b_active :std_ulogic;
+	signal load_addr_B_addr_ff       :std_logic_vector( 1 downto 0 );
+	signal main_state_b_active       :std_logic;
 
-	signal dummy : std_ulogic;
 
 begin
 	avs_s1_waitrequest <= '1'; -- not implemented
 
-	avm_m0_address <= std_ulogic_vector(write_address)  when main_state = main_write  else
-					  std_ulogic_vector(read_address)  when main_state = main_read_A or main_state=main_read_B else
+	avm_m0_address <= std_logic_vector(write_address)  when main_state = main_write  else
+					  std_logic_vector(read_address)  when main_state = main_read_A or main_state=main_read_B else
 					  (others=>'0');
 
 
@@ -161,6 +163,7 @@ begin
 	-- 	end if;
 	-- end process p_end_packet_switch;
 
+	addr_adder <= BASE_ADDR_1 when active_base_addr='1' else BASE_ADDR_2;
 
 	p_calculate_new_read_addr: process(all)
 	variable stage : natural range 0 to 5;
@@ -186,8 +189,6 @@ begin
 				stage := 1;
 
 			elsif stage=1 then
-
-				addr_adder <= BASE_ADDR_1 when active_base_addr='1' else BASE_ADDR_2;
 
 				-- addr_a_preload(9 downto 1) <= unsigned(conduit_col_info_col_nr); -- *2 --TODO: need this
 				-- addr_a_preload(0) <= '0';
@@ -495,7 +496,13 @@ begin
 
 			-- switch to other buffer: set base address and increments of addr
 			if addr_switch_pending='1' and (write_state=idle or write_state=wait_valid) then
-				current_address_write <= BASE_ADDR_1 when active_base_addr='0' else BASE_ADDR_2;
+				if active_base_addr='0' then
+					current_address_write <= BASE_ADDR_1;
+				else
+					current_address_write <= BASE_ADDR_2;
+				end if;
+
+
 				addr_switch_pending := '0';
 
 			elsif next_write_state=write_2 or next_write_state=end_write then

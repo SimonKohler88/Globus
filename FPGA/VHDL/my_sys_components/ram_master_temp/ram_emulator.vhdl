@@ -10,7 +10,7 @@ entity avalon_slave_ram_emulator is
 	port (
 		rst : in std_ulogic;
 		clk : in std_ulogic;
-        address       : in  std_ulogic_vector(24 downto 0) := (others=>'0');
+        address       : in  std_ulogic_vector(23 downto 0) := (others=>'0');
         read          : in  std_ulogic := '0';
         waitrequest   : out std_ulogic := '0';
         readdata      : out std_ulogic_vector(15 downto 0) := (others=> '0');
@@ -37,7 +37,6 @@ architecture rtl of avalon_slave_ram_emulator is
   signal refresh_intervall_count : integer := 0;
   signal refresh_ram: std_ulogic:= '0';
 
-  signal addr_check: std_ulogic_vector(24 downto 0);
   -- -- first read is always delayed by 3 clock cycles
   -- constant cas_delay : integer := 3;
   -- signal cas_delay: unsigned(1 downto 0):= (others => '0');
@@ -170,7 +169,6 @@ begin
     elsif rising_edge(clk) then
       if waitrequest = '0' and write_en_int = '1' then
         mem(to_integer(unsigned(address(RAM_ADDR_BITS downto 0)))) <= writedata;
-        addr_check <= address;
       end if;
     end if;
   end process p_store;

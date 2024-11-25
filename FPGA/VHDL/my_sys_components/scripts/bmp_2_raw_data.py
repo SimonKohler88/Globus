@@ -12,3 +12,6 @@ if __name__ == '__main__':
     with open('Earth_relief_120x256_raw2.txt', 'w') as f:
         for row in pix_per_row:
             f.write(f'{row[0]:02x}{row[1]:02x}{row[2]:02x}\n')
+
+
+

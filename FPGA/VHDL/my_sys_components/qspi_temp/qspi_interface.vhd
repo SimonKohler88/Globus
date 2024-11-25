@@ -24,39 +24,42 @@ entity qspi_interface is
 		conduit_qspi_data      : in  std_logic_vector(3 downto 0) := (others => '0'); --      conduit_qspi.qspi_data
 		conduit_qspi_clk       : in  std_logic                    := '0';             --                  .qspi_clk
 		conduit_qspi_cs        : in  std_logic                    := '0';             --                  .qspi_cs
-		conduit_ping_pong      : out std_logic                                        -- conduit_ping_pong.new_signal
+		conduit_ping_pong      : out std_logic                          ;              -- conduit_ping_pong.new_signal
+
+		conduit_debug_qspi_out    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_qspi.qspi_out
+		conduit_debug_qspi_in     : in   std_logic_vector(31 downto 0)  := (others => '0') --                         .qspi_in
 	);
 end entity qspi_interface;
 
 architecture rtl of qspi_interface is
-	signal sync_spi_clk_reg     : std_ulogic_vector(1 downto 0);
-	signal sync_spi_cs_reg      : std_ulogic_vector(1 downto 0);
-	signal sync_spi_d0_reg      : std_ulogic_vector(1 downto 0);
-	signal sync_spi_d1_reg      : std_ulogic_vector(1 downto 0);
-	signal sync_spi_d2_reg      : std_ulogic_vector(1 downto 0);
-	signal sync_spi_d3_reg      : std_ulogic_vector(1 downto 0);
+	signal sync_spi_clk_reg     : std_logic_vector(1 downto 0);
+	signal sync_spi_cs_reg      : std_logic_vector(1 downto 0);
+	signal sync_spi_d0_reg      : std_logic_vector(1 downto 0);
+	signal sync_spi_d1_reg      : std_logic_vector(1 downto 0);
+	signal sync_spi_d2_reg      : std_logic_vector(1 downto 0);
+	signal sync_spi_d3_reg      : std_logic_vector(1 downto 0);
 
-	signal sync_spi_clk_r1         : std_ulogic;
-	signal sync_spi_clk_r2         : std_ulogic;
-	signal sync_spi_clk         : std_ulogic;
-	signal sync_spi_cs          : std_ulogic;
-	signal sync_spi_data        : std_ulogic_vector(3 downto 0);
+	signal sync_spi_clk_r1      : std_logic;
+	signal sync_spi_clk_r2      : std_logic;
+	signal sync_spi_clk         : std_logic;
+	signal sync_spi_cs          : std_logic;
+	signal sync_spi_data        : std_logic_vector(3 downto 0);
 
-	signal sync_ff_cs_reg       : std_ulogic_vector(1 downto 0);
-	signal cs_edge_start        : std_ulogic;
-	signal cs_edge_end          : std_ulogic;
-	signal sync_ff_clk_reg      : std_ulogic_vector(1 downto 0);
+	signal sync_ff_cs_reg       : std_logic_vector(1 downto 0);
+	signal cs_edge_start        : std_logic;
+	signal cs_edge_end          : std_logic;
+	signal sync_ff_clk_reg      : std_logic_vector(1 downto 0);
 
-	signal data_in_buffer       : std_ulogic_vector(23 downto 0);
+	signal data_in_buffer       : std_logic_vector(23 downto 0);
 	signal data_takeover_pulse  : std_logic;
 	signal nibble_count			: natural range 0 to 5  :=0;
 	signal pixel_count			: natural range 0 to 120*256 + 10 := 0;
 	signal last_pix  			: natural range 0 to 120*256 + 10 := 0;
 
-	signal valid_ff_pulse_reg   : std_ulogic_vector(1 downto 0);
+	signal valid_ff_pulse_reg   : std_logic_vector(1 downto 0);
 	signal valid_intern         : std_logic;
 
-	signal symbol_streamed      : std_ulogic;
+	signal symbol_streamed      : std_logic;
 
 begin
 
@@ -147,8 +150,7 @@ begin
 				end if;
 
 				if nibble_count=0 and pixel_count > 0 then
-					aso_out0_data <= data_in_buffer;
-
+					aso_out0_data <= data_in_buffer ;
 				end if;
 
 				if pixel_count > 0 and nibble_count >= 0 and nibble_count < 5 then
@@ -159,6 +161,7 @@ begin
 			end if;
 		end if;
 	end process p_data_collector;
+	-- aso_out0_data <= data_in_buffer when (nibble_count=0 and pixel_count > 0) else (others=>'0');
 
 
 	p_valid_pos_edge:process(all)

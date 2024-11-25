@@ -29,7 +29,9 @@ architecture rtl of qspi_interface_tb is
 		conduit_qspi_data      : in  std_logic_vector(3 downto 0) := (others => '0'); --      conduit_qspi.qspi_data
 		conduit_qspi_clk       : in  std_logic                    := '0';             --                  .qspi_clk
 		conduit_qspi_cs        : in  std_logic                    := '0';             --                  .qspi_cs
-		conduit_ping_pong      : out std_logic                                        -- conduit_ping_pong.new_signal
+		conduit_ping_pong      : out std_logic;                                        -- conduit_ping_pong.new_signal
+		conduit_debug_qspi_out : out std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_qspi.qspi_out
+		conduit_debug_qspi_in  : in  std_logic_vector(31 downto 0)  := (others => '0') --                         .qspi_in
 	);
 	end component;
 
@@ -60,6 +62,8 @@ architecture rtl of qspi_interface_tb is
 	signal s_conduit_qspi_clk       : std_ulogic                   ;
 	signal s_conduit_qspi_cs        : std_ulogic                   ;
 	signal s_conduit_ping_pong      : std_ulogic                   ;
+	signal s_conduit_debug_qspi_out : std_logic_vector(31 downto 0);
+    signal s_conduit_debug_qspi_in  : std_logic_vector(31 downto 0);
 
 
 begin
@@ -92,7 +96,9 @@ begin
 		conduit_qspi_data      =>  s_conduit_qspi_data      ,
 		conduit_qspi_clk       =>  s_conduit_qspi_clk       ,
 		conduit_qspi_cs        =>  s_conduit_qspi_cs        ,
-		conduit_ping_pong      =>  s_conduit_ping_pong
+		conduit_ping_pong      =>  s_conduit_ping_pong,
+		conduit_debug_qspi_out => s_conduit_debug_qspi_out ,
+		conduit_debug_qspi_in  => s_conduit_debug_qspi_in
 	);
 
 end architecture rtl; -- of qspi_interface

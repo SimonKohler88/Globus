@@ -37,7 +37,10 @@ architecture rtl of new_encoder_tb is
 		conduit_encoder_sim_switch : in  std_logic                     := '0';             --                        .sim_switch
 		conduit_encoder_sim_pulse  : in  std_logic                     := '0';             --                        .sim_pulse
 		conduit_intern_col_nr      : out std_logic_vector(8 downto 0);                     -- conduit_intern_col_info.col_nr
-		conduit_intern_col_fire    : out std_logic                                         --                        .fire
+		conduit_intern_col_fire    : out std_logic ;                                        --                        .fire
+
+		conduit_debug_enc_out    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_enc.enc_dbg_out
+		conduit_debug_enc_in     : in   std_logic_vector(31 downto 0)  := (others => '0') --                         .led_dbg_in
 	);
 
 	end component;
@@ -55,6 +58,9 @@ architecture rtl of new_encoder_tb is
 	signal s_conduit_encoder_sim_pulse   :  std_logic                    ;
 	signal s_conduit_intern_col_nr       :  std_logic_vector(8 downto 0) ;
 	signal s_conduit_intern_col_fire     :  std_logic                    ;
+	signal s_conduit_debug_enc_out      : std_logic_vector(31 downto 0);
+	signal s_conduit_debug_enc_in       : std_logic_vector(31 downto 0);
+
 
 	constant c_cycle_time : time := 10 ns;
 	constant c_enc_t_per_u :time := 100 us;
@@ -85,7 +91,10 @@ begin
 		conduit_encoder_sim_switch => s_conduit_encoder_sim_switch  ,
 		conduit_encoder_sim_pulse  => s_conduit_encoder_sim_pulse   ,
 		conduit_intern_col_nr      => s_conduit_intern_col_nr       ,
-		conduit_intern_col_fire    => s_conduit_intern_col_fire
+		conduit_intern_col_fire    => s_conduit_intern_col_fire,
+
+		conduit_debug_enc_out      => s_conduit_debug_enc_out,
+		conduit_debug_enc_in       => s_conduit_debug_enc_in
 	);
 
 	reset <= transport '1', '0' after 5 ns;

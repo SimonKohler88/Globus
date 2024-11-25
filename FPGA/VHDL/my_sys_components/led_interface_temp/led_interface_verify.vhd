@@ -12,6 +12,10 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
+library std;
+use std.textio.all;
+
+
 entity led_interface_verify is
 	generic (
 		num_led_A  : integer := 30;
@@ -76,17 +80,27 @@ architecture rtl of led_interface_verify is
             wait until falling_edge(clk);
             qspi_clk <= '0';
         END LOOP;
-    end procedure qspi_write_pixel;
+    end procedure avs_stream_pixel;
 
 
 	constant c_cycle_time_100M : time := 10 ns;
+	constant c_cycle_time_26M : time := 33 ns;
     signal enable :boolean:=true;
+
 
     file output_file_stream_A : text open write_mode is "./stream_out/stream_received_A.txt";
 	file output_file_stream_B : text open write_mode is "./stream_out/stream_received_B.txt";
+	file output_file_stream_C : text open write_mode is "./stream_out/stream_received_C.txt";
+	file output_file_stream_D : text open write_mode is "./stream_out/stream_received_D.txt";
 
-	file input_file : text open read_mode is "./Earth_relief_120x256_raw2.txt";
-    constant c_pixel_to_send : integer := 4*20;
+	signal rec_A: std_ulogic_vector(7 downto 0);
+	signal rec_B: std_ulogic_vector(7 downto 0);
+	signal rec_C: std_ulogic_vector(7 downto 0);
+	signal rec_D: std_ulogic_vector(7 downto 0);
+
+
+	file input_file : text open read_mode is "./row_col_num.txt";
+    constant c_pixel_to_send : integer := 60;
 
 begin
 
@@ -102,19 +116,34 @@ begin
 		wait;  -- don't do it again
 	end process p_system_clk;
 
+	p_spi_clk : process
+	begin
+		while enable loop
+            clock_led_spi_clk <= '0';
+            wait for c_cycle_time_26M/2;
+            clock_led_spi_clk <= '1';
+            wait for c_cycle_time_26M/2;
+		end loop;
+		wait;  -- don't do it again
+	end process p_spi_clk;
+
     reset_reset <= transport '1', '0' after 5 ns;
 
-	 -- p_store_stream_A: process(all) --untested yet
-  --       variable v_output_line : line;
-  --   begin
-  --       if rising_edge(clock_clk) then
-  --           if aso_out0_A_ready = '1' and aso_out0_A_valid ='1' then
-  --               write(v_output_line, to_string(now), left, 16);
-  --               write(v_output_line, to_hstring(aso_out0_A_data));
-  --               writeline(output_file_stream_A, v_output_line);
-  --           end if;
-  --       end if;
-  --   end process p_store_stream_A;
+	 p_store_stream_A: process --untested yet
+        variable v_output_line : line;
+        variable bitcount: integer := 0;
+    begin
+		wait until conduit_LED_A_CLK ='1';
+		rec_A(bitcount) <= conduit_LED_A_DATA;
+		bitcount := bitcount + 1;
+		if bitcount = 7 then
+			write(v_output_line, to_string(now), left, 16);
+			write(v_output_line, to_hstring(rec_A));
+			writeline(output_file_stream_A, v_output_line);
+			bitcount := 0;
+		end if;
+		wait until conduit_LED_A_CLK ='0';
+    end process p_store_stream_A;
   --
   --    p_store_stream_B: process(all) --untested yet
   --       variable v_output_line : line;
@@ -129,15 +158,63 @@ begin
   --   end process p_store_stream_B;
 
 	p_stimuli: process
+		variable v_write_data : std_ulogic_vector(23 downto 0);
+        variable v_input_line : line;
     begin
 
 
-        wait for 2 ns;
+        wait for 20 ns;
+
         for i in 0 to c_pixel_to_send loop
-            readline(input_file, v_input_line);
-            hread(v_input_line, v_write_data);
-            qspi_write_pixel(v_write_data, internal_qspi_clock, conduit_qspi_clk, conduit_qspi_data );
-        end loop;
+            wait until rising_edge(clock_clk);
+            if asi_in0_ready='1' then
+				readline(input_file, v_input_line);
+				hread(v_input_line, v_write_data);
+				if i =0 then
+					asi_in0_startofpacket <= '1';
+				elsif i = c_pixel_to_send then
+					asi_in0_endofpacket   <= '1';
+				else
+					asi_in0_startofpacket <= '0';
+					asi_in0_endofpacket   <= '0';
+				end if;
+				asi_in0_data <= v_write_data;
+				asi_in0_valid <= '1';
+			else
+				asi_in0_valid <= '0';
+			end if;
+		end loop;
+		wait until rising_edge(clock_clk);
+		asi_in0_endofpacket   <= '0';
+		asi_in0_data <= (others => '0');
+
+		wait for 50 ns;
+
+        for i in 0 to c_pixel_to_send loop
+            wait until rising_edge(clock_clk);
+            if asi_in1_ready='1' then
+				readline(input_file, v_input_line);
+				hread(v_input_line, v_write_data);
+				if i =0 then
+					asi_in1_startofpacket <= '1';
+				elsif i = c_pixel_to_send then
+					asi_in1_endofpacket   <= '1';
+				else
+					asi_in1_startofpacket <= '0';
+					asi_in1_endofpacket   <= '0';
+				end if;
+				asi_in1_data <= v_write_data;
+				asi_in1_valid <= '1';
+			else
+				asi_in1_valid <= '0';
+			end if;
+		end loop;
+		wait until rising_edge(clock_clk);
+		asi_in1_endofpacket   <= '0';
+		asi_in1_data <= (others => '0');
+
+
+
 
         wait for 200 us;
 
