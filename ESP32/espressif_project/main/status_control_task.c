@@ -71,17 +71,19 @@ void status_control_init( status_control_status_t * status_ptr, command_control_
 	
 	/* Inbetriebsetzung */
 //	ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_FRAME_REQUEST, GPIO_MODE_OUTPUT ) );
-    ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_ENABLE_OUTPUT, GPIO_MODE_OUTPUT ) );
-    ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_RESERVE_2    , GPIO_MODE_OUTPUT ) );
-    ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_RESERVE_3    , GPIO_MODE_OUTPUT ) );
+    ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_ENABLE_OUTPUT, GPIO_MODE_INPUT ) );
+    ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_RESERVE_2    , GPIO_MODE_INPUT ) );
+    ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_RESERVE_3    , GPIO_MODE_INPUT ) );
     ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_RESET_FPGA   , GPIO_MODE_OUTPUT ) );                                                          
    // ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_DEV_1        , GPIO_MODE_OUTPUT ) );
     //ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_DEV_2        , GPIO_MODE_OUTPUT ) );
-    ESP_ERROR_CHECK( gpio_set_direction( ENC_PIN_CONNECTED          , GPIO_MODE_OUTPUT ) );
-	ESP_ERROR_CHECK( gpio_set_direction( ENC_PIN_EXP_0              , GPIO_MODE_OUTPUT ) );
-	ESP_ERROR_CHECK( gpio_set_direction( ENC_PIN_EXP_1              , GPIO_MODE_OUTPUT ) );
-	ESP_ERROR_CHECK( gpio_set_direction( ENC_PIN_EXP_2              , GPIO_MODE_OUTPUT ) );
-	ESP_ERROR_CHECK( gpio_set_direction( ENC_PIN_EXP_3              , GPIO_MODE_OUTPUT ) );
+    ESP_ERROR_CHECK( gpio_set_direction( ENC_PIN_CONNECTED          , GPIO_MODE_INPUT ) );
+	ESP_ERROR_CHECK( gpio_set_direction( ENC_PIN_EXP_0              , GPIO_MODE_INPUT ) );
+	ESP_ERROR_CHECK( gpio_set_direction( ENC_PIN_EXP_1              , GPIO_MODE_INPUT ) );
+	ESP_ERROR_CHECK( gpio_set_direction( ENC_PIN_EXP_2              , GPIO_MODE_INPUT ) );
+	ESP_ERROR_CHECK( gpio_set_direction( ENC_PIN_EXP_3              , GPIO_MODE_INPUT ) );
+
+	gpio_set_level(STAT_CTRL_PIN_RESET_FPGA   , 1);
 	
 	internal_status_ptr->command_queue_handle = xQueueCreateStatic(STAT_CTRL_QUEUE_NUMBER_OF_COMMANDS, sizeof( status_control_command_t ), &command_queue_storage[ 0 ], &xQueueBuffer_command_queue);
 
@@ -137,7 +139,7 @@ void status_control_task( void * pvParameter )
 	/* for toggling led */
 	TickType_t time = pdTICKS_TO_MS( xTaskGetTickCount() );
 	uint8_t led_state = 0;
-	uint32_t led_color = 0x0004000C;
+	uint32_t led_color = 0x00040004;
 	
 	
 	status_control_command_t cmd_buf;

@@ -39,8 +39,8 @@ architecture rtl of new_encoder_tb is
 		conduit_intern_col_nr      : out std_logic_vector(8 downto 0);                     -- conduit_intern_col_info.col_nr
 		conduit_intern_col_fire    : out std_logic ;                                        --                        .fire
 
-		conduit_debug_enc_out    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_enc.enc_dbg_out
-		conduit_debug_enc_in     : in   std_logic_vector(31 downto 0)  := (others => '0') --                         .led_dbg_in
+		conduit_debug_enc_enc_dbg_out   : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_enc.enc_dbg_out
+		conduit_debug_enc_enc_dbg_in    : in   std_logic_vector(31 downto 0)  := (others => '0') --                         .led_dbg_in
 	);
 
 	end component;
@@ -93,8 +93,8 @@ begin
 		conduit_intern_col_nr      => s_conduit_intern_col_nr       ,
 		conduit_intern_col_fire    => s_conduit_intern_col_fire,
 
-		conduit_debug_enc_out      => s_conduit_debug_enc_out,
-		conduit_debug_enc_in       => s_conduit_debug_enc_in
+		conduit_debug_enc_enc_dbg_out   => s_conduit_debug_enc_out,
+		conduit_debug_enc_enc_dbg_in    => s_conduit_debug_enc_in
 	);
 
 	reset <= transport '1', '0' after 5 ns;

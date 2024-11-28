@@ -143,8 +143,8 @@ architecture rtl of integration_tb is
 		conduit_intern_col_nr      : out std_logic_vector(8 downto 0);                     -- conduit_intern_col_info.col_nr
 		conduit_intern_col_fire    : out std_logic;                                         --                        .fire
 
-		conduit_debug_enc_out      : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_enc.enc_dbg_out
-		conduit_debug_enc_in       : in   std_logic_vector(31 downto 0)  := (others => '0') --                         .led_dbg_in
+		conduit_debug_enc_enc_dbg_out : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_enc.enc_dbg_out
+		conduit_debug_enc_enc_dbg_in  : in   std_logic_vector(31 downto 0)  := (others => '0') --                         .led_dbg_in
 	);
 	end component;
 --
@@ -271,17 +271,17 @@ begin
 		avs_s0_write               => open        ,
 		avs_s0_writedata           => open        ,
 		avs_s0_waitrequest         => open,
-		clock_clk                  => s_clock_clk                           ,
-		reset_reset                => s_reset_reset                         ,
-		conduit_encoder_A          => s_conduit_encoder_A                          ,
-		conduit_encoder_B          => s_conduit_encoder_B                         ,
+		clock_clk                  => s_clock_clk                   ,
+		reset_reset                => s_reset_reset                 ,
+		conduit_encoder_A          => s_conduit_encoder_A           ,
+		conduit_encoder_B          => s_conduit_encoder_B           ,
 		conduit_encoder_index      => s_conduit_encoder_index       ,
 		conduit_encoder_sim_switch => s_conduit_encoder_sim_switch  ,
 		conduit_encoder_sim_pulse  => s_conduit_encoder_sim_pulse   ,
-		conduit_intern_col_nr      => s_conduit_col_info_col_nr       ,
+		conduit_intern_col_nr      => s_conduit_col_info_col_nr     ,
 		conduit_intern_col_fire    => s_conduit_col_info_fire,
-		conduit_debug_enc_out      => s_conduit_debug_enc_out,
-		conduit_debug_enc_in       => s_conduit_debug_enc_in
+		conduit_debug_enc_enc_dbg_out => s_conduit_debug_enc_out,
+		conduit_debug_enc_enc_dbg_in  => s_conduit_debug_enc_in
 	);--s_avs_s1_waitrequest
 
     dut_ram_master: ram_master port map (

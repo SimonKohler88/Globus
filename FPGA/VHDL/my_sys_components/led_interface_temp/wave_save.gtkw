@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Mon Nov 25 18:14:48 2024
+[*] Thu Nov 28 09:14:29 2024
 [*]
 [dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\led_interface_temp\func.ghw"
-[dumpfile_mtime] "Mon Nov 25 18:10:40 2024"
-[dumpfile_size] 308875
+[dumpfile_mtime] "Thu Nov 28 09:14:02 2024"
+[dumpfile_size] 373921
 [savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\led_interface_temp\wave_save.gtkw"
 [timestart] 0
 [size] 1792 941
 [pos] -1 -1
-*-24.000000 60230000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-27.000000 272400000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.led_interface_tb.
 [treeopen] top.led_interface_tb.dut.
@@ -18,17 +18,20 @@
 [sst_expanded] 1
 [sst_vpaned_height] 374
 @28
-top.led_interface_tb.verify_led_if.clock_led_spi_clk
 top.led_interface_tb.verify_led_if.clock_clk
 @200
 -
-@29
+@22
 #{top.led_interface_tb.dut.asi_in0_data[23:0]} top.led_interface_tb.dut.asi_in0_data[23] top.led_interface_tb.dut.asi_in0_data[22] top.led_interface_tb.dut.asi_in0_data[21] top.led_interface_tb.dut.asi_in0_data[20] top.led_interface_tb.dut.asi_in0_data[19] top.led_interface_tb.dut.asi_in0_data[18] top.led_interface_tb.dut.asi_in0_data[17] top.led_interface_tb.dut.asi_in0_data[16] top.led_interface_tb.dut.asi_in0_data[15] top.led_interface_tb.dut.asi_in0_data[14] top.led_interface_tb.dut.asi_in0_data[13] top.led_interface_tb.dut.asi_in0_data[12] top.led_interface_tb.dut.asi_in0_data[11] top.led_interface_tb.dut.asi_in0_data[10] top.led_interface_tb.dut.asi_in0_data[9] top.led_interface_tb.dut.asi_in0_data[8] top.led_interface_tb.dut.asi_in0_data[7] top.led_interface_tb.dut.asi_in0_data[6] top.led_interface_tb.dut.asi_in0_data[5] top.led_interface_tb.dut.asi_in0_data[4] top.led_interface_tb.dut.asi_in0_data[3] top.led_interface_tb.dut.asi_in0_data[2] top.led_interface_tb.dut.asi_in0_data[1] top.led_interface_tb.dut.asi_in0_data[0]
 @28
 top.led_interface_tb.dut.asi_in0_valid
 top.led_interface_tb.dut.asi_in0_ready
 top.led_interface_tb.dut.asi_in0_startofpacket
 top.led_interface_tb.dut.asi_in0_endofpacket
+@420
+top.led_interface_tb.dut.pix_in_counter_a
+@22
+#{top.led_interface_tb.dut.in_buffer_stream_a[15][23:0]} top.led_interface_tb.dut.in_buffer_stream_a[15][23] top.led_interface_tb.dut.in_buffer_stream_a[15][22] top.led_interface_tb.dut.in_buffer_stream_a[15][21] top.led_interface_tb.dut.in_buffer_stream_a[15][20] top.led_interface_tb.dut.in_buffer_stream_a[15][19] top.led_interface_tb.dut.in_buffer_stream_a[15][18] top.led_interface_tb.dut.in_buffer_stream_a[15][17] top.led_interface_tb.dut.in_buffer_stream_a[15][16] top.led_interface_tb.dut.in_buffer_stream_a[15][15] top.led_interface_tb.dut.in_buffer_stream_a[15][14] top.led_interface_tb.dut.in_buffer_stream_a[15][13] top.led_interface_tb.dut.in_buffer_stream_a[15][12] top.led_interface_tb.dut.in_buffer_stream_a[15][11] top.led_interface_tb.dut.in_buffer_stream_a[15][10] top.led_interface_tb.dut.in_buffer_stream_a[15][9] top.led_interface_tb.dut.in_buffer_stream_a[15][8] top.led_interface_tb.dut.in_buffer_stream_a[15][7] top.led_interface_tb.dut.in_buffer_stream_a[15][6] top.led_interface_tb.dut.in_buffer_stream_a[15][5] top.led_interface_tb.dut.in_buffer_stream_a[15][4] top.led_interface_tb.dut.in_buffer_stream_a[15][3] top.led_interface_tb.dut.in_buffer_stream_a[15][2] top.led_interface_tb.dut.in_buffer_stream_a[15][1] top.led_interface_tb.dut.in_buffer_stream_a[15][0]
 @200
 -
 @22
@@ -38,5 +41,21 @@ top.led_interface_tb.dut.asi_in1_valid
 top.led_interface_tb.dut.asi_in1_ready
 top.led_interface_tb.dut.asi_in1_startofpacket
 top.led_interface_tb.dut.asi_in1_endofpacket
+@200
+-
+@28
+top.led_interface_tb.dut.start_spi_pulse
+@200
+-
+@28
+top.led_interface_tb.dut.sync_start_spi_pulse
+top.led_interface_tb.dut.clock_led_spi_clk
+top.led_interface_tb.dut.spi_out_a_enable
+@420
+top.led_interface_tb.dut.spi_pix_count_a
+top.led_interface_tb.dut.spi_bit_count_a
+@28
+top.led_interface_tb.dut.conduit_led_a_data
+top.led_interface_tb.dut.conduit_led_a_clk
 [pattern_trace] 1
 [pattern_trace] 0

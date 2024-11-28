@@ -38,31 +38,31 @@ entity new_encoder is
 		conduit_intern_col_nr      : out std_logic_vector(8 downto 0);                     -- conduit_intern_col_info.col_nr
 		conduit_intern_col_fire    : out std_logic                    ;                     --                        .fire
 
-		conduit_debug_enc_out    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_enc.enc_dbg_out
-		conduit_debug_enc_in     : in   std_logic_vector(31 downto 0)  := (others => '0') --                         .led_dbg_in
+		conduit_debug_enc_enc_dbg_out    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_enc.enc_dbg_out
+		conduit_debug_enc_enc_dbg_in     : in   std_logic_vector(31 downto 0)  := (others => '0') --                         .led_dbg_in
 	);
 end entity new_encoder;
 
 architecture rtl of new_encoder is
 
-	signal sync_a_reg : std_ulogic_vector(2 downto 0);
-	signal sync_b_reg : std_ulogic_vector(2 downto 0);
-	signal sync_i_reg : std_ulogic_vector(2 downto 0);
-	signal sync_sim_pulse_reg : std_ulogic_vector(2 downto 0);
-	signal sync_sim_sw_reg : std_ulogic_vector(2 downto 0);
+	signal sync_a_reg : std_logic_vector(2 downto 0);
+	signal sync_b_reg : std_logic_vector(2 downto 0);
+	signal sync_i_reg : std_logic_vector(2 downto 0);
+	signal sync_sim_pulse_reg : std_logic_vector(2 downto 0);
+	signal sync_sim_sw_reg : std_logic_vector(2 downto 0);
 
 
-	signal sync_a : std_ulogic;
-	signal sync_b : std_ulogic;
-	signal sync_i : std_ulogic;
+	signal sync_a : std_logic;
+	signal sync_b : std_logic;
+	signal sync_i : std_logic;
 
-	signal rising_edge_a_reg : std_ulogic_vector(1 downto 0);
-	signal rising_edge_sim_pulse_reg : std_ulogic_vector(1 downto 0);
+	signal rising_edge_a_reg : std_logic_vector(1 downto 0);
+	signal rising_edge_sim_pulse_reg : std_logic_vector(1 downto 0);
 	--signal rising_edge_i_reg : std_ulogic_vector(1 downto 0);
 
-	signal enc_clk: std_ulogic :='0';
-	signal enc_direction : std_ulogic := '0'; -- 1: upcounting 0:downcounting
-	signal i_valid : std_ulogic;
+	signal enc_clk: std_logic :='0';
+	signal enc_direction : std_logic := '0'; -- 1: upcounting 0:downcounting
+	signal i_valid : std_logic;
 
 	signal rising_edge_fire_reg : std_logic_vector(1 downto 0);
 	signal column_counter :unsigned(8 downto 0);
@@ -142,7 +142,7 @@ begin
 				else
 					column_counter <= column_counter - 1;
 				end if;
-				conduit_intern_col_nr(7 downto 0) <= std_logic_vector(column_counter(8 downto 1));
+				conduit_intern_col_nr <= "0" & std_logic_vector(column_counter(8 downto 1));
 			end if;
         end if;
 	end process col_counter_proc;
@@ -167,7 +167,7 @@ begin
 		end if;
 	end process fire_pulse_proc;
 
-	conduit_debug_enc_out(7 downto 0) <= conduit_intern_col_fire & std_logic_vector(column_counter(7 downto 1));
+	conduit_debug_enc_enc_dbg_out(7 downto 0) <= conduit_intern_col_fire & std_logic_vector(column_counter(7 downto 1));
 
 
 	-- avalon slave not yet implemented

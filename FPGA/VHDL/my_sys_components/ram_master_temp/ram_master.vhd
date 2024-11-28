@@ -113,21 +113,21 @@ architecture rtl of ram_master is
 	signal active_aso_data           : std_logic_vector(23 downto 0);
 	signal active_aso_ready          : std_logic;
 	signal active_aso_valid          : std_logic;
+	signal pix_count                 : unsigned(7 downto 0);
 
 	signal col_fire_ff               : std_logic_vector(1 downto 0);
 	signal fire_pending              : std_logic;
 
-	signal load_addr_B_addr_ff       :std_logic_vector( 1 downto 0 );
-	signal main_state_b_active       :std_logic;
-
 
 begin
 	avs_s1_waitrequest <= '1'; -- not implemented
+	avs_s1_readdata <= (others => '0');
 
 	avm_m0_address <= std_logic_vector(write_address)  when main_state = main_write  else
 					  std_logic_vector(read_address)  when main_state = main_read_A or main_state=main_read_B else
 					  (others=>'0');
 
+	conduit_debug_ram_out <= (others => '0');
 
 
 
@@ -190,20 +190,19 @@ begin
 
 			elsif stage=1 then
 
-				-- addr_a_preload(9 downto 1) <= unsigned(conduit_col_info_col_nr); -- *2 --TODO: need this
+				addr_a_preload(9 downto 1) <= unsigned(conduit_col_info_col_nr); -- *2 --TODO: need this
 				-- addr_a_preload(0) <= '0';
-				addr_a_preload(8 downto 0) <= unsigned(conduit_col_info_col_nr);
+				-- addr_a_preload(8 downto 0) <= unsigned(conduit_col_info_col_nr);
 
 				addr_ab_converter <= unsigned(conduit_col_info_col_nr( 7 downto 0 )); -- TODO: case 512 cols: need all bits
-
 
 
 				addr_valid <= '0';
 				stage:=2;
 			elsif stage=2 then
 				addr_a_preload <= addr_a_preload + addr_adder;
-				-- addr_b_preload(9 downto 0) <= (addr_ab_converter - addr_b_col_shift_offset) & "0"; -- let wrap around and shift for *2 for 512
-				-- addr_b_preload(8 downto 0) <= (addr_ab_converter - addr_b_col_shift_offset) & "0"; -- let wrap around and shift for *2
+				-- addr_b_preload(9 downto 0) <= (addr_ab_converter - addr_b_col_shift_offset) & "0"; -- let wrap around and shift for *2 (512 version)
+				addr_b_preload(8 downto 0) <= (addr_ab_converter - addr_b_col_shift_offset) & "0"; -- let wrap around and shift for *2
 				addr_b_preload(7 downto 0) <= (addr_ab_converter - addr_b_col_shift_offset);
 
 				addr_valid <= '0';
@@ -255,16 +254,22 @@ begin
 			when main_write =>
 				if fire_pending='1' and (write_state=idle or write_state=wait_valid) and addr_valid='1' then
 					next_main_state <= main_read_A;
+				else
+					next_main_state <= main_write;
 				end if;
 
 			when main_read_A =>
 				if read_state = end_read then
 					next_main_state <= main_read_B;
+				else
+					next_main_state <= main_read_A;
 				end if;
 
 			when main_read_B =>
 				if read_state = end_read then
 					next_main_state <= main_write;
+				else
+					next_main_state <= main_read_B;
 				end if;
 
 		end case;
@@ -317,35 +322,16 @@ begin
 
 	--*************************************** Read from ram processes ***************************************************************
 
-	main_state_b_active <= '1' when main_state=main_read_B else '0';
+	-- main_state_b_active <= '1' when main_state=main_read_B else '0';
 	--type state_AVM_read is (idle, wait_read_1, read_1, wait_read_2, read_2, end_read);
 	p_read_ram_clocked :process(all)
 	begin
 		if reset_reset = '1' then
 			read_state <= idle;
-			load_addr_B_addr_ff <= (others =>'0');
-
 		elsif rising_edge(clock_clk) then
 			read_state <= next_read_state;
-
-			load_addr_B_addr_ff <= load_addr_B_addr_ff(0) &  main_state_b_active;
-
-			if addr_ready='1' then
-				current_address_read <= addr_a_preload;
-
-			elsif main_state=main_read_A and read_state=end_read then
-				current_address_read <= addr_b_preload;
-
-			elsif next_read_state=read_1 then
-				current_address_read <= current_address_read + 1; --todo:mus have correct offset
-
-			elsif next_read_state= read_2 then
-				current_address_read <= current_address_read + addr_row_to_row_offset;
-			end if;
-
 		end if;
 	end process p_read_ram_clocked;
-
 
 -- 	avm_m0_address
 -- avm_m0_read
@@ -353,33 +339,41 @@ begin
 -- avm_m0_readdata
 -- avm_m0_readdatavalid
 
-	p_AVM_Read_statemachine: process(all) is
-	variable pix_count: integer;
+	p_AVM_Read_statemachine: process(all)
 	constant PIX_PER_ASO: integer:= image_rows/2;
 	-- constant PIX_PER_ASO: integer:= 20; --TODO:check value. must be 60 in real design
     begin
-		if main_state = main_read_A or main_state = main_read_B then
+		if (main_state = main_read_A or main_state = main_read_B) then
 			case read_state is
 				when idle =>
 					if main_state = main_read_A or main_state = main_read_B then
 						next_read_state <= wait_read_1;
+					else
+						next_read_state <= idle;
 					end if;
 
 				when wait_read_1 =>
 					-- if active_aso_ready='1' and avm_m0_readdatavalid='1' and avm_m0_waitrequest='0' then
 					if active_aso_ready='1' and avm_m0_waitrequest='0' then
 						next_read_state <= read_1;
+					else
+						next_read_state <= wait_read_1;
 					end if;
+
 				when read_1 =>
 					if avm_m0_waitrequest='0' and avm_m0_readdatavalid='1' then
 						next_read_state <= read_2;
 					else
 						next_read_state <= wait_read_2;
 					end if;
+
 				when wait_read_2 =>
 					if avm_m0_waitrequest='0' and avm_m0_readdatavalid='1' then
 						next_read_state <= read_2;
+					else
+						next_read_state <= wait_read_2;
 					end if;
+
 				when read_2 =>
 					if pix_count < PIX_PER_ASO then
 						if avm_m0_waitrequest='1' then
@@ -390,6 +384,7 @@ begin
 					else
 						next_read_state <= end_read;
 					end if;
+
 				when end_read =>
 					next_read_state <= idle;
 
@@ -401,10 +396,10 @@ begin
 				when idle =>
 					read_address <= (others =>'0');
 					avm_m0_read_n <= '1';
-					pix_count := 0;
 					active_aso_valid <= '0';
 					active_aso_startofpacket <= '0';
 					active_aso_endofpacket <= '0';
+					-- active_aso_data <= (others=>'0');
 
 				when wait_read_1 =>
 					read_address <= current_address_read;
@@ -412,39 +407,48 @@ begin
 					active_aso_valid <= '0';
 					active_aso_startofpacket <= '0';
 					active_aso_endofpacket <= '0';
+					-- active_aso_data <= (others=>'0');
 
 				when read_1 =>
 					read_address <= current_address_read;
 					avm_m0_read_n <= '0';
 					active_aso_valid <= '0';
-					active_aso_data <= avm_m0_readdata & X"00";
+					-- active_aso_data <= avm_m0_readdata & X"00";
+					active_aso_endofpacket <= '0';
+					active_aso_startofpacket <= '0';
 
 				when wait_read_2 =>
 					read_address <= current_address_read;
 					avm_m0_read_n <= '0';
 					active_aso_valid <= '0';
+					-- active_aso_data <= avm_m0_readdata & X"00";
+					active_aso_endofpacket <= '0';
+					active_aso_startofpacket <= '0';
 
 				when read_2 =>
-					active_aso_data(7 downto 0) <= avm_m0_readdata(15 downto 8);
+					-- active_aso_data <=  active_aso_data(23 downto 8) & avm_m0_readdata(15 downto 8);
 					read_address <= current_address_read;
 					avm_m0_read_n <= '0';
 					active_aso_valid <= '1';
 
-					pix_count := pix_count +1;
-
 					if pix_count=0 and (next_read_state=read_1 or next_read_state=wait_read_1) then
 						active_aso_startofpacket <= '1';
+						active_aso_endofpacket <= '0';
 					elsif pix_count >= PIX_PER_ASO-1 and next_read_state=end_read then
 						active_aso_endofpacket <= '1';
+						active_aso_startofpacket <= '0';
+					else
+						active_aso_endofpacket <= '0';
+						active_aso_startofpacket <= '0';
 					end if;
 
 				when end_read =>
 					read_address <= (others =>'0');
 					avm_m0_read_n <= '1';
-					pix_count := 0;
 					active_aso_valid <= '0';
 					active_aso_startofpacket <= '0';
 					active_aso_endofpacket <= '0';
+					-- active_aso_data <= (others=>'0');
 
 				when others =>
 					read_address <= (others =>'0');
@@ -452,17 +456,76 @@ begin
 					active_aso_valid <= '0';
 					active_aso_startofpacket <= '0';
 					active_aso_endofpacket <= '0';
+					-- active_aso_data <= (others=>'0');
 			end case;
 		else
+			next_read_state <= idle;
 			avm_m0_read_n <= '1';
 			active_aso_valid <= '0';
 			active_aso_startofpacket <= '0';
 			active_aso_endofpacket <= '0';
-			active_aso_data <= (others=>'0');
+			-- active_aso_data <= (others=>'0');
+			read_address <= (others =>'0');
+
 		end if;
 
 	end process p_AVM_Read_statemachine;
 
+	p_pix_count: process(all)
+	begin
+		if reset_reset = '1' then
+			pix_count <= (others=>'0');
+
+		elsif rising_edge(clock_clk) then
+			if (main_state = main_read_A or main_state = main_read_B) then
+				case next_read_state is
+					when end_read | idle => pix_count <= (others=>'0');
+					when read_2 => pix_count <= pix_count +1;
+					when others => pix_count <= pix_count;
+				end case;
+			else
+				pix_count <= (others=>'0');
+			end if;
+		end if;
+	end process p_pix_count;
+
+	p_update_addr: process(all)
+	begin
+		if reset_reset = '1' then
+		current_address_read <= (others=>'0');
+
+		elsif rising_edge(clock_clk) then
+			if addr_ready='1' then
+				current_address_read <= addr_a_preload;
+
+			elsif main_state=main_read_A and read_state=end_read then
+				current_address_read <= addr_b_preload;
+
+			elsif next_read_state=read_1 then
+				current_address_read <= current_address_read + 1;
+
+			elsif next_read_state= read_2 then
+				current_address_read <= current_address_read + addr_row_to_row_offset;
+			end if;
+		end if;
+	end process p_update_addr;
+
+	p_set_stream_out:process(all)
+	begin
+		if reset_reset = '1' then
+			active_aso_data <= (others =>'0');
+
+		elsif rising_edge(clock_clk) then
+			if next_read_state=read_1 then
+				active_aso_data <= avm_m0_readdata & X"00";
+			elsif next_read_state= read_2 then
+				active_aso_data(7 downto 0) <= avm_m0_readdata(15 downto 8);
+			else
+				active_aso_data <= (others =>'0');
+			end if;
+
+		end if;
+	end process p_set_stream_out;
 	--*************************************** Write to ram processes ***************************************************************
 
 	asi_in0_ready <= '1' when main_state=main_write and ( write_state = wait_valid ) and SystemEnable='1' else '0';
@@ -501,8 +564,6 @@ begin
 				else
 					current_address_write <= BASE_ADDR_2;
 				end if;
-
-
 				addr_switch_pending := '0';
 
 			elsif next_write_state=write_2 or next_write_state=end_write then
@@ -520,17 +581,24 @@ begin
 		if main_state = main_write then
 			case write_state is
 				when idle =>
-						if main_state = main_write then
-							next_write_state <= wait_valid;
-						end if;
+					if main_state = main_write then
+						next_write_state <= wait_valid;
+					else
+						next_write_state <= idle;
+					end if;
+
 				when wait_valid =>
 					if asi_in0_valid='1' then
 						next_write_state <= write_1;
+					else
+						next_write_state <= wait_valid;
 					end if;
 
 				when write_1 =>
 					if avm_m0_waitrequest='0' then
 						next_write_state <= write_2;
+					else
+						next_write_state <= write_1;
 					end if;
 
 				when write_2 =>
@@ -563,8 +631,8 @@ begin
 					write_address <=  current_address_write;
 					-- write_address <= (others => '0');
 					avm_m0_write_n <= '0';
-					avm_m0_writedata(15 downto 8) <= data_in_buffer(7 downto 0);
-					avm_m0_writedata(7 downto 0) <= (others => '0');
+					avm_m0_writedata(15 downto 0) <= data_in_buffer(7 downto 0) & X"00";
+					-- avm_m0_writedata(7 downto 0) <= (others => '0');
 
 				when end_write =>
 					write_address <= (others => '0');
@@ -578,6 +646,9 @@ begin
 			end case;
 		else
 			avm_m0_write_n <= '1';
+			write_address <= (others => '0');
+			avm_m0_writedata <= (others => '0');
+			next_write_state <= idle;
 
 		end if;
 

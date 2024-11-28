@@ -41,7 +41,6 @@ architecture rtl of qspi_interface is
 
 	signal sync_spi_clk_r1      : std_logic;
 	signal sync_spi_clk_r2      : std_logic;
-	signal sync_spi_clk         : std_logic;
 	signal sync_spi_cs          : std_logic;
 	signal sync_spi_data        : std_logic_vector(3 downto 0);
 
@@ -89,15 +88,11 @@ begin
 			else
 				data_takeover_pulse <= '0';
 			end if;
-
-
-
 		end if;
 	end process p_sync;
 
 	conduit_ping_pong <= '0'; --not used
 
-	sync_spi_clk     <= sync_spi_clk_reg(1);
 	sync_spi_cs      <= sync_spi_cs_reg(1);
 	sync_spi_data    <= sync_spi_d3_reg(1) & sync_spi_d2_reg(1) & sync_spi_d1_reg(1) & sync_spi_d0_reg(1);
 
@@ -215,7 +210,7 @@ begin
 		end if;
 	end process p_data_streamer;
 
-
+	conduit_debug_qspi_out <= (others=>'0');
 	-- if reset_reset = '1' then
 	-- elsif rising_edge(clock_clk) then
 	-- end if;

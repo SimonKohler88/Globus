@@ -100,7 +100,7 @@ architecture rtl of led_interface_verify is
 
 
 	file input_file : text open read_mode is "./row_col_num.txt";
-    constant c_pixel_to_send : integer := 60;
+    constant c_pixel_to_send : integer := 60-1;
 
 begin
 
@@ -157,13 +157,14 @@ begin
   --       end if;
   --   end process p_store_stream_B;
 
-	p_stimuli: process
+	p_stim_stream_out: process
 		variable v_write_data : std_ulogic_vector(23 downto 0);
         variable v_input_line : line;
     begin
-
-
         wait for 20 ns;
+        wait until conduit_col_info_out_fire = '1';
+		wait for 20 ns;
+		wait until rising_edge(clock_clk);
 
         for i in 0 to c_pixel_to_send loop
             wait until rising_edge(clock_clk);
@@ -187,6 +188,7 @@ begin
 		wait until rising_edge(clock_clk);
 		asi_in0_endofpacket   <= '0';
 		asi_in0_data <= (others => '0');
+		asi_in0_valid <= '0';
 
 		wait for 50 ns;
 
@@ -212,14 +214,32 @@ begin
 		wait until rising_edge(clock_clk);
 		asi_in1_endofpacket   <= '0';
 		asi_in1_data <= (others => '0');
-
-
-
-
+		asi_in0_valid <= '0';
         wait for 200 us;
 
         wait;
-    end process p_stimuli;
+    end process p_stim_stream_out;
+
+    p_encoder_stim: process
+    begin
+		wait for 50 ns;
+		conduit_col_info <= "0" & X"16";
+		wait until rising_edge(clock_clk);
+		conduit_fire <= '1';
+		wait until rising_edge(clock_clk);
+		conduit_fire <= '0';
+
+		wait for 2 us;
+		conduit_fire <= '1';
+		conduit_col_info <= "0" & X"17";
+		wait until rising_edge(clock_clk);
+		conduit_fire <= '0';
+		wait;
+
+
+
+    end process p_encoder_stim;
+
 
     p_monitor: process
 

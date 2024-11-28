@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Mon Nov 25 22:02:06 2024
+[*] Mon Nov 25 19:31:33 2024
 [*]
 [dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\func.ghw"
-[dumpfile_mtime] "Mon Nov 25 21:55:11 2024"
-[dumpfile_size] 1474666
-[savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\wave_save.gtkw"
+[dumpfile_mtime] "Mon Nov 25 19:25:42 2024"
+[dumpfile_size] 1502985
+[savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\wave_save__before_latch_fix.gtkw"
 [timestart] 0
 [size] 1920 1017
-[pos] -1 -1
-*-33.000000 15083600000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[pos] 24 29
+*-28.000000 15083600000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.integration_tb.
 [treeopen] top.integration_tb.dut_ram_master.
@@ -52,6 +52,7 @@ top.integration_tb.dut_ram_master.avm_m0_waitrequest
 #{top.integration_tb.dut_ram_master.addr_b_preload[24:0]} top.integration_tb.dut_ram_master.addr_b_preload[23] top.integration_tb.dut_ram_master.addr_b_preload[22] top.integration_tb.dut_ram_master.addr_b_preload[21] top.integration_tb.dut_ram_master.addr_b_preload[20] top.integration_tb.dut_ram_master.addr_b_preload[19] top.integration_tb.dut_ram_master.addr_b_preload[18] top.integration_tb.dut_ram_master.addr_b_preload[17] top.integration_tb.dut_ram_master.addr_b_preload[16] top.integration_tb.dut_ram_master.addr_b_preload[15] top.integration_tb.dut_ram_master.addr_b_preload[14] top.integration_tb.dut_ram_master.addr_b_preload[13] top.integration_tb.dut_ram_master.addr_b_preload[12] top.integration_tb.dut_ram_master.addr_b_preload[11] top.integration_tb.dut_ram_master.addr_b_preload[10] top.integration_tb.dut_ram_master.addr_b_preload[9] top.integration_tb.dut_ram_master.addr_b_preload[8] top.integration_tb.dut_ram_master.addr_b_preload[7] top.integration_tb.dut_ram_master.addr_b_preload[6] top.integration_tb.dut_ram_master.addr_b_preload[5] top.integration_tb.dut_ram_master.addr_b_preload[4] top.integration_tb.dut_ram_master.addr_b_preload[3] top.integration_tb.dut_ram_master.addr_b_preload[2] top.integration_tb.dut_ram_master.addr_b_preload[1] top.integration_tb.dut_ram_master.addr_b_preload[0]
 @28
 top.integration_tb.dut_ram_master.addr_valid
+@29
 top.integration_tb.dut_ram_master.addr_ready
 @200
 -
@@ -68,8 +69,6 @@ top.integration_tb.dut_ram_master.fire_pending
 top.integration_tb.dut_ram_master.avm_m0_readdatavalid
 @22
 #{top.integration_tb.dut_ram_master.active_aso_data[23:0]} top.integration_tb.dut_ram_master.active_aso_data[23] top.integration_tb.dut_ram_master.active_aso_data[22] top.integration_tb.dut_ram_master.active_aso_data[21] top.integration_tb.dut_ram_master.active_aso_data[20] top.integration_tb.dut_ram_master.active_aso_data[19] top.integration_tb.dut_ram_master.active_aso_data[18] top.integration_tb.dut_ram_master.active_aso_data[17] top.integration_tb.dut_ram_master.active_aso_data[16] top.integration_tb.dut_ram_master.active_aso_data[15] top.integration_tb.dut_ram_master.active_aso_data[14] top.integration_tb.dut_ram_master.active_aso_data[13] top.integration_tb.dut_ram_master.active_aso_data[12] top.integration_tb.dut_ram_master.active_aso_data[11] top.integration_tb.dut_ram_master.active_aso_data[10] top.integration_tb.dut_ram_master.active_aso_data[9] top.integration_tb.dut_ram_master.active_aso_data[8] top.integration_tb.dut_ram_master.active_aso_data[7] top.integration_tb.dut_ram_master.active_aso_data[6] top.integration_tb.dut_ram_master.active_aso_data[5] top.integration_tb.dut_ram_master.active_aso_data[4] top.integration_tb.dut_ram_master.active_aso_data[3] top.integration_tb.dut_ram_master.active_aso_data[2] top.integration_tb.dut_ram_master.active_aso_data[1] top.integration_tb.dut_ram_master.active_aso_data[0]
-@23
-#{top.integration_tb.dut_ram_master.pix_count[7:0]} top.integration_tb.dut_ram_master.pix_count[7] top.integration_tb.dut_ram_master.pix_count[6] top.integration_tb.dut_ram_master.pix_count[5] top.integration_tb.dut_ram_master.pix_count[4] top.integration_tb.dut_ram_master.pix_count[3] top.integration_tb.dut_ram_master.pix_count[2] top.integration_tb.dut_ram_master.pix_count[1] top.integration_tb.dut_ram_master.pix_count[0]
 @200
 -
 -Stream A out
