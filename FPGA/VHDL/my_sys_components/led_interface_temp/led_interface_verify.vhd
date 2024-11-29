@@ -162,59 +162,62 @@ begin
         variable v_input_line : line;
     begin
         wait for 20 ns;
-        wait until conduit_col_info_out_fire = '1';
-		wait for 20 ns;
-		wait until rising_edge(clock_clk);
+        while enable loop
+			wait until conduit_col_info_out_fire = '1';
+			wait for 20 ns;
+			wait until rising_edge(clock_clk);
 
-        for i in 0 to c_pixel_to_send loop
-            wait until rising_edge(clock_clk);
-            if asi_in0_ready='1' then
-				readline(input_file, v_input_line);
-				hread(v_input_line, v_write_data);
-				if i =0 then
-					asi_in0_startofpacket <= '1';
-				elsif i = c_pixel_to_send then
-					asi_in0_endofpacket   <= '1';
+			for i in 0 to c_pixel_to_send loop
+				wait until rising_edge(clock_clk);
+				if asi_in0_ready='1' then
+					readline(input_file, v_input_line);
+					hread(v_input_line, v_write_data);
+					if i =0 then
+						asi_in0_startofpacket <= '1';
+					elsif i = c_pixel_to_send then
+						asi_in0_endofpacket   <= '1';
+					else
+						asi_in0_startofpacket <= '0';
+						asi_in0_endofpacket   <= '0';
+					end if;
+					asi_in0_data <= v_write_data;
+					asi_in0_valid <= '1';
 				else
-					asi_in0_startofpacket <= '0';
-					asi_in0_endofpacket   <= '0';
+					asi_in0_valid <= '0';
 				end if;
-				asi_in0_data <= v_write_data;
-				asi_in0_valid <= '1';
-			else
-				asi_in0_valid <= '0';
-			end if;
-		end loop;
-		wait until rising_edge(clock_clk);
-		asi_in0_endofpacket   <= '0';
-		asi_in0_data <= (others => '0');
-		asi_in0_valid <= '0';
+			end loop;
+			wait until rising_edge(clock_clk);
+			asi_in0_endofpacket   <= '0';
+			asi_in0_data <= (others => '0');
+			asi_in0_valid <= '0';
 
-		wait for 50 ns;
+			wait for 50 ns;
 
-        for i in 0 to c_pixel_to_send loop
-            wait until rising_edge(clock_clk);
-            if asi_in1_ready='1' then
-				readline(input_file, v_input_line);
-				hread(v_input_line, v_write_data);
-				if i =0 then
-					asi_in1_startofpacket <= '1';
-				elsif i = c_pixel_to_send then
-					asi_in1_endofpacket   <= '1';
+			for i in 0 to c_pixel_to_send loop
+				wait until rising_edge(clock_clk);
+				if asi_in1_ready='1' then
+					readline(input_file, v_input_line);
+					hread(v_input_line, v_write_data);
+					if i =0 then
+						asi_in1_startofpacket <= '1';
+					elsif i = c_pixel_to_send then
+						asi_in1_endofpacket   <= '1';
+					else
+						asi_in1_startofpacket <= '0';
+						asi_in1_endofpacket   <= '0';
+					end if;
+					asi_in1_data <= v_write_data;
+					asi_in1_valid <= '1';
 				else
-					asi_in1_startofpacket <= '0';
-					asi_in1_endofpacket   <= '0';
+					asi_in1_valid <= '0';
 				end if;
-				asi_in1_data <= v_write_data;
-				asi_in1_valid <= '1';
-			else
-				asi_in1_valid <= '0';
-			end if;
+			end loop;
+			wait until rising_edge(clock_clk);
+			asi_in1_endofpacket   <= '0';
+			asi_in1_data <= (others => '0');
+			asi_in1_valid <= '0';
 		end loop;
-		wait until rising_edge(clock_clk);
-		asi_in1_endofpacket   <= '0';
-		asi_in1_data <= (others => '0');
-		asi_in0_valid <= '0';
+
         wait for 200 us;
 
         wait;
@@ -229,7 +232,7 @@ begin
 		wait until rising_edge(clock_clk);
 		conduit_fire <= '0';
 
-		wait for 2 us;
+		wait for 50 us;
 		conduit_fire <= '1';
 		conduit_col_info <= "0" & X"17";
 		wait until rising_edge(clock_clk);
@@ -244,8 +247,6 @@ begin
     p_monitor: process
 
     begin
-
-
 
 		wait for 120 us;
 		enable <= false;

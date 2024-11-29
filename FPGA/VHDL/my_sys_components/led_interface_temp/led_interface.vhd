@@ -62,11 +62,13 @@ architecture rtl of led_interface is
 
 	constant PIX_PER_STREAM_IN: integer:= 60;
 	constant PIX_OUT_PER_SPI: integer:= 30;
+	constant BIT_PER_LED_FRAME :integer := 32;
 	constant BIT_PER_SPI_START_END_FRAME: integer:= 32;
-	-- constant BITS_PER_SPI_TRANSFER : integer : PIX_OUT_PER_SPI * 3 * 8 ;
+	constant BRIGHTNESS : std_logic_vector(4 downto 0) := "10000";
+
 
 	type t_pixel_buffer_in_array is array (0 to PIX_PER_STREAM_IN-1) of std_logic_vector(23 downto 0);
-	type t_pixel_buffer_out_array is array (0 to PIX_OUT_PER_SPI-1) of std_logic_vector(23 downto 0);
+	type t_pixel_buffer_out_array is array (0 to PIX_OUT_PER_SPI-1) of std_logic_vector(31 downto 0);
 
 	signal in_buffer_stream_A: t_pixel_buffer_in_array := (others =>(others => '0'));
 	signal in_buffer_stream_B: t_pixel_buffer_in_array := (others =>(others => '0'));
@@ -93,7 +95,7 @@ architecture rtl of led_interface is
 	-- signal sync_reset_ff:std_logic_vector(1 downto 0);
 	-- signal sync_reset:std_logic;
 
-	signal spi_out_A_enable :std_logic;
+	signal spi_out_enable :std_logic;
 	signal spi_bit_count_A: natural range 0 to 32;
 	signal spi_pix_count_A: natural range 0 to PIX_OUT_PER_SPI-1;
 
@@ -126,44 +128,6 @@ begin
 	end process p_fire_delay;
 
 
-	p_data_to_A_buffer: process(all)
-	begin
-		if reset_reset ='1' then
-			pix_out_A           <= (others =>(others => '0'));
-			pix_out_B           <= (others =>(others => '0'));
-			pix_out_C           <= (others =>(others => '0'));
-			pix_out_D           <= (others =>(others => '0'));
-			spi_pulse_stretch <= (others => '0');
-
-		elsif rising_edge(clock_clk) then
-
-			if conduit_fire = '1' then -- todo: BRG
-
-				for i in 0 to (pix_out_A'length -1) loop
-					pix_out_A(i) <= in_buffer_stream_A(i);
-				end loop;
-
-				for b in 0 to (pix_out_B'length -1) loop -- change direction
-					pix_out_B(b) <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b);
-				end loop;
-
-				for c in 0 to (pix_out_C'length -1) loop
-					pix_out_C(c) <= in_buffer_stream_B(c);
-				end loop;
-
-				for d in 0 to (pix_out_D'length -1) loop -- change direction
-					pix_out_D(d) <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d);
-				end loop;
-
-				spi_pulse_stretch <= spi_pulse_stretch(5 downto 0) & "1";
-			else
-				spi_pulse_stretch <= spi_pulse_stretch(5 downto 0) & "0";
-			end if;
-		end if;
-	end process;
-
-	start_spi_pulse <= spi_pulse_stretch(6) or spi_pulse_stretch(5) or spi_pulse_stretch(4) or spi_pulse_stretch(3) or
-					   spi_pulse_stretch(2) or spi_pulse_stretch(1) or spi_pulse_stretch(0);
 
 	--receiving streams to buffer
 	p_receive_stream_A: process(all)
@@ -199,8 +163,56 @@ begin
 		end if;
 	end process p_receive_stream_B;
 
+	-- buffer to spi out buffers, always when fire pulse is on
+	p_data_to_A_buffer: process(all)
+	begin
+		if reset_reset ='1' then
+			pix_out_A           <= (others =>(others => '0'));
+			pix_out_B           <= (others =>(others => '0'));
+			pix_out_C           <= (others =>(others => '0'));
+			pix_out_D           <= (others =>(others => '0'));
+			spi_pulse_stretch <= (others => '0');
 
-	-- synchronize spi start impulse
+		elsif rising_edge(clock_clk) then
+
+			if conduit_fire = '1' then -- todo: BRG, gamma
+
+				for a in 0 to (pix_out_A'length -1) loop
+					pix_out_A(a)(23 downto 0) <= in_buffer_stream_A(a);
+					pix_out_A(a)(31 downto 29) <= "111";
+					pix_out_A(a)(28 downto 24)  <= BRIGHTNESS;
+				end loop;
+
+				for b in 0 to (pix_out_B'length -1) loop -- change direction
+					pix_out_B(b)(23 downto 0) <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b);
+					pix_out_B(b)(31 downto 29)  <= "111";
+					pix_out_B(b)(28 downto 24) <= BRIGHTNESS;
+				end loop;
+
+				for c in 0 to (pix_out_C'length -1) loop
+					pix_out_C(c)(23 downto 0)<= in_buffer_stream_B(c);
+					pix_out_C(c)(31 downto 29) <= "111";
+					pix_out_C(c)(28 downto 24)  <= BRIGHTNESS; -- must change order
+				end loop;
+
+				for d in 0 to (pix_out_D'length -1) loop -- change direction
+					pix_out_D(d)(23 downto 0) <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d);
+					pix_out_D(d)(31 downto 29)  <= "111";
+					pix_out_D(d)(28 downto 24)  <= BRIGHTNESS; -- must change order
+				end loop;
+
+				spi_pulse_stretch <= spi_pulse_stretch(5 downto 0) & "1";
+			else
+				spi_pulse_stretch <= spi_pulse_stretch(5 downto 0) & "0";
+			end if;
+		end if;
+	end process;
+
+	start_spi_pulse <= spi_pulse_stretch(6) or spi_pulse_stretch(5) or spi_pulse_stretch(4) or spi_pulse_stretch(3) or
+					   spi_pulse_stretch(2) or spi_pulse_stretch(1) or spi_pulse_stretch(0);
+
+
+	-- synchronize spi start pulse
 	p_spi_sync: process(all)
 	begin
 		if reset_reset ='1' then
@@ -212,31 +224,31 @@ begin
 	sync_start_spi_pulse <= sync_start_spi_pulse_ff(0) and  not sync_start_spi_pulse_ff(1);
 
 
-
+	-- state machine for spi led
 	p_spi_state_clocked: process(all)
 	begin
 		if reset_reset	= '1' then
 			spi_state  <= idle;
 
-			spi_bit_count_A <= 0;
+			spi_bit_count_A <= BIT_PER_LED_FRAME-1;
 			spi_pix_count_A <= 0;
 
-		elsif rising_edge(clock_led_spi_clk) then
+		elsif falling_edge(clock_led_spi_clk) then
 			spi_state <= next_spi_state;
 
 			if spi_state /= next_spi_state then
-				spi_bit_count_A  <= 0;
+				spi_bit_count_A  <= BIT_PER_LED_FRAME-1;
 				spi_pix_count_A <= 0;
 
 			elsif spi_state /= idle then
 				if spi_state=send_start_frame or spi_state=send_end_frame then
-					spi_bit_count_A <= spi_bit_count_A + 1;
+					spi_bit_count_A <= spi_bit_count_A - 1;
 				else
-					if spi_bit_count_A = 22 then
-						spi_bit_count_A  <= 0;
+					if spi_bit_count_A = 0 then
+						spi_bit_count_A  <= BIT_PER_LED_FRAME-1;
 						spi_pix_count_A <= spi_pix_count_A + 1;
 					else
-						spi_bit_count_A <= spi_bit_count_A + 1;
+						spi_bit_count_A <= spi_bit_count_A - 1;
 					end if;
 				end if;
 			end if;
@@ -255,7 +267,7 @@ begin
 				end if;
 
 			when send_start_frame =>
-				if spi_bit_count_A = BIT_PER_SPI_START_END_FRAME-1 then
+				if spi_bit_count_A = 0 then
 					next_spi_state <= send_buffer;
 				else
 					next_spi_state <= send_start_frame;
@@ -269,7 +281,7 @@ begin
 				end if;
 
 			when send_end_frame =>
-				if spi_bit_count_A = BIT_PER_SPI_START_END_FRAME-1 then
+				if spi_bit_count_A = 0 then
 					next_spi_state <= end_send;
 				else
 					next_spi_state <= send_end_frame;
@@ -283,46 +295,54 @@ begin
 
 		case spi_state is
 			when idle =>
-				spi_out_A_enable   <= '0';
+				spi_out_enable   <= '0';
 				conduit_LED_A_DATA <= '0';
+				conduit_LED_B_DATA <= '0';
+				conduit_LED_C_DATA <= '0';
+				conduit_LED_D_DATA <= '0';
 
 			when send_start_frame =>
 				conduit_LED_A_DATA <= '0';
-				spi_out_A_enable   <= '1';
+				conduit_LED_B_DATA <= '0';
+				conduit_LED_C_DATA <= '0';
+				conduit_LED_D_DATA <= '0';
+				spi_out_enable   <= '1';
 
 			when send_buffer =>
-				conduit_LED_A_DATA <= pix_out_A(spi_pix_count_A)(spi_bit_count_A) when spi_out_A_enable else  '0';
-				spi_out_A_enable   <= '1';
+
+				conduit_LED_A_DATA <= pix_out_A(spi_pix_count_A)(spi_bit_count_A); --todo: change when spi count differ in A,B,C,D
+				conduit_LED_B_DATA <= pix_out_B(spi_pix_count_A)(spi_bit_count_A);
+				conduit_LED_C_DATA <= pix_out_C(spi_pix_count_A)(spi_bit_count_A);
+				conduit_LED_D_DATA <= pix_out_D(spi_pix_count_A)(spi_bit_count_A);
+				spi_out_enable   <= '1';
 
 			when send_end_frame =>
 				conduit_LED_A_DATA <= '1';
-				spi_out_A_enable   <= '1';
+				conduit_LED_B_DATA <= '1';
+				conduit_LED_C_DATA <= '1';
+				conduit_LED_D_DATA <= '1';
+				spi_out_enable   <= '1';
 
 			when end_send =>
 				conduit_LED_A_DATA <= '0';
-				spi_out_A_enable   <= '0';
+				conduit_LED_B_DATA <= '0';
+				conduit_LED_C_DATA <= '0';
+				conduit_LED_D_DATA <= '0';
+				spi_out_enable   <= '0';
 
 			when others =>
 				conduit_LED_A_DATA <= '0';
-				spi_out_A_enable   <= '0';
+				conduit_LED_B_DATA <= '0';
+				conduit_LED_C_DATA <= '0';
+				conduit_LED_D_DATA <= '0';
+				spi_out_enable   <= '0';
 		end case;
 
 	end process;
-	conduit_LED_A_CLK <= clock_led_spi_clk when spi_out_A_enable else '0';
-
-
-	conduit_LED_B_CLK <= '0';
-
-	conduit_LED_B_DATA <= '0';
-
-	conduit_LED_C_DATA <= '0';
-
-	conduit_LED_C_CLK <= '0';
-
-	conduit_LED_D_DATA <= '0';
-
-	conduit_LED_D_CLK <= '0';
-
+	conduit_LED_A_CLK <= clock_led_spi_clk when spi_out_enable else '0';
+	conduit_LED_B_CLK <= clock_led_spi_clk when spi_out_enable else '0';
+	conduit_LED_C_CLK <= clock_led_spi_clk when spi_out_enable else '0';
+	conduit_LED_D_CLK <= clock_led_spi_clk when spi_out_enable else '0';
 
 	asi_in1_ready <= '1';
 

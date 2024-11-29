@@ -1,18 +1,19 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Thu Nov 28 09:14:29 2024
+[*] Thu Nov 28 13:09:51 2024
 [*]
 [dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\led_interface_temp\func.ghw"
-[dumpfile_mtime] "Thu Nov 28 09:14:02 2024"
-[dumpfile_size] 373921
+[dumpfile_mtime] "Thu Nov 28 13:09:16 2024"
+[dumpfile_size] 362030
 [savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\led_interface_temp\wave_save.gtkw"
-[timestart] 0
+[timestart] 51089000000
 [size] 1792 941
 [pos] -1 -1
-*-27.000000 272400000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-28.000000 2045000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.led_interface_tb.
 [treeopen] top.led_interface_tb.dut.
+[treeopen] top.led_interface_tb.dut.pix_out_a.
 [sst_width] 323
 [signals_width] 415
 [sst_expanded] 1
@@ -57,5 +58,7 @@ top.led_interface_tb.dut.spi_bit_count_a
 @28
 top.led_interface_tb.dut.conduit_led_a_data
 top.led_interface_tb.dut.conduit_led_a_clk
+@23
+#{top.led_interface_tb.dut.pix_out_a[0][23:0]} top.led_interface_tb.dut.pix_out_a[0][23] top.led_interface_tb.dut.pix_out_a[0][22] top.led_interface_tb.dut.pix_out_a[0][21] top.led_interface_tb.dut.pix_out_a[0][20] top.led_interface_tb.dut.pix_out_a[0][19] top.led_interface_tb.dut.pix_out_a[0][18] top.led_interface_tb.dut.pix_out_a[0][17] top.led_interface_tb.dut.pix_out_a[0][16] top.led_interface_tb.dut.pix_out_a[0][15] top.led_interface_tb.dut.pix_out_a[0][14] top.led_interface_tb.dut.pix_out_a[0][13] top.led_interface_tb.dut.pix_out_a[0][12] top.led_interface_tb.dut.pix_out_a[0][11] top.led_interface_tb.dut.pix_out_a[0][10] top.led_interface_tb.dut.pix_out_a[0][9] top.led_interface_tb.dut.pix_out_a[0][8] top.led_interface_tb.dut.pix_out_a[0][7] top.led_interface_tb.dut.pix_out_a[0][6] top.led_interface_tb.dut.pix_out_a[0][5] top.led_interface_tb.dut.pix_out_a[0][4] top.led_interface_tb.dut.pix_out_a[0][3] top.led_interface_tb.dut.pix_out_a[0][2] top.led_interface_tb.dut.pix_out_a[0][1] top.led_interface_tb.dut.pix_out_a[0][0]
 [pattern_trace] 1
 [pattern_trace] 0

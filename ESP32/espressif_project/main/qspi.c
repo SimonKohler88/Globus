@@ -124,11 +124,12 @@ BaseType_t qspi_request_frame( void )
 {
 	/* called from isr */
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-	
+
 	if( internal_qspi_task_handle != NULL )
 	{
-		xTaskNotifyFromISR( internal_qspi_task_handle,
+		xTaskNotifyIndexedFromISR( internal_qspi_task_handle,
                        TASK_NOTIFY_QSPI_START_FRAME_BIT,
+                       0,
                        eSetBits,
                        &xHigherPriorityTaskWoken );
 	}
@@ -163,11 +164,11 @@ void qspi_post_transaction_cb( spi_transaction_t *trans )
 	/* From ISR: QSPI Transaction done */
 	
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-	
 	if( internal_qspi_task_handle != NULL )
 	{
-		xTaskNotifyFromISR( internal_qspi_task_handle,
+		xTaskNotifyIndexedFromISR( internal_qspi_task_handle,
                        TASK_NOTIFY_QSPI_FRAME_FINISHED_BIT,
+                       0,
                        eSetBits,
                        &xHigherPriorityTaskWoken );
 	}
@@ -194,13 +195,16 @@ void fpga_qspi_task( void* pvParameter )
 	uint32_t ulNotifiedValue;
 	BaseType_t xResult;
 	internal_qspi_task_handle = xTaskGetCurrentTaskHandle();
+	if( internal_qspi_task_handle == NULL ) ESP_LOGE( "QSPI", "No Task Handle" );
 
 	while( 1 )
 	{
-		xTaskNotifyWaitIndexed( TASK_NOTIFY_QSPI_START_FRAME_BIT, pdFALSE, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY ); // wait for ISR to notify us
+		ESP_LOGI( "QSPI", "wait for notify");
+		xTaskNotifyWaitIndexed( TASK_NOTIFY_QSPI_START_FRAME_BIT, ULONG_MAX, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY ); // wait for ISR to notify us
+		ESP_LOGI( "QSPI", "notified");
 		uint8_t frame_sent = 0;	
 		/* FPGA Requests a frame */
-		if(  ! fifo_is_frame_2_fpga_in_progress())
+		if(  !fifo_is_frame_2_fpga_in_progress() )
 		{
 			if( fifo_has_frame_4_fpga()  )
 			{
@@ -213,10 +217,17 @@ void fpga_qspi_task( void* pvParameter )
 			}
 			else 
 			{
-				/* resend last frame */
-				qspi_frame_info->current_ptr = qspi_frame_info->frame_start_ptr;
-				qspi_DMA_write();
-				frame_sent = 1;
+				if ( qspi_frame_info != NULL )
+				{
+					/* resend last frame */
+					qspi_frame_info->current_ptr = qspi_frame_info->frame_start_ptr;
+					qspi_DMA_write();
+					frame_sent = 1;
+				}
+				else
+				{
+					// cant do shit...
+				}
 			}
 		}
      
@@ -224,6 +235,7 @@ void fpga_qspi_task( void* pvParameter )
 		{
 			/* TODO: maybe qspi transfer takes longer than 5 ticks? */
 			xResult = xTaskNotifyWaitIndexed( TASK_NOTIFY_QSPI_FRAME_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifiedValue, 5 ); // wait for ISR to notify us
+			ESP_LOGI( "QSPI", "notified transfer finished: , %d", xResult);
 			if( xResult == pdTRUE )
 			{
 				fifo_mark_frame_4_fpga_done( );

@@ -36,13 +36,27 @@ fifo_frame_t* current_frame_download = NULL;
 
 
 /* Its here because all IO's are initialized/handled here */
-void IRAM_ATTR frame_request_isr_cb( void* arg )
+// void IRAM_ATTR frame_request_isr_cb( void* arg )
+// {
+//
+// 	//gpio_set_level(STAT_CTRL_PIN_RESERVE_3    , 1);
+// 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+// 	xHigherPriorityTaskWoken = qspi_request_frame();
+// 	portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+// }
+
+volatile uint8_t line_toggle = 0;
+
+
+static void IRAM_ATTR frame_request_isr_cb( void* arg )
 {
+	gpio_set_level(STAT_CTRL_PIN_RESERVE_3    , line_toggle);
+	line_toggle = !line_toggle;
+	
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 	xHigherPriorityTaskWoken = qspi_request_frame();
 	portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
-
 
 void status_control_init( status_control_status_t * status_ptr, command_control_task_t* internal_status_ptr )
 {
@@ -50,8 +64,19 @@ void status_control_init( status_control_status_t * status_ptr, command_control_
 	internal_status_ptr->status = status_ptr;
 	status = internal_status_ptr;
 
+	gpio_config_t config =
+	{
+		.intr_type = GPIO_INTR_POSEDGE,
+		.mode = GPIO_MODE_INPUT,
+		.pull_up_en = 1,
+		.pin_bit_mask = 1<<STAT_CTRL_PIN_FRAME_REQUEST
+	};
+
+	ESP_ERROR_CHECK( gpio_config(&config) );
+	ESP_ERROR_CHECK( gpio_install_isr_service(ESP_INTR_FLAG_IRAM ) );
+    ESP_ERROR_CHECK( gpio_isr_handler_add(STAT_CTRL_PIN_FRAME_REQUEST, frame_request_isr_cb, (void*)STAT_CTRL_PIN_FRAME_REQUEST) );
 	/* FPGA Control Lanes */
-	ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_FRAME_REQUEST,  GPIO_MODE_INPUT  ) );
+	// ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_FRAME_REQUEST,  GPIO_MODE_INPUT  ) );
 //	ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_ENABLE_OUTPUT,  GPIO_MODE_OUTPUT ) );
 //	ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_RESERVE_2    ,  GPIO_MODE_INPUT  ) );
 //	ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_RESERVE_3    ,  GPIO_MODE_INPUT  ) );
@@ -62,21 +87,27 @@ void status_control_init( status_control_status_t * status_ptr, command_control_
 //	ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_DEV_2        ,  GPIO_MODE_INPUT  ) );
 //	
 //	/* install Interrupt cb for frame request */
-	ESP_ERROR_CHECK( gpio_set_intr_type( STAT_CTRL_PIN_FRAME_REQUEST, GPIO_INTR_POSEDGE ) );
-	ESP_ERROR_CHECK( gpio_intr_enable( STAT_CTRL_PIN_FRAME_REQUEST ) );
-	ESP_ERROR_CHECK( gpio_install_isr_service( ESP_INTR_FLAG_IRAM ) );
+	// ESP_ERROR_CHECK( gpio_set_intr_type( STAT_CTRL_PIN_FRAME_REQUEST, GPIO_INTR_POSEDGE ) );
+	// ESP_ERROR_CHECK( gpio_intr_enable( STAT_CTRL_PIN_FRAME_REQUEST ) );
+	// ESP_ERROR_CHECK( gpio_install_isr_service( ESP_INTR_FLAG_IRAM ) );
+	//ESP_ERROR_CHECK( gpio_install_isr_service( 0 ) );
+	//
+	// gpio_install_isr_service(0);
+	// gpio_isr_handler_add(HW_SETTINGS_HALL_GPIO, hal_isr_handler, NULL);
 //	
 //	//gpio_isr_t isr_ptr;
-	ESP_ERROR_CHECK( gpio_isr_handler_add( STAT_CTRL_PIN_FRAME_REQUEST, &frame_request_isr_cb, ( void* ) internal_status_ptr ) );
-	
+	// ESP_ERROR_CHECK( gpio_isr_handler_add( STAT_CTRL_PIN_FRAME_REQUEST, frame_request_isr_cb, ( void* ) internal_status_ptr ) );
+	// ESP_ERROR_CHECK( gpio_isr_register( STAT_CTRL_PIN_FRAME_REQUEST, frame_request_isr_cb, ( void* ) internal_status_ptr ) );
+
 	/* Inbetriebsetzung */
 //	ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_FRAME_REQUEST, GPIO_MODE_OUTPUT ) );
     ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_ENABLE_OUTPUT, GPIO_MODE_INPUT ) );
     ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_RESERVE_2    , GPIO_MODE_INPUT ) );
-    ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_RESERVE_3    , GPIO_MODE_INPUT ) );
+    ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_RESERVE_3    , GPIO_MODE_OUTPUT ) );
     ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_RESET_FPGA   , GPIO_MODE_OUTPUT ) );                                                          
    // ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_DEV_1        , GPIO_MODE_OUTPUT ) );
     //ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_DEV_2        , GPIO_MODE_OUTPUT ) );
+
     ESP_ERROR_CHECK( gpio_set_direction( ENC_PIN_CONNECTED          , GPIO_MODE_INPUT ) );
 	ESP_ERROR_CHECK( gpio_set_direction( ENC_PIN_EXP_0              , GPIO_MODE_INPUT ) );
 	ESP_ERROR_CHECK( gpio_set_direction( ENC_PIN_EXP_1              , GPIO_MODE_INPUT ) );

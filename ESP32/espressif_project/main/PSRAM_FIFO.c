@@ -85,7 +85,8 @@ uint8_t fifo_is_frame_2_fpga_in_progress( void )
 fifo_frame_t* fifo_get_frame_4_fpga( void )
 {
 	if( fifo_control.frame_2_fpga_in_progress == 1 ) return NULL;
-	
+	ESP_LOGI( "FIFO", "fifo_get_frame_for_fpga " );
+
 	uint8_t has_frame = xQueueReceive( fifo_control.ready_4_fpga_frames, &fifo_control.current_frame_4_fpga, 0 );
 	if( has_frame == pdFALSE ) return NULL;
 	

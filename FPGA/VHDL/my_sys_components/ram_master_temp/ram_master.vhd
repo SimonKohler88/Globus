@@ -89,8 +89,8 @@ architecture rtl of ram_master is
 	constant BASE_ADDR_1      : unsigned(23 downto 0):= (others => '0');
 
 	-- 60'000 pixel need addr range of 120'000          (= 0x01E000)
-	-- constant BASE_ADDR_2: unsigned(24 downto 0):= '0' & X"100000"; --TODO: this in real design
-	constant BASE_ADDR_2      : unsigned(23 downto 0):=  X"001000"; -- only for testing
+	constant BASE_ADDR_2: unsigned(23 downto 0):=   X"100000"; --TODO: this in real design
+	-- constant BASE_ADDR_2      : unsigned(23 downto 0):=  X"001000"; -- only for testing
 	signal active_base_addr   : std_logic;
 
 	constant addr_row_to_row_offset  : integer := 2* image_cols -1;
@@ -118,6 +118,8 @@ architecture rtl of ram_master is
 	signal col_fire_ff               : std_logic_vector(1 downto 0);
 	signal fire_pending              : std_logic;
 
+	signal ram_read_1_buffer : std_logic_vector(15 downto 0);
+
 
 begin
 	avs_s1_waitrequest <= '1'; -- not implemented
@@ -132,29 +134,23 @@ begin
 
 
 	--TODO: uncomment startup delay
-	SystemEnable <= '1';
+	-- SystemEnable <= '1';
  --Startup Delay for the RAM Controller
-    -- InitialDelay : process(clk, rst) is
-    --     variable delayCount : unsigned(9 downto 0);
-    -- begin
-    --     if rst = '1' then
-    --         delayCount   := (others => '1');
-    --         SystemEnable <= '0';
-    --     elsif rising_edge(clk) then
-    --         if delayCount = 0 then
-    --             SystemEnable <= '1';
-    --         else
-    --             SystemEnable <= '0';
-    --             delayCount   := delayCount - 1;
-    --         end if;
-    --     end if;
-    -- end process InitialDelay;
-
-	--avm_m0_address <= (others => '0');
-	--avm_m0_read <= '1';
-	--avm_m0_write <= '1';
-	--avm_m0_writedata <= (others => '0');
-
+    InitialDelay : process(all) is
+        variable delayCount : unsigned(9 downto 0);
+    begin
+        if reset_reset = '1' then
+            delayCount   := (others => '1');
+            SystemEnable <= '0';
+        elsif rising_edge(clock_clk) then
+            if delayCount = 0 then
+                SystemEnable <= '1';
+            else
+                SystemEnable <= '0';
+                delayCount   := delayCount - 1;
+            end if;
+        end if;
+    end process InitialDelay;
 
 	-- p_end_packet_switch :process(all)
 	-- begin
@@ -399,7 +395,6 @@ begin
 					active_aso_valid <= '0';
 					active_aso_startofpacket <= '0';
 					active_aso_endofpacket <= '0';
-					-- active_aso_data <= (others=>'0');
 
 				when wait_read_1 =>
 					read_address <= current_address_read;
@@ -407,13 +402,11 @@ begin
 					active_aso_valid <= '0';
 					active_aso_startofpacket <= '0';
 					active_aso_endofpacket <= '0';
-					-- active_aso_data <= (others=>'0');
 
 				when read_1 =>
 					read_address <= current_address_read;
 					avm_m0_read_n <= '0';
 					active_aso_valid <= '0';
-					-- active_aso_data <= avm_m0_readdata & X"00";
 					active_aso_endofpacket <= '0';
 					active_aso_startofpacket <= '0';
 
@@ -421,12 +414,10 @@ begin
 					read_address <= current_address_read;
 					avm_m0_read_n <= '0';
 					active_aso_valid <= '0';
-					-- active_aso_data <= avm_m0_readdata & X"00";
 					active_aso_endofpacket <= '0';
 					active_aso_startofpacket <= '0';
 
 				when read_2 =>
-					-- active_aso_data <=  active_aso_data(23 downto 8) & avm_m0_readdata(15 downto 8);
 					read_address <= current_address_read;
 					avm_m0_read_n <= '0';
 					active_aso_valid <= '1';
@@ -448,7 +439,6 @@ begin
 					active_aso_valid <= '0';
 					active_aso_startofpacket <= '0';
 					active_aso_endofpacket <= '0';
-					-- active_aso_data <= (others=>'0');
 
 				when others =>
 					read_address <= (others =>'0');
@@ -456,7 +446,6 @@ begin
 					active_aso_valid <= '0';
 					active_aso_startofpacket <= '0';
 					active_aso_endofpacket <= '0';
-					-- active_aso_data <= (others=>'0');
 			end case;
 		else
 			next_read_state <= idle;
@@ -464,7 +453,6 @@ begin
 			active_aso_valid <= '0';
 			active_aso_startofpacket <= '0';
 			active_aso_endofpacket <= '0';
-			-- active_aso_data <= (others=>'0');
 			read_address <= (others =>'0');
 
 		end if;
@@ -478,7 +466,8 @@ begin
 
 		elsif rising_edge(clock_clk) then
 			if (main_state = main_read_A or main_state = main_read_B) then
-				case next_read_state is
+				-- case next_read_state is
+				case read_state is
 					when end_read | idle => pix_count <= (others=>'0');
 					when read_2 => pix_count <= pix_count +1;
 					when others => pix_count <= pix_count;
@@ -504,28 +493,31 @@ begin
 			elsif next_read_state=read_1 then
 				current_address_read <= current_address_read + 1;
 
-			elsif next_read_state= read_2 then
-				current_address_read <= current_address_read + addr_row_to_row_offset;
+			elsif next_read_state= read_2 then -- todo: change for hot version
+				current_address_read <= current_address_read + 1;--addr_row_to_row_offset;
 			end if;
 		end if;
 	end process p_update_addr;
 
 	p_set_stream_out:process(all)
 	begin
-		if reset_reset = '1' then
-			active_aso_data <= (others =>'0');
+	if reset_reset = '1' then
+		ram_read_1_buffer <= (others=> '0');
 
-		elsif rising_edge(clock_clk) then
-			if next_read_state=read_1 then
-				active_aso_data <= avm_m0_readdata & X"00";
-			elsif next_read_state= read_2 then
-				active_aso_data(7 downto 0) <= avm_m0_readdata(15 downto 8);
-			else
-				active_aso_data <= (others =>'0');
-			end if;
-
+	elsif rising_edge(clock_clk) then
+		if read_state=read_1 then
+			ram_read_1_buffer <= avm_m0_readdata;
 		end if;
+	end if;
+
+	-- not clocked !!
+	if read_state = read_2 then
+		active_aso_data <=  ram_read_1_buffer & avm_m0_readdata(15 downto 8);
+	else
+		active_aso_data <= (others =>'0');
+	end if;
 	end process p_set_stream_out;
+
 	--*************************************** Write to ram processes ***************************************************************
 
 	asi_in0_ready <= '1' when main_state=main_write and ( write_state = wait_valid ) and SystemEnable='1' else '0';
@@ -629,10 +621,8 @@ begin
 
 				when write_2 =>
 					write_address <=  current_address_write;
-					-- write_address <= (others => '0');
 					avm_m0_write_n <= '0';
 					avm_m0_writedata(15 downto 0) <= data_in_buffer(7 downto 0) & X"00";
-					-- avm_m0_writedata(7 downto 0) <= (others => '0');
 
 				when end_write =>
 					write_address <= (others => '0');
