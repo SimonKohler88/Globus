@@ -129,7 +129,8 @@ begin
 					  std_logic_vector(read_address)  when main_state = main_read_A or main_state=main_read_B else
 					  (others=>'0');
 
-	conduit_debug_ram_out <= (others => '0');
+	conduit_debug_ram_out(31 downto 1) <= (others => '0');
+	conduit_debug_ram_out(0) <= reset_reset;
 
 
 
@@ -493,8 +494,9 @@ begin
 			elsif next_read_state=read_1 then
 				current_address_read <= current_address_read + 1;
 
-			elsif next_read_state= read_2 then -- todo: change for hot version
-				current_address_read <= current_address_read + 1;--addr_row_to_row_offset;
+			elsif next_read_state= read_2 then -- TODO: change for hot version
+				current_address_read <= current_address_read + addr_row_to_row_offset;
+				-- current_address_read <= current_address_read + 1;--test version;
 			end if;
 		end if;
 	end process p_update_addr;

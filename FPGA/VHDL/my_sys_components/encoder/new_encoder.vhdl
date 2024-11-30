@@ -67,7 +67,6 @@ architecture rtl of new_encoder is
 	signal rising_edge_fire_reg : std_logic_vector(1 downto 0);
 	signal column_counter :unsigned(8 downto 0);
 
-
 begin
 
 	-- sync in encoder inputs
@@ -91,7 +90,7 @@ begin
 	-- feed in simulation signals
 	sync_a <= sync_a_reg(2) when sync_sim_sw_reg(2)='0' else sync_sim_pulse_reg(2);
 	sync_b <= sync_b_reg(2) when sync_sim_sw_reg(2)='0' else '0';
-	sync_i <= sync_i_reg(2);
+	sync_i <= sync_i_reg(2); -- hall sensor pulls signal down when triggered
 
 	-- determing direction and rising edge of a
 	rising_edge_proc: process(all)
@@ -167,7 +166,8 @@ begin
 		end if;
 	end process fire_pulse_proc;
 
-	conduit_debug_enc_enc_dbg_out(7 downto 0) <= conduit_intern_col_fire & std_logic_vector(column_counter(7 downto 1));
+	conduit_debug_enc_enc_dbg_out(2 downto 0) <= std_logic_vector(column_counter(4 downto 2));
+	conduit_debug_enc_enc_dbg_out(3) <= conduit_intern_col_fire;
 
 
 	-- avalon slave not yet implemented

@@ -86,14 +86,19 @@
 #define HW_SETTINGS_LINES_PER_PACKET		3
 #define HW_SETTINGS_WIFI_RX_OFFSET			2	//unusable length in bytes
 
-// #define CONFIG_WIFI_SSID                    "UPCF611258"
-// #define CONFIG_WIFI_PASSWORD                "Fs4nzkzne4tu"
-#define CONFIG_WIFI_SSID                    "DESKTOP-P96TM8B 9415"
-#define CONFIG_WIFI_PASSWORD                "5716Jt3/"
-//#define CONFIG_WIFI_SSID                    "myssid"
-//#define CONFIG_WIFI_PASSWORD                "mypassword"
-#define CONFIG_WIFI_IPV4_ADDR               "192.168.137.1"
-// #define CONFIG_WIFI_IPV4_ADDR               "192.168.0.22"
+#define WHERE	1
+#if (WHERE == 1)
+	#define CONFIG_WIFI_SSID                    "UPCF611258"
+	#define CONFIG_WIFI_PASSWORD                "Fs4nzkzne4tu"
+	#define CONFIG_WIFI_IPV4_ADDR               "192.168.0.22"
+#endif
+
+#if (WHERE == 2)
+	#define CONFIG_WIFI_SSID                    "DESKTOP-P96TM8B 9415"
+	#define CONFIG_WIFI_PASSWORD                "5716Jt3/"
+	#define CONFIG_WIFI_IPV4_ADDR               "192.168.137.1"
+#endif
+
 #define CONFIG_UDP_PORT		                1234
 #define CONFIG_UDP_FRAME_PACKET_SIZE        1024
 

@@ -70,10 +70,16 @@ def packethook(*args):
     print(args)
 
 
+WHERE = 1
 if __name__ == '__main__':
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    # my_ip = '192.168.0.22'
-    my_ip = '192.168.137.1'
+    if WHERE == 1:
+        my_ip = '192.168.0.22'
+        ip = '192.168.0.72'
+    elif WHERE == 2:
+        my_ip = '192.168.137.1'
+        ip = '192.168.137.89'
+
     my_port = 1234
 
     # s.settimeout(0.1)
@@ -90,8 +96,6 @@ if __name__ == '__main__':
     print('Start listening')
     client = None
     port = 1234
-    # ip = '192.168.0.72'
-    ip = '192.168.137.89'
     _time = time.time()
     s.settimeout(0.5)
     received_data = None
