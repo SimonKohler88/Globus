@@ -139,7 +139,7 @@ void status_control_task( void *pvParameter )
     /* for toggling led */
     TickType_t time    = pdTICKS_TO_MS( xTaskGetTickCount() );
     uint8_t led_state  = 0;
-    uint32_t led_color = 0x00010001;
+    uint32_t led_color = 0x01000041;
 
     status_control_command_t cmd_buf;
 

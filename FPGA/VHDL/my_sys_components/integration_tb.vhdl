@@ -48,6 +48,7 @@ architecture rtl of integration_tb is
 		avs_s1_writedata         : in  std_logic_vector(31 downto 0) := (others => '0'); --                     .writedata
 		avs_s1_waitrequest       : out std_logic;                                         --                     .waitrequest
 		conduit_debug_ram_out    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_ram.ram_out
+		conduit_debug_ram_out_2    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_ram.ram_out
 		conduit_debug_ram_in     : in   std_logic_vector(31 downto 0)  := (others => '0') --                         .ram_in
 	);
 	end component;
@@ -66,6 +67,7 @@ architecture rtl of integration_tb is
 		conduit_qspi_cs        : in  std_logic                    := '0';             --                  .qspi_cs
 		conduit_ping_pong      : out std_logic ;                                       -- conduit_ping_pong.new_signal
 		conduit_debug_qspi_out    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_qspi.qspi_out
+		conduit_debug_qspi_out_2    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_qspi.qspi_out
 		conduit_debug_qspi_in     : in   std_logic_vector(31 downto 0)  := (others => '0') --                         .qspi_in
 	);
     end component;
@@ -144,6 +146,7 @@ architecture rtl of integration_tb is
 		conduit_intern_col_fire    : out std_logic;                                         --                        .fire
 
 		conduit_debug_enc_enc_dbg_out : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_enc.enc_dbg_out
+		conduit_debug_enc_enc_dbg_out_2 : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_enc.enc_dbg_out
 		conduit_debug_enc_enc_dbg_in  : in   std_logic_vector(31 downto 0)  := (others => '0') --                         .led_dbg_in
 	);
 	end component;
@@ -183,6 +186,7 @@ architecture rtl of integration_tb is
 	signal s_avs_s1_writedata         : std_logic_vector(31 downto 0);
 	signal s_avs_s1_waitrequest       : std_ulogic;
 	signal s_conduit_debug_ram_out    : std_logic_vector(31 downto 0);
+	signal s_conduit_debug_ram_out_2    : std_logic_vector(31 downto 0);
 	signal s_conduit_debug_ram_in     : std_logic_vector(31 downto 0);
 
 	signal s_conduit_encoder_A            : std_ulogic;
@@ -191,6 +195,7 @@ architecture rtl of integration_tb is
 	signal s_conduit_encoder_sim_switch   : std_ulogic;
 	signal s_conduit_encoder_sim_pulse    : std_ulogic;
 	signal s_conduit_debug_enc_out      : std_logic_vector(31 downto 0);
+	signal s_conduit_debug_enc_out_2      : std_logic_vector(31 downto 0);
 	signal s_conduit_debug_enc_in       : std_logic_vector(31 downto 0);
 
 	signal s_conduit_qspi_data      : std_ulogic_vector(3 downto 0);
@@ -198,6 +203,7 @@ architecture rtl of integration_tb is
     signal s_conduit_qspi_cs        : std_ulogic                   ;
 
 	signal s_conduit_debug_qspi_out : std_logic_vector(31 downto 0);
+	signal s_conduit_debug_qspi_out_2 : std_logic_vector(31 downto 0);
     signal s_conduit_debug_qspi_in  : std_logic_vector(31 downto 0);
 
 begin
@@ -259,6 +265,7 @@ begin
         conduit_qspi_cs        => s_conduit_qspi_cs    ,
         conduit_ping_pong      => s_conduit_ping_or_pong,
         conduit_debug_qspi_out => s_conduit_debug_qspi_out ,
+        conduit_debug_qspi_out_2 => s_conduit_debug_qspi_out_2 ,
 		conduit_debug_qspi_in  => s_conduit_debug_qspi_in
     );
 
@@ -281,6 +288,7 @@ begin
 		conduit_intern_col_nr      => s_conduit_col_info_col_nr     ,
 		conduit_intern_col_fire    => s_conduit_col_info_fire,
 		conduit_debug_enc_enc_dbg_out => s_conduit_debug_enc_out,
+		conduit_debug_enc_enc_dbg_out_2 => s_conduit_debug_enc_out_2,
 		conduit_debug_enc_enc_dbg_in  => s_conduit_debug_enc_in
 	);--s_avs_s1_waitrequest
 
@@ -319,6 +327,7 @@ begin
 		avs_s1_writedata         => s_avs_s1_writedata         ,
 		avs_s1_waitrequest       => s_avs_s1_waitrequest       ,
 		conduit_debug_ram_out    => s_conduit_debug_ram_out    ,
+		conduit_debug_ram_out_2    => s_conduit_debug_ram_out_2    ,
 		conduit_debug_ram_in     => s_conduit_debug_ram_in
 
 

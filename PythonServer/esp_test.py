@@ -10,6 +10,8 @@ import random
 from collections import deque
 import ctypes as ct
 import struct
+from PIL import Image
+import numpy as np
 
 DATA_SIZE_PACKET = 1024
 
@@ -38,8 +40,10 @@ class EspStatus(ct.Structure):
 
 class PicStream:
     def __init__(self, pic):
-        with open(pic, 'rb') as f:
-            self.pic_raw = f.read()
+        img = np.asarray(Image.open(pic))
+        self.pic_raw = img.flatten().tobytes()
+        # with open(pic, 'rb') as f:
+        #     self.pic_raw = f.read()
 
         print('pic size: ', len(self.pic_raw), ' bytes')
         self.current_byte_pos = 0
@@ -123,7 +127,7 @@ if __name__ == '__main__':
             client = tftpy.TftpClient(ip, my_port, options={'blksize': 1024})  # , localip=my_ip)
             print('Receiving CMD')
             ans = received_data.decode()
-            print(ans)
+            #print(ans)
             if ans == 'FRAME':
                 try:
                     frame_start_time = time.time()
@@ -132,8 +136,8 @@ if __name__ == '__main__':
                     print(f'Frame time taken: {t}')
                 except tftpy.TftpShared.TftpTimeout:
                     pass
-                except tftpy.TftpShared.TftpException:
-                    print('Unknown Transfer ID')
+                except tftpy.TftpShared.TftpException as e:
+                    print('TFTP Exception: ', e)
                     pic_stream.close()
             #     i = 1
             #     print('frame')

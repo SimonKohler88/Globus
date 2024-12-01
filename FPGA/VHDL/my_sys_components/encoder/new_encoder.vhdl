@@ -39,6 +39,7 @@ entity new_encoder is
 		conduit_intern_col_fire    : out std_logic                    ;                     --                        .fire
 
 		conduit_debug_enc_enc_dbg_out    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_enc.enc_dbg_out
+		conduit_debug_enc_enc_dbg_out_2    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_enc.enc_dbg_out_2
 		conduit_debug_enc_enc_dbg_in     : in   std_logic_vector(31 downto 0)  := (others => '0') --                         .led_dbg_in
 	);
 end entity new_encoder;
@@ -67,7 +68,34 @@ architecture rtl of new_encoder is
 	signal rising_edge_fire_reg : std_logic_vector(1 downto 0);
 	signal column_counter :unsigned(8 downto 0);
 
+	type state_test is (none, t1);
+	signal test_state         : state_test;
+
+
 begin
+	test_state <= none;
+	p_test: process(all)
+	begin
+		case test_state is
+			when none =>
+				conduit_debug_enc_enc_dbg_out(2 downto 0) <= std_logic_vector(column_counter(4 downto 2));
+				conduit_debug_enc_enc_dbg_out(3) <= conduit_intern_col_fire;
+				conduit_debug_enc_enc_dbg_out(31 downto 4) <= (others => '0');
+				conduit_debug_enc_enc_dbg_out_2(31 downto 0) <= (others => '0');
+
+			when t1 =>
+				conduit_debug_enc_enc_dbg_out(31 downto 0) <= (others => '0');
+				conduit_debug_enc_enc_dbg_out_2(31 downto 0) <= (others => '0');
+
+			when others =>
+				conduit_debug_enc_enc_dbg_out(31 downto 0) <= (others => '0');
+				conduit_debug_enc_enc_dbg_out_2(31 downto 0) <= (others => '0');
+
+		end case;
+	end process;
+
+
+
 
 	-- sync in encoder inputs
 	sync_proc: process(reset_reset, clock_clk)
@@ -165,9 +193,6 @@ begin
 
 		end if;
 	end process fire_pulse_proc;
-
-	conduit_debug_enc_enc_dbg_out(2 downto 0) <= std_logic_vector(column_counter(4 downto 2));
-	conduit_debug_enc_enc_dbg_out(3) <= conduit_intern_col_fire;
 
 
 	-- avalon slave not yet implemented

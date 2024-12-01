@@ -30,11 +30,12 @@ BraceWrapping:
   BeforeWhile: false
 BreakBeforeBraces: Allman
 BreakBeforeTernaryOperators: true
-ColumnLimit: 200
+ColumnLimit: 150
 IndentCaseBlocks: true
 IndentCaseLabels: true
 IndentPPDirectives: BeforeHash
 IndentWidth: 4
+PointerAlignment: Left
 SpaceAfterCStyleCast: true
 SpaceAfterLogicalNot: false
 SpaceBeforeAssignmentOperators: true

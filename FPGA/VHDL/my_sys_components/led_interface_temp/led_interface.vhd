@@ -54,6 +54,7 @@ entity led_interface is
 		asi_in0_endofpacket         : in  std_logic                     := '0';              --                     .endofpacket
 
 		conduit_debug_led_led_dbg_out    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_led.led_dbg_out
+		conduit_debug_led_led_dbg_out_2    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_led.led_dbg_out_2
 		conduit_debug_led_led_dbg_in     : in   std_logic_vector(31 downto 0)  := (others => '0') --                         .led_dbg_in
 	);
 end entity led_interface;
@@ -103,8 +104,31 @@ architecture rtl of led_interface is
 	signal spi_state : t_spi_state;
 	signal next_spi_state : t_spi_state;
 
+		type state_test is (none, t1);
+	signal test_state         : state_test;
+
+
 begin
-	conduit_debug_led_led_dbg_out <= (others=>'0');
+	test_state <= none;
+	p_test: process(all)
+	begin
+		case test_state is
+			when none =>
+				conduit_debug_led_led_dbg_out <= (others=>'0');
+				conduit_debug_led_led_dbg_out_2 <= (others=>'0');
+
+			when t1 =>
+				conduit_debug_led_led_dbg_out <= (others=>'0');
+				conduit_debug_led_led_dbg_out_2 <= (others=>'0');
+
+			when others =>
+				conduit_debug_led_led_dbg_out <= (others=>'0');
+				conduit_debug_led_led_dbg_out_2 <= (others=>'0');
+
+		end case;
+	end process;
+
+
 	avs_s0_readdata <= "00000000000000000000000000000000";
 	avs_s0_waitrequest <= '0';
 

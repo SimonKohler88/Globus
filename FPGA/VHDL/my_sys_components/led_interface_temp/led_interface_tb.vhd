@@ -58,6 +58,7 @@ component led_interface is
 		asi_in0_startofpacket       : in  std_logic                     := '0';             --                     .startofpacket
 		asi_in0_endofpacket         : in  std_logic                     := '0';              --                     .endofpacket
 		conduit_debug_led_led_dbg_out : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_led.led_dbg_out
+		conduit_debug_led_led_dbg_out_2 : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_led.led_dbg_out
 		conduit_debug_led_led_dbg_in  : in   std_logic_vector(31 downto 0)  := (others => '0') --                         .led_dbg_in
 	);
 end component;
@@ -137,6 +138,7 @@ end component;
     signal s_asi_in0_startofpacket        : std_ulogic                     ;
     signal s_asi_in0_endofpacket          : std_ulogic                     ;
 	signal s_conduit_debug_led_out : std_logic_vector(31 downto 0);
+	signal s_conduit_debug_led_out_2 : std_logic_vector(31 downto 0);
 	signal s_conduit_debug_led_in  : std_logic_vector(31 downto 0);
 
 begin
@@ -211,6 +213,7 @@ begin
         asi_in0_startofpacket       => s_asi_in0_startofpacket       ,
         asi_in0_endofpacket         => s_asi_in0_endofpacket         ,
         conduit_debug_led_led_dbg_out  => s_conduit_debug_led_out       ,
+        conduit_debug_led_led_dbg_out_2  => s_conduit_debug_led_out_2       ,
         conduit_debug_led_led_dbg_in   => s_conduit_debug_led_in
      );
 

@@ -40,6 +40,7 @@ architecture rtl of new_encoder_tb is
 		conduit_intern_col_fire    : out std_logic ;                                        --                        .fire
 
 		conduit_debug_enc_enc_dbg_out   : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_enc.enc_dbg_out
+		conduit_debug_enc_enc_dbg_out_2   : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_enc.enc_dbg_out
 		conduit_debug_enc_enc_dbg_in    : in   std_logic_vector(31 downto 0)  := (others => '0') --                         .led_dbg_in
 	);
 
@@ -59,6 +60,7 @@ architecture rtl of new_encoder_tb is
 	signal s_conduit_intern_col_nr       :  std_logic_vector(8 downto 0) ;
 	signal s_conduit_intern_col_fire     :  std_logic                    ;
 	signal s_conduit_debug_enc_out      : std_logic_vector(31 downto 0);
+	signal s_conduit_debug_enc_out_2      : std_logic_vector(31 downto 0);
 	signal s_conduit_debug_enc_in       : std_logic_vector(31 downto 0);
 
 
@@ -94,6 +96,7 @@ begin
 		conduit_intern_col_fire    => s_conduit_intern_col_fire,
 
 		conduit_debug_enc_enc_dbg_out   => s_conduit_debug_enc_out,
+		conduit_debug_enc_enc_dbg_out_2   => s_conduit_debug_enc_out_2,
 		conduit_debug_enc_enc_dbg_in    => s_conduit_debug_enc_in
 	);
 

@@ -40,4 +40,6 @@ void fifo_mark_free_frame_done( void );
 void fifo_return_free_frame( void );
 
 void fifo_update_stats( void );
+
+fifo_frame_t* fifo_get_static_frame( void );
 #endif /* MAIN_PSRAM_FIFO_H_ */

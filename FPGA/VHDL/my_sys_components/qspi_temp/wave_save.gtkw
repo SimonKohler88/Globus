@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Mon Nov 18 19:01:32 2024
+[*] Sun Dec 01 10:17:46 2024
 [*]
 [dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\qspi_temp\func.vcd"
-[dumpfile_mtime] "Mon Nov 18 18:56:25 2024"
-[dumpfile_size] 2218017
+[dumpfile_mtime] "Sun Dec 01 10:09:26 2024"
+[dumpfile_size] 3752276
 [savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\qspi_temp\wave_save.gtkw"
-[timestart] 0
+[timestart] 136468
 [size] 1920 1017
-[pos] -1 -1
-*-8.794608 340 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[pos] -2006 -138
+*-6.794608 136867 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] qspi_interface_tb.
 [sst_width] 239
 [signals_width] 288
@@ -17,13 +17,12 @@
 [sst_vpaned_height] 298
 @28
 qspi_interface_tb.dut.clock_clk
-qspi_interface_tb.dut.sync_spi_clk
 qspi_interface_tb.dut.sync_spi_cs
 @22
 qspi_interface_tb.dut.sync_spi_data[3:0]
 @28
 qspi_interface_tb.dut.data_takeover_pulse
-@22
+@23
 qspi_interface_tb.dut.data_in_buffer[23:0]
 @420
 qspi_interface_tb.dut.nibble_count

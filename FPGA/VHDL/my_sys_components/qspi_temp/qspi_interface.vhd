@@ -27,6 +27,7 @@ entity qspi_interface is
 		conduit_ping_pong      : out std_logic                          ;              -- conduit_ping_pong.new_signal
 
 		conduit_debug_qspi_out    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_qspi.qspi_out
+		conduit_debug_qspi_out_2    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_qspi.qspi_out_2
 		conduit_debug_qspi_in     : in   std_logic_vector(31 downto 0)  := (others => '0') --                         .qspi_in
 	);
 end entity qspi_interface;
@@ -60,7 +61,36 @@ architecture rtl of qspi_interface is
 
 	signal symbol_streamed      : std_logic;
 
+	type state_test is (none, t1);
+	signal test_state         : state_test;
+
+
 begin
+	test_state <= t1;
+	p_test: process(all)
+	begin
+		case test_state is
+			when none =>
+				conduit_debug_qspi_out(31 downto 0) <= (others => '0');
+				conduit_debug_qspi_out_2(31 downto 0) <= (others => '0');
+			when t1 =>
+				-- Test 1: check first pixel after transfer initiated
+				conduit_debug_qspi_out(23 downto 0) <= aso_out0_data;
+				conduit_debug_qspi_out(31 downto 24) <= (others=>'0');
+
+				if pixel_count=1 then
+					conduit_debug_qspi_out_2(0) <= '1';
+				else
+					conduit_debug_qspi_out_2(0) <= '0';
+				end if;
+				conduit_debug_qspi_out_2(1) <= sync_spi_cs;
+				conduit_debug_qspi_out_2(31 downto 2) <= (others=>'0');
+			when others =>
+				conduit_debug_qspi_out(31 downto 0) <= (others => '0');
+				conduit_debug_qspi_out_2(31 downto 0) <= (others => '0');
+		end case;
+	end process;
+
 
 	-- sync in signals
 	p_sync: process(all)
@@ -122,7 +152,7 @@ begin
 
 	p_data_collector: process(clock_clk, reset_reset)
 	begin
-		if reset_reset = '1' then
+		if reset_reset = '1'  or sync_spi_cs = '1' then
 			data_in_buffer <= (others => '0');
 			nibble_count <= 0;
 			valid_intern <= '0';
@@ -210,7 +240,7 @@ begin
 		end if;
 	end process p_data_streamer;
 
-	conduit_debug_qspi_out <= (others=>'0');
+
 	-- if reset_reset = '1' then
 	-- elsif rising_edge(clock_clk) then
 	-- end if;

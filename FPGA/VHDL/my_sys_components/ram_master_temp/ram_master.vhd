@@ -60,6 +60,7 @@ entity ram_master is
 		avs_s1_waitrequest       : out std_logic;                                         --                     .waitrequest
 
 		conduit_debug_ram_out    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_ram.ram_out
+		conduit_debug_ram_out_2    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_ram.ram_out_2
 		conduit_debug_ram_in     : in   std_logic_vector(31 downto 0)  := (others => '0') --                         .ram_in
 	);--avs_s1_waitrequest
 end entity ram_master;
@@ -121,7 +122,31 @@ architecture rtl of ram_master is
 	signal ram_read_1_buffer : std_logic_vector(15 downto 0);
 
 
+	type state_test is (none, t1);
+	signal test_state         : state_test;
+
+
 begin
+	test_state <= none;
+	p_test: process(all)
+	begin
+		case test_state is
+			when none =>
+				conduit_debug_ram_out(31 downto 1) <= (others => '0');
+				conduit_debug_ram_out(0) <= reset_reset;
+				conduit_debug_ram_out_2(31 downto 0) <= (others => '0');
+
+			when t1 =>
+				conduit_debug_ram_out(31 downto 0) <= (others => '0');
+				conduit_debug_ram_out_2(31 downto 0) <= (others => '0');
+
+			when others =>
+				conduit_debug_ram_out(31 downto 0) <= (others => '0');
+				conduit_debug_ram_out_2(31 downto 0) <= (others => '0');
+
+		end case;
+	end process;
+
 	avs_s1_waitrequest <= '1'; -- not implemented
 	avs_s1_readdata <= (others => '0');
 
@@ -129,8 +154,7 @@ begin
 					  std_logic_vector(read_address)  when main_state = main_read_A or main_state=main_read_B else
 					  (others=>'0');
 
-	conduit_debug_ram_out(31 downto 1) <= (others => '0');
-	conduit_debug_ram_out(0) <= reset_reset;
+
 
 
 

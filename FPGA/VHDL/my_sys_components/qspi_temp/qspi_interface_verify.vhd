@@ -55,15 +55,38 @@ architecture rtl of qspi_interface_verify is
         END LOOP;
     end procedure qspi_write_pixel;
 
+    procedure qspi_write_many_pixel(
+        constant c_num    : in integer;
+        signal clk         : in std_ulogic;
+        signal qspi_clk    : out std_ulogic;
+        signal data        : out std_ulogic_vector(3 downto 0);
+        signal cs        : out std_logic
+    ) is
+        file input_file : text open read_mode is "./Earth_relief_120x256_raw2.txt";
+        variable v_input_data : std_ulogic_vector(23 downto 0);
+        variable v_input_line : line;
+    begin
+
+       cs <= '0';
+        wait for 2 ns;
+        for i in 0 to c_num-1 loop
+            readline(input_file, v_input_line);
+            hread(v_input_line, v_input_data);
+            qspi_write_pixel(v_input_data, clk, qspi_clk, data );
+        end loop;
+        cs <= '1';
+    end procedure qspi_write_many_pixel;
+
     constant c_cycle_time_100M : time := 10 ns;
     constant c_cycle_time_qspi : time := 38 ns; --26M
 
     signal internal_qspi_clock: std_ulogic;
 
     signal enable         : boolean := true;
-    file input_file : text open read_mode is "./Earth_relief_120x256_raw2.txt";
+
     file output_file : text open write_mode is "./stream_received.txt";
-    constant c_pixel_to_send : integer := 5;
+    constant c_pixel_to_send : integer := 256;
+
 
 
 begin
@@ -100,8 +123,7 @@ begin
 
 
     p_stimuli: process
-        variable v_write_data : std_ulogic_vector(23 downto 0);
-        variable v_input_line : line;
+
     begin
         conduit_qspi_cs <= '1';
         conduit_qspi_clk <= '0';
@@ -110,14 +132,11 @@ begin
 
         wait for 50 ns;
 
-        conduit_qspi_cs <= '0';
-        wait for 2 ns;
-        for i in 0 to c_pixel_to_send-1 loop
-            readline(input_file, v_input_line);
-            hread(v_input_line, v_write_data);
-            qspi_write_pixel(v_write_data, internal_qspi_clock, conduit_qspi_clk, conduit_qspi_data );
+        for p in 0 to 5 loop
+            qspi_write_many_pixel(256, internal_qspi_clock, conduit_qspi_clk, conduit_qspi_data, conduit_qspi_cs);
+
+            wait for 10 us;
         end loop;
-        conduit_qspi_cs <= '1';
 
 
         wait;
