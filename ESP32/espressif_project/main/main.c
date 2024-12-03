@@ -94,7 +94,7 @@ void app_main( void )
                                                            "fpga_qspi_task",                /* Text name for the task. */
                                                            FREERTOS_STACK_SIZE_STATUS_CTRL, /* Number of indexes in the xStack array. */
                                                            ( void * ) 1,                    /* Parameter passed into the task. */
-                                                           tskIDLE_PRIORITY + 5,            /* Priority at which the task is created. */
+                                                           tskIDLE_PRIORITY + 4,            /* Priority at which the task is created. */
                                                            xFPGAQSPIStack,                  /* Array to use as the task's stack. */
                                                            &xFPGAQSPITaskBuffer,            /* Variable to hold the task's data structure. */
                                                            0 );                             /* Core which executes the task*/

@@ -80,6 +80,8 @@ void fifo_init( fifo_status_t* status )
     {
         static_pic_frame.frame_start_ptr = frame_ptr;
         static_pic_frame.current_ptr     = frame_ptr;
+        static_pic_frame.total_size      = frame_size_bytes;
+        static_pic_frame.size            = 0;
         ESP_LOGI( TAG, "Allocated Static Frame Buffer size %" PRIu32 " Bytes", frame_size_bytes );
 
         copy_static_pic_to_PSRAM( frame_ptr );
@@ -236,5 +238,5 @@ void copy_static_pic_to_PSRAM( uint8_t* start_ptr )
         },
         92160 );
 
-    ESP_LOGI( TAG, "Copied Data to ADDR %" PRIx32, (uint32_t) start_ptr );
+    ESP_LOGI( TAG, "Copied Data to ADDR %" PRIx32, ( uint32_t ) start_ptr );
 }
