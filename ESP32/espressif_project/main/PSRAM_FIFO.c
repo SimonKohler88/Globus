@@ -44,10 +44,20 @@ static const char* TAG = "fifo_ctrl";
 fifo_frame_t static_pic_frame;
 void copy_static_pic_to_PSRAM( uint8_t* start_ptr );
 
+StaticSemaphore_t xMutexBuffer;
+SemaphoreHandle_t xSemaphore = NULL;
+
+void fifo_copy_mem_protected( void* dst_ptr, const void* src_ptr, uint32_t size )
+{
+    xSemaphoreTake( xSemaphore, portMAX_DELAY );
+    memcpy( dst_ptr, src_ptr, size );
+    xSemaphoreGive( xSemaphore );
+}
+
 void fifo_init( fifo_status_t* status )
 {
-
     if ( status ) fifo_control.status = status;
+    xSemaphore = xSemaphoreCreateMutexStatic( &xMutexBuffer );
 
     uint32_t frame_size_bytes = IMAGE_MAX_PIXEL_HEIGHT * IMAGE_MAX_PIXEL_WIDTH * IMAGE_BYTES_PER_PIXEL;
 

@@ -66,7 +66,7 @@ architecture rtl of qspi_interface is
 
 
 begin
-	test_state <= t1;
+	test_state <= t_data2ram;
 	p_test: process(all)
 	begin
 		case test_state is
@@ -90,9 +90,18 @@ begin
 			when t_data2ram =>
 				conduit_debug_qspi_out(23 downto 0) <= aso_out0_data;
 				conduit_debug_qspi_out(31) <= aso_out0_valid;
-				conduit_debug_qspi_out_2(30 downto 24) <= (others => '0');
+				conduit_debug_qspi_out(30) <= aso_out0_ready;
+				conduit_debug_qspi_out(29) <= aso_out0_startofpacket;
+				conduit_debug_qspi_out(28) <= aso_out0_endofpacket;
+				conduit_debug_qspi_out(27 downto 24) <= (others => '0');
 
-				conduit_debug_qspi_out_2(31 downto 0) <= (others => '0');
+				if pixel_count=1 then
+					conduit_debug_qspi_out_2(0) <= '1';
+				else
+					conduit_debug_qspi_out_2(0) <= '0';
+				end if;
+
+				conduit_debug_qspi_out_2(31 downto 1) <= (others => '0');
 
 			when others =>
 				conduit_debug_qspi_out(31 downto 0) <= (others => '0');

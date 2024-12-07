@@ -420,7 +420,8 @@ bool wifi_receive_packet()
                             wifi_send_tftp_ack( wifi_stat.tftp_block_number, source_addr.sin_port );
                             // ESP_LOGI( "WIFI", "data  %d %d %d", op_code,
                             // block_nr, data_len );
-                            memcpy( ( void* ) wifi_stat.current_frame_download->current_ptr, ( void* ) &rx_buffer + 4, data_len );
+
+                            fifo_copy_mem_protected(( void* ) wifi_stat.current_frame_download->current_ptr, ( void* ) &rx_buffer + 4, data_len);
 
                             wifi_stat.current_frame_download->size += ( data_len );
                             wifi_stat.current_frame_download->current_ptr += ( data_len );

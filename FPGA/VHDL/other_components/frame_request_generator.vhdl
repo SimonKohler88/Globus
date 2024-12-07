@@ -7,7 +7,7 @@ use IEEE.numeric_std.all;
 
 entity frame_request_generator is
 	generic (
-		counter_bits : integer := 22;
+		counter_bits : integer := 19;
 		on_clocks : integer := 10000
 	);
 	port (

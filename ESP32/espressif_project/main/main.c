@@ -85,7 +85,7 @@ void app_main( void )
                                                            "fpga_ctrl_task",              /* Text name for the task. */
                                                            FREERTOS_STACK_SIZE_FPGA_CTRL, /* Number of indexes in the xStack array. */
                                                            ( void * ) 1,                  /* Parameter passed into the task. */
-                                                           tskIDLE_PRIORITY + 5,          /* Priority at which the task is created. */
+                                                           tskIDLE_PRIORITY + 6,          /* Priority at which the task is created. */
                                                            xFPGACtrlStack,                /* Array to use as the task's stack. */
                                                            &xFPGACtrlTaskBuffer,          /* Variable to hold the task's data structure. */
                                                            0 );                           /* Core which executes the task*/

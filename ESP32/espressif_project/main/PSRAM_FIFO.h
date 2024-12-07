@@ -21,8 +21,8 @@ struct
 
 struct
 {
-    uint8_t *frame_start_ptr;
-    volatile uint8_t *current_ptr;
+    uint8_t* frame_start_ptr;
+    volatile uint8_t* current_ptr;
     volatile uint32_t size;
     uint32_t total_size;
 } typedef fifo_frame_t;
@@ -37,7 +37,7 @@ struct
  *
  * @param status Pointer to a fifo_status_t structure that will contain FIFO status information.
  */
-void fifo_init( fifo_status_t *status );
+void fifo_init( fifo_status_t* status );
 
 /**
  * Checks the number of frames available in the FIFO queue that are ready for FPGA processing.
@@ -57,7 +57,7 @@ uint8_t fifo_has_frame_4_fpga( void );
  * @return A pointer to the frame ready for FPGA if successful, or NULL if no frame is ready
  *         or another frame is already in progress.
  */
-fifo_frame_t *fifo_get_frame_4_fpga( void );
+fifo_frame_t* fifo_get_frame_4_fpga( void );
 
 /**
  * Marks the frame for the FPGA as completed and resets the current frame state.
@@ -107,7 +107,7 @@ uint8_t fifo_has_free_frame( void );
  *
  * @return Pointer to the current frame from RPi if available, otherwise NULL.
  */
-fifo_frame_t *fifo_get_free_frame( void );
+fifo_frame_t* fifo_get_free_frame( void );
 
 /**
  * @brief Marks the current frame being transferred from the Raspberry Pi (RPI) to the FIFO as done.
@@ -177,5 +177,19 @@ void fifo_update_stats( void );
  *         picture frame.
  */
 fifo_frame_t* fifo_get_static_frame( void );
+
+/**
+ * @brief Copies memory from a source to a destination with mutual exclusion to ensure thread safety.
+ *
+ * This function copies a block of memory from the specified source pointer to the
+ * destination pointer. It uses a mutex to protect the memory operation, ensuring
+ * that the memory copy is thread-safe and preventing potential data corruption
+ * during simultaneous access.
+ *
+ * @param dst_ptr Pointer to the destination memory where the data is to be copied.
+ * @param src_ptr Pointer to the source memory from which the data is to be copied.
+ * @param size Size, in bytes, of the data to be copied from the source to the destination.
+ */
+void fifo_copy_mem_protected( void* dst_ptr, const void* src_ptr, uint32_t size );
 
 #endif /* MAIN_PSRAM_FIFO_H_ */
