@@ -30,7 +30,6 @@ void qspi_post_transaction_cb( spi_transaction_t* trans );
 
 static spi_device_handle_t qspi_handle;
 fifo_frame_t* qspi_frame_info         = NULL;
-static fifo_frame_t* static_pic_frame = NULL;
 
 static spi_transaction_t FPGA_transaction = {
     .length    = 0,

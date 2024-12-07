@@ -47,7 +47,8 @@ architecture rtl of avalon_slave_ram_emulator is
   -- type t_mem is array (0 to 2** RAM_ADDR_BITS-1) of std_ulogic_vector(15 downto 0);
   signal read_data_buf : std_ulogic_vector(15 downto 0) := (others=>'0');
   -- type t_mem is array (0 to 511) of std_ulogic_vector(15 downto 0);
-  type t_mem is array (0 to 16383) of std_ulogic_vector(15 downto 0);
+  -- type t_mem is array (0 to 16383) of std_ulogic_vector(15 downto 0);
+  type t_mem is array (0 to 122880) of std_ulogic_vector(15 downto 0);
   signal mem : t_mem := (others=>(others=>'0'));
 
  -- file input_file : text open read_mode is "./ram_content.txt";

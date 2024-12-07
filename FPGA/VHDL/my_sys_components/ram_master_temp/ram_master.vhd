@@ -90,7 +90,7 @@ architecture rtl of ram_master is
 	constant BASE_ADDR_1      : unsigned(23 downto 0):= (others => '0');
 
 	-- 60'000 pixel need addr range of 120'000          (= 0x01E000)
-	constant BASE_ADDR_2: unsigned(23 downto 0):=   X"100000"; --TODO: this in real design
+	constant BASE_ADDR_2: unsigned(23 downto 0):=   X"020000"; --TODO: this in real design
 	-- constant BASE_ADDR_2      : unsigned(23 downto 0):=  X"001000"; -- only for testing
 	signal active_base_addr   : std_logic;
 
@@ -122,7 +122,7 @@ architecture rtl of ram_master is
 	signal ram_read_1_buffer : std_logic_vector(15 downto 0);
 
 
-	type state_test is (none, t1);
+	type state_test is (none, t1, t_data2ram);
 	signal test_state         : state_test;
 
 
@@ -137,8 +137,33 @@ begin
 				conduit_debug_ram_out_2(31 downto 0) <= (others => '0');
 
 			when t1 =>
-				conduit_debug_ram_out(31 downto 0) <= (others => '0');
-				conduit_debug_ram_out_2(31 downto 0) <= (others => '0');
+
+				-- conduit_debug_ram_out_2(0) <= '1' when ((main_state=main_write) and (avm_m0_address="000000") and (not avm_m0_write_n)) else '0';
+				if (main_state=main_write) then
+					if (avm_m0_address="000000") then
+						if ( avm_m0_write_n='0') then
+							conduit_debug_ram_out_2(0) <= '1';
+						else
+							conduit_debug_ram_out_2(0) <= '0';
+						end if;
+					else
+						conduit_debug_ram_out_2(0) <= '0';
+					end if;
+				else
+					conduit_debug_ram_out_2(0) <= '0';
+				end if;
+
+				conduit_debug_ram_out(15 downto 0) <= avm_m0_writedata;
+				conduit_debug_ram_out(31 downto 16) <= (others => '0');
+				conduit_debug_ram_out_2(31 downto 1) <= (others => '0');
+
+			when t_data2ram =>
+				conduit_debug_ram_out(23 downto 0) <= asi_in0_data;
+				conduit_debug_ram_out(31) <= asi_in0_valid;
+				conduit_debug_ram_out(30) <= asi_in0_ready;
+				conduit_debug_ram_out(29 downto 4) <= (others => '0');
+
+				conduit_debug_ram_out_2(31 downto 1) <= (others => '0');
 
 			when others =>
 				conduit_debug_ram_out(31 downto 0) <= (others => '0');

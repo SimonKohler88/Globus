@@ -100,7 +100,6 @@ begin
 		conduit_debug_enc_enc_dbg_in    => s_conduit_debug_enc_in
 	);
 
-	reset <= transport '1', '0' after 5 ns;
 
 
 	-- 100MHz
@@ -174,24 +173,30 @@ begin
         wait;
     end process stim_proc_encoder;
 
-	s_conduit_encoder_index <= '1' when indexCount = 55 else '0';
+	s_conduit_encoder_index <= '0' when indexCount = 55 else '1';
 
     stim_main_proc: process
     begin
-	enable_a_b<='1';
+    --reset <= transport '1', '0' after 5 ns;
+		reset <= '1';
+		enable_a_b<='1';
 		s_conduit_encoder_sim_switch <= '0';
 		-- normal counting up
-		wait for 170 us;
-
-		--normal counting down
-		enable_a_b <= '0';
+		wait for 15 ns;
+		reset <= '0';
+  --
+		-- --normal counting down
+		-- enable_a_b <= '0';
 		wait for 170 us;
 
 		--setup for sim
-		enable_a_b <= '1';
-		wait for 50 us;
+		-- enable_a_b <= '1';
+		-- wait for 50 us;
 		-- check if feeding in simulation signals works
 		s_conduit_encoder_sim_switch <= '1';
+		reset <= '1';
+		wait for 150 ns;
+		reset <= '0';
 		wait for 170 us;
 
 		wait for 10 us;

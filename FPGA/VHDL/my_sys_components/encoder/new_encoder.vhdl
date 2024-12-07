@@ -56,10 +56,11 @@ architecture rtl of new_encoder is
 	signal sync_a : std_logic;
 	signal sync_b : std_logic;
 	signal sync_i : std_logic;
+	signal sync_sim_switch : std_logic;
 
 	signal rising_edge_a_reg : std_logic_vector(1 downto 0);
 	signal rising_edge_sim_pulse_reg : std_logic_vector(1 downto 0);
-	--signal rising_edge_i_reg : std_ulogic_vector(1 downto 0);
+	signal rising_edge_i_reg : std_ulogic_vector(1 downto 0);
 
 	signal enc_clk: std_logic :='0';
 	signal enc_direction : std_logic := '0'; -- 1: upcounting 0:downcounting
@@ -94,16 +95,13 @@ begin
 		end case;
 	end process;
 
-
-
-
 	-- sync in encoder inputs
 	sync_proc: process(reset_reset, clock_clk)
 	begin
 		if reset_reset = '1' then
 			sync_a_reg <= (others => '0');
 			sync_b_reg <= (others => '0');
-			sync_i_reg <= (others => '0');
+			sync_i_reg <= (others => '1'); -- TODO: must change if enc_index changed to positive
 			sync_sim_pulse_reg <= (others => '0');
 			sync_sim_sw_reg <= (others => '0');
 
@@ -118,17 +116,20 @@ begin
 	-- feed in simulation signals
 	sync_a <= sync_a_reg(2) when sync_sim_sw_reg(2)='0' else sync_sim_pulse_reg(2);
 	sync_b <= sync_b_reg(2) when sync_sim_sw_reg(2)='0' else '0';
-	sync_i <= sync_i_reg(2); -- hall sensor pulls signal down when triggered
+	sync_i <= not sync_i_reg(2); -- TODO: hall sensor pulls signal down when triggered
+	sync_sim_switch <= sync_sim_sw_reg(2);
 
-	-- determing direction and rising edge of a
+	-- determing direction and rising edge of a and i
 	rising_edge_proc: process(all)
 	begin
 		if reset_reset = '1' then
 			rising_edge_a_reg <= (others => '0');
+			rising_edge_i_reg <= (others => '0');
 			enc_direction <= '0';
 			enc_clk <= '0';
 		elsif rising_edge(clock_clk) then
 			rising_edge_a_reg <= rising_edge_a_reg(0) & sync_a;
+			rising_edge_i_reg <= rising_edge_i_reg(0) & sync_i;
 
 			if rising_edge_a_reg="01" then
 				enc_clk <= '1';
@@ -149,7 +150,7 @@ begin
 		if reset_reset = '1' then
 			i_valid <= '0';
 		elsif rising_edge(clock_clk) then
-			if i_valid='0' and sync_i='1' then
+			if (i_valid='0' and rising_edge_i_reg="01") or sync_sim_switch='1' then
 				i_valid <= '1';
 			end if;
 		end if;

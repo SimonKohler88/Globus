@@ -54,7 +54,8 @@ architecture rtl of qspi_simulate is
     signal enable :boolean:=true;
 
     file input_file : text open read_mode is "./row_col_num.txt";
-    constant c_pixel_to_send : integer := 4*20;
+    -- constant c_pixel_to_send : integer := 4*20;
+    constant c_pixel_to_send : integer := 3000;
 
 
 begin
@@ -80,7 +81,7 @@ begin
         conduit_qspi_data <= (others => '0');
 
 
-        wait for 50 ns;
+        wait for 1 us;
 
         conduit_qspi_cs <= '0';
         wait for 2 ns;
@@ -91,7 +92,7 @@ begin
         end loop;
         conduit_qspi_cs <= '1';
 
-        wait for 50 us;
+        wait for 10 us;
 
         conduit_qspi_cs <= '0';
         wait for 2 ns;

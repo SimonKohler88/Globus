@@ -72,6 +72,29 @@ architecture rtl of integration_verify_ram_qspi_led_interface is
         END LOOP;
     end procedure qspi_write_pixel;
 
+	procedure qspi_write_n_pixel (
+		constant pixel_to_write    : in integer range 0 to 60000;
+		signal clk               : in std_logic;
+        signal qspi_clk          : out std_logic;
+        signal qspi_cs           : out std_logic;
+        signal data              : out std_logic_vector(3 downto 0)
+
+	) is
+		file input_file : text open read_mode is "./Earth_relief_120x256_raw2.txt";
+		variable v_write_data : std_ulogic_vector(23 downto 0);
+        variable v_input_line : line;
+	begin
+		qspi_cs <= '0';
+        wait for 2 ns;
+        for i in 0 to pixel_to_write-1 loop
+            readline(input_file, v_input_line);
+            hread(v_input_line, v_write_data);
+            qspi_write_pixel(v_write_data, clk, qspi_clk, data );
+        end loop;
+        qspi_cs <= '1';
+	end procedure;
+
+
     constant c_cycle_time_100M : time := 10 ns;
     constant c_cycle_time_qspi : time := 38 ns; --26M
     constant c_cycle_time_26M : time := 33 ns;
@@ -79,7 +102,7 @@ architecture rtl of integration_verify_ram_qspi_led_interface is
     signal internal_qspi_clock: std_ulogic;
     signal enable :boolean:=true;
 
-    file input_file : text open read_mode is "./row_col_num.txt";
+
     constant c_pixel_to_send : integer := 4*20;
 
 
@@ -200,25 +223,26 @@ begin
 
         wait for 50 ns;
 
-        conduit_qspi_cs <= '0';
-        wait for 2 ns;
-        for i in 0 to c_pixel_to_send loop
-            readline(input_file, v_input_line);
-            hread(v_input_line, v_write_data);
-            qspi_write_pixel(v_write_data, internal_qspi_clock, conduit_qspi_clk, conduit_qspi_data );
-        end loop;
-        conduit_qspi_cs <= '1';
+		qspi_write_n_pixel(100, internal_qspi_clock, conduit_qspi_clk, conduit_qspi_cs, conduit_qspi_data );
+        -- conduit_qspi_cs <= '0';
+        -- wait for 2 ns;
+        -- for i in 0 to c_pixel_to_send loop
+        --     readline(input_file, v_input_line);
+        --     hread(v_input_line, v_write_data);
+        --     qspi_write_pixel(v_write_data, internal_qspi_clock, conduit_qspi_clk, conduit_qspi_data );
+        -- end loop;
+        -- conduit_qspi_cs <= '1';
 
         wait for 50 us;
 
-        conduit_qspi_cs <= '0';
-        wait for 2 ns;
-        for i in 0 to c_pixel_to_send loop
-            readline(input_file, v_input_line);
-            hread(v_input_line, v_write_data);
-            qspi_write_pixel(v_write_data, internal_qspi_clock, conduit_qspi_clk, conduit_qspi_data );
-        end loop;
-        conduit_qspi_cs <= '1';
+        -- conduit_qspi_cs <= '0';
+        -- wait for 2 ns;
+        -- for i in 0 to c_pixel_to_send loop
+        --     readline(input_file, v_input_line);
+        --     hread(v_input_line, v_write_data);
+        --     qspi_write_pixel(v_write_data, internal_qspi_clock, conduit_qspi_clk, conduit_qspi_data );
+        -- end loop;
+        -- conduit_qspi_cs <= '1';
 
 
         wait;

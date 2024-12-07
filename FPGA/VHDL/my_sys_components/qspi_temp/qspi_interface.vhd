@@ -61,7 +61,7 @@ architecture rtl of qspi_interface is
 
 	signal symbol_streamed      : std_logic;
 
-	type state_test is (none, t1);
+	type state_test is (none, t1, t_data2ram);
 	signal test_state         : state_test;
 
 
@@ -73,6 +73,7 @@ begin
 			when none =>
 				conduit_debug_qspi_out(31 downto 0) <= (others => '0');
 				conduit_debug_qspi_out_2(31 downto 0) <= (others => '0');
+
 			when t1 =>
 				-- Test 1: check first pixel after transfer initiated
 				conduit_debug_qspi_out(23 downto 0) <= aso_out0_data;
@@ -85,6 +86,14 @@ begin
 				end if;
 				conduit_debug_qspi_out_2(1) <= sync_spi_cs;
 				conduit_debug_qspi_out_2(31 downto 2) <= (others=>'0');
+
+			when t_data2ram =>
+				conduit_debug_qspi_out(23 downto 0) <= aso_out0_data;
+				conduit_debug_qspi_out(31) <= aso_out0_valid;
+				conduit_debug_qspi_out_2(30 downto 24) <= (others => '0');
+
+				conduit_debug_qspi_out_2(31 downto 0) <= (others => '0');
+
 			when others =>
 				conduit_debug_qspi_out(31 downto 0) <= (others => '0');
 				conduit_debug_qspi_out_2(31 downto 0) <= (others => '0');

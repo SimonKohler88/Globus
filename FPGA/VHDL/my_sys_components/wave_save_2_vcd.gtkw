@@ -1,0 +1,23 @@
+[*]
+[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
+[*] Wed Dec 04 21:06:20 2024
+[*]
+[dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\func2_vcd.vcd"
+[dumpfile_mtime] "Wed Dec 04 21:04:02 2024"
+[dumpfile_size] 2506506
+[savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\wave_save_2_vcd.gtkw"
+[timestart] 28060
+[size] 1594 763
+[pos] -1 -1
+*-13.000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] integration_tb.
+[sst_width] 325
+[signals_width] 206
+[sst_expanded] 1
+[sst_vpaned_height] 210
+@28
+integration_tb.s_conduit_qspi_clk
+@23
+integration_tb.sim_qspi.conduit_qspi_data[3:0]
+[pattern_trace] 1
+[pattern_trace] 0
