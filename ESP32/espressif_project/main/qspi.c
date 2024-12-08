@@ -220,7 +220,8 @@ void fpga_qspi_task( void* pvParameter )
         {
             if ( fifo_has_frame_4_fpga() )
             {
-                ESP_LOGI( "QSPI", "Send Frame" );
+                //ESP_LOGI( "QSPI", "Send Frame" );
+                fifo_mark_frame_4_fpga_done();
                 qspi_frame_info = fifo_get_frame_4_fpga();
                 if ( qspi_frame_info != NULL )
                 {
@@ -235,7 +236,7 @@ void fpga_qspi_task( void* pvParameter )
             else if ( qspi_frame_info != NULL )
             {
                 /* resend last frame */
-                ESP_LOGI( "QSPI", "Resend Last Frame" );
+                //ESP_LOGI( "QSPI", "Resend Last Frame" );
                 qspi_frame_info->current_ptr = qspi_frame_info->frame_start_ptr;
                 qspi_frame_info->size        = qspi_frame_info->total_size;
 
@@ -247,6 +248,7 @@ void fpga_qspi_task( void* pvParameter )
                               ( uint32_t ) qspi_frame_info->size );
             }
             // cant do anything...
+            // TODO: maybe send static Frame?
             else ESP_LOGI( "QSPI", "NoFrame, NoSend" );
         }
         else ESP_LOGI( "QSPI", "Already in Progress" );
@@ -309,10 +311,7 @@ void fpga_qspi_task( void* pvParameter )
             if ( success )
             {
                 // ESP_LOGI( "QSPI", "success" );
-#if ( TEST == 0 )
-                qspi_frame_info = NULL;
-                fifo_mark_frame_4_fpga_done();
-#endif
+
             }
             else
             {

@@ -21,7 +21,7 @@
 // TODO: make all
 //  init frame request, reserve etc
 
-static command_control_task_t *status = NULL;
+static command_control_task_t* status = NULL;
 
 #define STAT_CTRL_TAG "status_control_task"
 
@@ -30,7 +30,7 @@ static command_control_task_t *status = NULL;
 StaticQueue_t xQueueBuffer_command_queue;
 uint8_t command_queue_storage[ STAT_CTRL_QUEUE_NUMBER_OF_COMMANDS * sizeof( status_control_command_t ) ];
 
-fifo_frame_t *current_frame_download = NULL;
+fifo_frame_t* current_frame_download = NULL;
 
 /* Its here because all IO's are initialized/handled here */
 // void IRAM_ATTR frame_request_isr_cb( void* arg )
@@ -44,7 +44,7 @@ fifo_frame_t *current_frame_download = NULL;
 
 volatile uint8_t line_toggle = 0;
 
-static void IRAM_ATTR frame_request_isr_cb( void *arg )
+static void IRAM_ATTR frame_request_isr_cb( void* arg )
 {
     gpio_set_level( STAT_CTRL_PIN_RESERVE_3, line_toggle );
     line_toggle = !line_toggle;
@@ -54,17 +54,18 @@ static void IRAM_ATTR frame_request_isr_cb( void *arg )
     portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
 
-void status_control_init( status_control_status_t *status_ptr, command_control_task_t *internal_status_ptr )
+void status_control_init( status_control_status_t* status_ptr, command_control_task_t* internal_status_ptr )
 {
     ESP_LOGI( STAT_CTRL_TAG, "Initializing status control..." );
     internal_status_ptr->status = status_ptr;
     status                      = internal_status_ptr;
 
-    gpio_config_t config = { .intr_type = GPIO_INTR_POSEDGE, .mode = GPIO_MODE_INPUT, .pull_up_en = 1, .pin_bit_mask = 1 << STAT_CTRL_PIN_FRAME_REQUEST };
+    gpio_config_t config = {
+        .intr_type = GPIO_INTR_POSEDGE, .mode = GPIO_MODE_INPUT, .pull_up_en = 1, .pin_bit_mask = 1 << STAT_CTRL_PIN_FRAME_REQUEST };
 
     ESP_ERROR_CHECK( gpio_config( &config ) );
     ESP_ERROR_CHECK( gpio_install_isr_service( ESP_INTR_FLAG_IRAM ) );
-    ESP_ERROR_CHECK( gpio_isr_handler_add( STAT_CTRL_PIN_FRAME_REQUEST, frame_request_isr_cb, ( void * ) STAT_CTRL_PIN_FRAME_REQUEST ) );
+    ESP_ERROR_CHECK( gpio_isr_handler_add( STAT_CTRL_PIN_FRAME_REQUEST, frame_request_isr_cb, ( void* ) STAT_CTRL_PIN_FRAME_REQUEST ) );
     /* FPGA Control Lanes */
 
     /* Inbetriebsetzung */
@@ -87,7 +88,8 @@ void status_control_init( status_control_status_t *status_ptr, command_control_t
 
     gpio_set_level( STAT_CTRL_PIN_RESET_FPGA, 1 );
 
-    internal_status_ptr->command_queue_handle = xQueueCreateStatic( STAT_CTRL_QUEUE_NUMBER_OF_COMMANDS, sizeof( status_control_command_t ), &command_queue_storage[ 0 ], &xQueueBuffer_command_queue );
+    internal_status_ptr->command_queue_handle = xQueueCreateStatic( STAT_CTRL_QUEUE_NUMBER_OF_COMMANDS, sizeof( status_control_command_t ),
+                                                                    &command_queue_storage[ 0 ], &xQueueBuffer_command_queue );
 
     init_led( internal_status_ptr );
 }
@@ -124,7 +126,7 @@ void ibn_set_set_all_gpio_off( void )
     gpio_set_level( ENC_PIN_EXP_3, 0 );
 }
 
-void status_control_task( void *pvParameter )
+void status_control_task( void* pvParameter )
 {
     ESP_LOGI( STAT_CTRL_TAG, "status_control_task start" );
     if ( status == NULL )
@@ -134,36 +136,16 @@ void status_control_task( void *pvParameter )
     }
 
     TickType_t xLastWakeTime    = xTaskGetTickCount();
-    const TickType_t xPeriod_ms = 100;
+    const TickType_t xPeriod_ms = 10;
 
     /* for toggling led */
     TickType_t time    = pdTICKS_TO_MS( xTaskGetTickCount() );
-    uint8_t led_state  = 0;
     uint32_t led_color = 0x01000041;
 
     status_control_command_t cmd_buf;
 
-    //	uint8_t test_buffer[ 10 ];
-    //	for( uint8_t i = 0; i < 10; i ++ ) test_buffer[ i ] = i;
-
     while ( 1 )
     {
-        // ESP_LOGI( STAT_CTRL_TAG, "status_control_cycle" );
-        //		if( status->s_led_state )
-        //		{
-        //			ibn_set_set_all_gpio_on();
-        //			set_led( status, 0, 10, 10 );
-        //		}
-        //		else
-        //		{
-        //			ibn_set_set_all_gpio_off();
-        //			clear_led( status );
-        //		}
-        //		status->s_led_state = !status->s_led_state;
-
-        //		fpga_ctrl_set_leds(0b11011011);
-        //		qspi_DMA_write_debug_test( test_buffer, 10 );
-
         // if not enough frames -> trigger one
         if ( wifi_is_connected() )
         {
@@ -189,12 +171,10 @@ void status_control_task( void *pvParameter )
         if ( pdTICKS_TO_MS( xTaskGetTickCount() ) - time > 100 )
         {
             time         = pdTICKS_TO_MS( xTaskGetTickCount() );
-            led_state    = !led_state;
-            uint8_t temp = ( uint8_t ) ( led_color >> 31 );
+            uint8_t temp = ( led_color >> 31 );
             led_color    = led_color << 1;
             led_color |= temp;
-            set_led( status, ( uint8_t ) ( led_color >> 16 ), ( uint8_t ) ( led_color >> 8 ), ( uint8_t ) led_color );
-            //			else clear_led( status );
+            set_led( status, ( led_color >> 16 ), ( led_color >> 8 ), led_color );
         }
 
         vTaskDelayUntil( &xLastWakeTime, xPeriod_ms );

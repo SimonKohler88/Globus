@@ -77,7 +77,7 @@ void fifo_init( fifo_status_t* status )
             fifo_frame_t frame;
             frame.frame_start_ptr = frame_ptr;
             frame.current_ptr     = frame_ptr;
-            xQueueSend( fifo_control.free_frames, ( void* ) &frame, 0 );
+            xQueueSend( fifo_control.free_frames, &frame, 0 );
             fifo_control.status->free_frames++;
             ESP_LOGI( TAG, "Allocated Frame Buffer %" PRIu8 " , size %" PRIu32 " Bytes", i, frame_size_bytes );
         }
@@ -123,7 +123,7 @@ void fifo_mark_frame_4_fpga_done( void )
     {
         fifo_control.current_frame_4_fpga.current_ptr = fifo_control.current_frame_4_fpga.frame_start_ptr;
         fifo_control.current_frame_4_fpga.size        = 0;
-        xQueueSend( fifo_control.free_frames, ( void* ) &fifo_control.current_frame_4_fpga, 0 );
+        xQueueSend( fifo_control.free_frames, &fifo_control.current_frame_4_fpga, 0 );
         fifo_control.frame_2_fpga_in_progress = 0;
 
         fifo_update_stats();
@@ -159,7 +159,7 @@ void fifo_mark_free_frame_done( void )
 
     if ( fifo_control.frame_rpi_2_fifo_in_progress )
     {
-        xQueueSend( fifo_control.ready_4_fpga_frames, ( void* ) &fifo_control.current_frame_from_rpi, 0 );
+        xQueueSend( fifo_control.ready_4_fpga_frames, &fifo_control.current_frame_from_rpi, 0 );
         fifo_control.frame_rpi_2_fifo_in_progress = 0;
 
         fifo_update_stats();

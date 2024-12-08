@@ -1,0 +1,85 @@
+@startuml
+
+
+participant "Raspberri Pi" as RPi
+participant "UDP RX Task" as UDPrx
+box "FIFO" #LightBlue
+participant "PSRAM" as RAM
+participant "Free Frames Queue" as FFq
+participant "Ready4FPGA Queue" as R4Fq
+end box
+participant "UDP TX Task" as UDPtx
+participant "Status Ctrl Task" as CTRL
+participant "QSPI Task" as QSPI
+participant "FPGA" as FPGA
+
+
+CTRL -> FFq: has free Frame
+activate FFq
+CTRL <- FFq: number of free Frames
+deactivate FFq
+alt if Free Frame available
+    CTRL -> UDPtx: request Frame
+    activate UDPtx
+    RPi <- UDPtx: request Frame
+    deactivate UDPtx
+
+    RPi -> UDPrx: TFTP start
+    activate UDPrx
+    UDPrx -> FFq: get free frame
+    activate FFq
+    UDPrx <- FFq: frame descriptor
+    deactivate FFq
+    RPi <- UDPrx: Acknowledge
+
+
+    loop while TFTP Data
+        RPi -> UDPrx: TFTP Protocol: Data
+        activate UDPrx
+        RPi <- UDPrx: TFTP Protocol: Acknowledge
+
+        UDPrx -> RAM: Data
+        deactivate UDPrx
+    end loop
+    UDPrx -> R4Fq : frame descriptor
+    deactivate UDPrx
+else
+    CTRL -> CTRL : Delay 10ms
+end
+
+QSPI <- FPGA:request Frame
+activate QSPI
+QSPI -> R4Fq: has ready Frame
+activate R4Fq
+QSPI <- R4Fq: number of ready Frames
+deactivate R4Fq
+
+alt if Frame ready
+QSPI -> FFq : return previous Frame
+QSPI -> R4Fq: get ready Frame
+activate R4Fq
+QSPI <- R4Fq: Frame descriptor
+deactivate R4Fq
+
+else
+QSPI -> QSPI :reuse last Frame
+end
+
+loop while data
+RAM->QSPI: data
+QSPI -> FPGA :data
+deactivate QSPI
+end loop
+
+
+
+
+
+
+
+
+
+
+
+
+@enduml

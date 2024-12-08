@@ -168,7 +168,7 @@ begin
 	end process p_generate_edges;
 
 
-	p_data_collector: process(clock_clk, reset_reset)
+	p_data_collector: process(all)
 	begin
 		if reset_reset = '1'  or sync_spi_cs = '1' then
 			data_in_buffer <= (others => '0');

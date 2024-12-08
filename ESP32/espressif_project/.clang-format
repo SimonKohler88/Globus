@@ -31,7 +31,7 @@ BraceWrapping:
 BreakBeforeBraces: Allman
 BreakBeforeTernaryOperators: true
 ColumnLimit: 150
-IndentCaseBlocks: true
+IndentCaseBlocks: false
 IndentCaseLabels: true
 IndentPPDirectives: BeforeHash
 IndentWidth: 4

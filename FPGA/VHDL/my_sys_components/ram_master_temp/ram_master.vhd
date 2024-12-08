@@ -140,7 +140,7 @@ begin
 
 				-- conduit_debug_ram_out_2(0) <= '1' when ((main_state=main_write) and (avm_m0_address="000000") and (not avm_m0_write_n)) else '0';
 				if (main_state=main_write) then
-					if (avm_m0_address="000000") then
+					if (avm_m0_address=X"000000") then
 						if ( avm_m0_write_n='0') then
 							conduit_debug_ram_out_2(0) <= '1';
 						else

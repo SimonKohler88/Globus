@@ -1,0 +1,52 @@
+@startuml
+
+participant "FIFO" as System
+participant "main.c" as Main
+participant "QSPI Task" as QSPI
+
+Main -> System: fifo_init(status)
+activate System
+System -> System: xSemaphoreCreateMutexStatic(&xMutexBuffer)
+System -> System: xQueueCreateStatic(free_frames)
+System -> System: xQueueCreateStatic(ready_4_fpga_frames)
+System -> Main : void
+deactivate System
+
+
+-> System: fifo_copy_mem_protected(dst_ptr, src_ptr, size)
+activate System
+System -> System: xSemaphoreTake(xSemaphore)
+System -> System: memcpy(dst_ptr, src_ptr, size)
+System -> System: xSemaphoreGive(xSemaphore)
+<- System : void
+deactivate System
+
+QSPI -> System: fifo_get_frame_4_fpga()
+activate System
+alt if frame_2_fpga_in_progress != 1
+    System -> System: xQueueReceive(ready_4_fpga_frames)
+    System -> System: frame_2_fpga_in_progress = 1
+    System -> System: fifo_update_stats()
+    System -> QSPI: return fifo_frame_descriptor
+else
+    System -> QSPI: return NULL
+end
+deactivate System
+
+QSPI -> System: fifo_has_frame_4_fpga()
+activate System
+System -> System: uxQueueMessagesWaiting(ready_4_fpga_frames)
+System -> QSPI : numbers of available frames
+deactivate System
+
+QSPI -> System: fifo_mark_frame_4_fpga_done()
+activate System
+alt if frame_2_fpga_in_progress == 1
+    System -> System: xQueueSend(free_frames)
+    System -> System: frame_2_fpga_in_progress = 0
+    System -> System: fifo_update_stats()
+end
+System -> QSPI
+deactivate System
+
+@enduml

@@ -74,6 +74,7 @@ static WIFI_STAT_INTERNAL_t wifi_stat;
 enum
 {
     WIFI_TX_SEND_FRAME_REQUEST,
+    WIFI_TX_SEND_STATUS
 };
 typedef uint8_t SEND_TASK_COMMAND_t;
 
@@ -231,7 +232,7 @@ void wifi_send_udp_task( void* pvParameters )  // todo
 
     while ( 1 )
     {
-        xReturn = xQueueReceive( send_task_cmd_queue_handle, ( void* ) &current_command, portMAX_DELAY );
+        xReturn = xQueueReceive( send_task_cmd_queue_handle, &current_command, portMAX_DELAY );
 
         /* Cant send stuff if we are not connected */
         if ( !wifi_stat.wifi_connected || wifi_stat.UDP_socket < 0 ) xReturn = pdFALSE;
@@ -241,11 +242,20 @@ void wifi_send_udp_task( void* pvParameters )  // todo
             switch ( current_command )
             {
                 case WIFI_TX_SEND_FRAME_REQUEST :
-                    {
-                        ret = wifi_send_packet( WIFI_REQUEST_FRAME_MESSAGE );
-                        if ( !ret ) xQueueSend( send_task_cmd_queue_handle, ( void* ) &current_command, 1 );
-                        break;
-                    }
+                {
+                    ret = wifi_send_packet( WIFI_REQUEST_FRAME_MESSAGE );
+                    if ( !ret ) xQueueSend( send_task_cmd_queue_handle, ( void* ) &current_command, 1 );
+                    break;
+                }
+                case WIFI_TX_SEND_STATUS :
+                {
+                    tx_buffer[ 0 ] = WIFI_CONTROL_STATUS_IDENTIFIER;
+                    uint32_t size  = get_status_data( tx_buffer + 1 );
+                    wifi_send_packet_raw( ( uint8_t* ) tx_buffer, size + 1 );
+                    break;
+                }
+                default: break;
+
             }
         }
     }
@@ -421,7 +431,7 @@ bool wifi_receive_packet()
                             // ESP_LOGI( "WIFI", "data  %d %d %d", op_code,
                             // block_nr, data_len );
 
-                            fifo_copy_mem_protected(( void* ) wifi_stat.current_frame_download->current_ptr, ( void* ) &rx_buffer + 4, data_len);
+                            fifo_copy_mem_protected( ( void* ) wifi_stat.current_frame_download->current_ptr, ( void* ) &rx_buffer + 4, data_len );
 
                             wifi_stat.current_frame_download->size += ( data_len );
                             wifi_stat.current_frame_download->current_ptr += ( data_len );
@@ -531,23 +541,8 @@ bool wifi_receive_control_packet( void )
     if ( rx_buffer[ 1 ] == WIFI_CONTROL_STATUS_IDENTIFIER )
     {
         // ESP_LOGI( "WIFI", "Control Status packet received" );
-        tx_buffer[ 0 ] = WIFI_CONTROL_STATUS_IDENTIFIER;
-        uint32_t size  = get_status_data( tx_buffer + 1 );
-        // ESP_LOGI( "Wifi", "%" PRIu8 "\n", tx_buffer[ 0 ] );
-        // ESP_LOGI( "WIFI", "%s", tx_buffer );
-        return wifi_send_packet_raw( ( uint8_t* ) tx_buffer, size + 1 );
+        SEND_TASK_COMMAND_t cmd = WIFI_TX_SEND_STATUS;
+        uint8_t ret             = xQueueSend( send_task_cmd_queue_handle, ( void* ) &cmd, 1 );
     }
 
-    else if ( rx_buffer[ 1 ] == WIFI_CONTROL_PARAM_IDENTIFIER )
-    {
-        // return wifi_send_packet(wifi_receive_stop());
-        return wifi_send_packet( WIFI_ACK_MESSAGE );
-        ESP_LOGI( "WIFI", "Control Param packet received" );
-        // todo: send data to rpi_interface --> parameterstuff first
-    }
-
-    else
-    {
-        return wifi_send_packet( WIFI_NACK_MESSAGE );
-    }
 }
