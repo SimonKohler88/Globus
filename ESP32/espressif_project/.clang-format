@@ -1,9 +1,48 @@
-# We'll use defaults from the LLVM style, but with some modifications so that it's close to the CDT K&R style.
-BasedOnStyle: LLVM
-UseTab: Always
-IndentWidth: 4
-TabWidth: 4
-PackConstructorInitializers: NextLineOnly
-BreakConstructorInitializers: AfterColon
-IndentAccessModifiers: false
+# Format Style Options - Created with Clang Power Tools
+---
 AccessModifierOffset: -4
+AlignConsecutiveAssignments: AcrossComments
+AlignConsecutiveBitFields: AcrossEmptyLinesAndComments
+AlignConsecutiveMacros: AcrossEmptyLinesAndComments
+AlignTrailingComments: true
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortEnumsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+BitFieldColonSpacing: Both
+BraceWrapping: 
+  AfterCaseLabel: true
+  AfterClass: true
+  AfterControlStatement: true
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterObjCDeclaration: true
+  AfterStruct: true
+  AfterUnion: true
+  AfterExternBlock: true
+  BeforeCatch: true
+  BeforeElse: true
+  IndentBraces: true
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+  BeforeLambdaBody: false
+  BeforeWhile: false
+BreakBeforeBraces: Allman
+BreakBeforeTernaryOperators: true
+ColumnLimit: 150
+IndentCaseBlocks: false
+IndentCaseLabels: true
+IndentPPDirectives: BeforeHash
+IndentWidth: 4
+PointerAlignment: Left
+SpaceAfterCStyleCast: true
+SpaceAfterLogicalNot: false
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCaseColon: true
+SpacesBeforeTrailingComments: 2
+SpacesInCStyleCastParentheses: true
+SpacesInParentheses: true
+SpacesInSquareBrackets: true
+TabWidth: 4
+...

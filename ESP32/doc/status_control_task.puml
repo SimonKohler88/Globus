@@ -1,0 +1,29 @@
+@startuml
+
+participant "status_ctrl_task" as T
+participant "UDP tx Task" as Wifi
+participant "FrameFIFO" as FIFO
+participant "CommandQueue" as CQ
+participant "LED" as LED
+
+
+group loop every 10 ms
+    alt wifi is connected
+        T -> Wifi: check connection
+        T -> FIFO: get free frame
+        alt free frame is available
+            T -> Wifi: request frame
+        end
+    end
+
+    T -> CQ: Check command queue
+    loop for each command
+        T -> CQ: Receive command
+        ... handle commands ...
+    end
+
+    T -> LED: Update LED state every 100ms
+end
+
+
+@enduml

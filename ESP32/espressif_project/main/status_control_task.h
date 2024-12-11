@@ -44,9 +44,31 @@ struct {
 	
 } typedef command_control_task_t;
 
-
-
+/**
+ * Initializes the status control with the given status pointers.
+ *
+ * This function sets up the internal status control structures and
+ * configures the necessary GPIOs for communication. It specifically
+ * configures GPIO for the handling of FPGA control lanes and requests
+ * the FPGA to be reset.
+ *
+ * @param status_ptr Pointer to the status_control_status_t structure
+ *                   that holds the control status information.
+ * @param internal_status_ptr Pointer to the command_control_task_t
+ *                            structure that manages internal command
+ *                            and status handling for the task.
+ */
 void status_control_init( status_control_status_t * status_ptr , command_control_task_t* internal_status_ptr );
+
+/**
+ * @brief Task function for controlling status operations. This task manages the
+ *        LED states and processes command messages from a queue.
+ *
+ * @param pvParameter A pointer to task parameters, if any, used for task-specific
+ *                    needs. Typically used to pass structures or other data
+ *                    necessary for task operation. In this function, it might
+ *                    relate to status control data.
+ */
 void status_control_task( void * pvParameter );
 
 
