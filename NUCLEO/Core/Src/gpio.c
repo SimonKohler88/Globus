@@ -65,17 +65,14 @@ void gpio_init_onboard_led( GPIO_BLINK_PIN_t* pin )
 void gpio_update_onboard_led( GPIO_BLINK_PIN_t* pin, uint32_t tick )
 {
     uint32_t elapsed_ticks = tick - pin->last_tick;
-    if (elapsed_ticks >= pin->interval_ticks )
+    uint32_t interval_ticks = pin->interval_ticks;
+
+    if (elapsed_ticks >= interval_ticks )
     {
         pin->last_tick = tick;
         uint8_t state = !HAL_GPIO_ReadPin(PIN_ONBOARD_LED_GPIO_Port, PIN_ONBOARD_LED_Pin);
         HAL_GPIO_WritePin(PIN_ONBOARD_LED_GPIO_Port, PIN_ONBOARD_LED_Pin, state);
     }
-}
-
-void gpio_set_blink_interval_onboard_led( GPIO_BLINK_PIN_t* pin, uint32_t interval )
-{
-    pin->interval_ticks = interval;
 }
 
 

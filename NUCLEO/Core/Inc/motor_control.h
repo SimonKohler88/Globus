@@ -10,23 +10,23 @@ extern "C"
 {
 #endif
 
-
 #include "stm32f3xx_hal.h"
 #include "stm32f3xx_hal_tim.h"
+#include "tim.h"
 
     typedef struct
     {
         TIM_HandleTypeDef* htim;
 
-        uint32_t current_speed;
-        uint32_t target_speed;
-        uint32_t slope;
+        /* I2C Interface */
+        uint32_t current_speed_duty_cycle;  // pwm
+        uint32_t target_speed_duty_cycle;
+        uint32_t slope_duty_cycle_per_s;
+
     } MOT_CTRL_t;
 
-    void mot_ctrl_init( MOT_CTRL_t* mot_ctrl, TIM_HandleTypeDef* htim1 );
+    void mot_ctrl_init( MOT_CTRL_t* mot_ctrl, TIM_HandleTypeDef* htim );
     void mot_ctrl_update( MOT_CTRL_t* mot_ctrl );
-    void mot_ctrl_set_speed( MOT_CTRL_t* mot_ctrl, float speed );
-    uint32_t mot_ctrl_get_speed( MOT_CTRL_t* mot_ctrl );
 
 #ifdef __cplusplus
 }

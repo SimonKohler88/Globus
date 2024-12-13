@@ -45,7 +45,6 @@ void MX_GPIO_Init(void);
 /* USER CODE BEGIN Prototypes */
     void gpio_init_onboard_led( GPIO_BLINK_PIN_t* pin );
     void gpio_update_onboard_led( GPIO_BLINK_PIN_t* pin, uint32_t tick );
-    void gpio_set_blink_interval_onboard_led( GPIO_BLINK_PIN_t* pin, uint32_t interval );
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

@@ -46,11 +46,22 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-static I2C_DATA_MEM_t i2c_data_memory;
 static GPIO_BLINK_PIN_t gpio_blink_pin = {
     .interval_ticks = 300,
 };
-static MOT_CTRL_t motor_control;
+
+static MOT_CTRL_t motor_control = {
+    .target_speed_duty_cycle = 60,
+    .slope_duty_cycle_per_s  = 5,
+};
+static TRIPLE_ADC_t adc_triplet = {};
+
+static I2C_DATA_MEM_t i2c_data_memory = {
+    .data[ I2C_ADDR_LED_BLINK ]                  = {&gpio_blink_pin.interval_ticks,          I2C_ENTRY_TYPE_READ_WRITE},
+    .data[ I2C_ADDR_MOT_DUTY_CYCLE_SET ]         = {&motor_control.target_speed_duty_cycle,  I2C_ENTRY_TYPE_WRITE     },
+    .data[ I2C_ADDR_MOT_DUTY_CYCLE_IS ]          = {&motor_control.current_speed_duty_cycle, I2C_ENTRY_TYPE_READ      },
+    .data[ I2C_ADDR_MOT_DUTY_CYCLE_SLOPE_PER_S ] = {&motor_control.slope_duty_cycle_per_s,   I2C_ENTRY_TYPE_READ_WRITE},
+};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -101,6 +112,8 @@ int main(void)
     i2c_init( &i2c_data_memory );
     gpio_init_onboard_led( &gpio_blink_pin );
     mot_ctrl_init( &motor_control, &htim1 );
+    adc_init( &adc_triplet, &hadc2 );
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -109,20 +122,15 @@ int main(void)
 
     while ( 1 )
     {
-        if ( uwTick != last_uwTick )
+        if ( uwTick - last_uwTick >= 10 )  // 10ms
         {
             /* Sstick increased. do a cycle */
             last_uwTick = uwTick;
 
             uint8_t has_update = i2c_update();
 
-            if ( has_update != 0 )
-            {
-                uint32_t new_interval = i2c_read(I2C_ADDR_LED_BLINK);
-                gpio_set_blink_interval_onboard_led( &gpio_blink_pin, new_interval );
-            }
-
             gpio_update_onboard_led( &gpio_blink_pin, uwTick );
+            adc_update( &adc_triplet );
         }
     /* USER CODE END WHILE */
 
