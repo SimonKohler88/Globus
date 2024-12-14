@@ -68,6 +68,8 @@ void MX_I2C1_Init(void);
 
     void i2c_init( I2C_DATA_MEM_t* data_mem );
     uint8_t i2c_update();
+    void i2c_enable_irq( void );
+    void i2c_disable_irq( void );
 
 /* USER CODE END Prototypes */
 

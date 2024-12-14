@@ -21,7 +21,7 @@
 #include "adc.h"
 
 /* USER CODE BEGIN 0 */
-
+static uint32_t calc_current_from_adc_val(uint32_t adc_val);
 /* USER CODE END 0 */
 
 ADC_HandleTypeDef hadc2;
@@ -163,15 +163,21 @@ void adc_update( TRIPLE_ADC_t* triple_adc )
         switch ( i )
         {
             case 0 :
-                triple_adc->value_1 = adc_val;  // Map The ADC_RES To PWM DutyCycle
+                triple_adc->value_1 = calc_current_from_adc_val(adc_val);
             break;
             case 1 :
-                triple_adc->value_2 = adc_val;  // Map The ADC_RES To PWM DutyCycle
+                triple_adc->value_2 = calc_current_from_adc_val(adc_val);
             break;
             case 2 :
-                triple_adc->value_3 = adc_val;  // Map The ADC_RES To PWM DutyCycle
+                triple_adc->value_3 = calc_current_from_adc_val(adc_val);
             break;
         }
     }
+}
+
+static uint32_t calc_current_from_adc_val(uint32_t adc_val)
+{
+    // TODO: make this
+    return adc_val;
 }
 /* USER CODE END 1 */

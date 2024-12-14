@@ -220,13 +220,15 @@ extern void HAL_I2C_SlaveRxCpltCallback( I2C_HandleTypeDef* hi2c )
 
 extern void HAL_I2C_ErrorCallback( I2C_HandleTypeDef* hi2c ) { HAL_I2C_EnableListen_IT( hi2c ); }
 
-static void i2c_set_value( uint8_t addr, uint32_t value )
+void i2c_enable_irq( void )
 {
-
-    HAL_NVIC_DisableIRQ( I2C1_EV_IRQn );
-    HAL_NVIC_DisableIRQ( I2C1_ER_IRQn );
-    *data_storage->data[ addr ].val_ptr = value;
     HAL_NVIC_EnableIRQ( I2C1_EV_IRQn );
     HAL_NVIC_EnableIRQ( I2C1_ER_IRQn );
 }
+void i2c_disable_irq( void )
+{
+    HAL_NVIC_DisableIRQ( I2C1_EV_IRQn );
+    HAL_NVIC_DisableIRQ( I2C1_ER_IRQn );
+}
+
 /* USER CODE END 1 */

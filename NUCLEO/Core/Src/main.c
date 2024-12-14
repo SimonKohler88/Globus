@@ -25,7 +25,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "induction.h"
 #include "motor_control.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -35,7 +37,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+# define HW_CYCLE_MS (10)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -51,16 +53,24 @@ static GPIO_BLINK_PIN_t gpio_blink_pin = {
 };
 
 static MOT_CTRL_t motor_control = {
-    .target_speed_duty_cycle = 60,
-    .slope_duty_cycle_per_s  = 5,
+    .i2c_if =
+        {
+                 .target_speed_duty_cycle = 60,
+                 .slope_duty_cycle_per_s  = 1,
+                 },
 };
+
+static INDUCTION_t induction = {
+    .i2c_if = { .duty_cycle = 50, .frequency = 10000, .dead_time = 100 },
+};
+
 static TRIPLE_ADC_t adc_triplet = {};
 
 static I2C_DATA_MEM_t i2c_data_memory = {
-    .data[ I2C_ADDR_LED_BLINK ]                  = {&gpio_blink_pin.interval_ticks,          I2C_ENTRY_TYPE_READ_WRITE},
-    .data[ I2C_ADDR_MOT_DUTY_CYCLE_SET ]         = {&motor_control.target_speed_duty_cycle,  I2C_ENTRY_TYPE_WRITE     },
-    .data[ I2C_ADDR_MOT_DUTY_CYCLE_IS ]          = {&motor_control.current_speed_duty_cycle, I2C_ENTRY_TYPE_READ      },
-    .data[ I2C_ADDR_MOT_DUTY_CYCLE_SLOPE_PER_S ] = {&motor_control.slope_duty_cycle_per_s,   I2C_ENTRY_TYPE_READ_WRITE},
+    .data[ I2C_ADDR_LED_BLINK ]                  = {&gpio_blink_pin.interval_ticks,                 I2C_ENTRY_TYPE_READ_WRITE},
+    .data[ I2C_ADDR_MOT_DUTY_CYCLE_SET ]         = {&motor_control.i2c_if.target_speed_duty_cycle,  I2C_ENTRY_TYPE_WRITE     },
+    .data[ I2C_ADDR_MOT_DUTY_CYCLE_IS ]          = {&motor_control.i2c_if.current_speed_duty_cycle, I2C_ENTRY_TYPE_READ      },
+    .data[ I2C_ADDR_MOT_DUTY_CYCLE_SLOPE_PER_S ] = {&motor_control.i2c_if.slope_duty_cycle_per_s,   I2C_ENTRY_TYPE_READ_WRITE},
 };
 /* USER CODE END PV */
 
@@ -107,12 +117,14 @@ int main(void)
   MX_ADC2_Init();
   MX_I2C1_Init();
   MX_TIM1_Init();
+  MX_TIM15_Init();
   /* USER CODE BEGIN 2 */
 
     i2c_init( &i2c_data_memory );
     gpio_init_onboard_led( &gpio_blink_pin );
-    mot_ctrl_init( &motor_control, &htim1 );
+    mot_ctrl_init( &motor_control, &htim15, TIM_CHANNEL_2 );
     adc_init( &adc_triplet, &hadc2 );
+    ind_init( &induction, &htim1 );
 
   /* USER CODE END 2 */
 
@@ -122,7 +134,7 @@ int main(void)
 
     while ( 1 )
     {
-        if ( uwTick - last_uwTick >= 10 )  // 10ms
+        if ( uwTick - last_uwTick >= HW_CYCLE_MS )  // 10ms
         {
             /* Sstick increased. do a cycle */
             last_uwTick = uwTick;
@@ -131,6 +143,8 @@ int main(void)
 
             gpio_update_onboard_led( &gpio_blink_pin, uwTick );
             adc_update( &adc_triplet );
+            ind_update( &induction, uwTick);
+            mot_ctrl_update( &motor_control, uwTick );
         }
     /* USER CODE END WHILE */
 
@@ -168,7 +182,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
   {
