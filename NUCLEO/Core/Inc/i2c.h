@@ -35,11 +35,14 @@ extern "C" {
 extern I2C_HandleTypeDef hi2c1;
 
 /* USER CODE BEGIN Private defines */
-#define I2C_NUM_ADDRESS    ( 8 )
-#define I2C_ADDR_LED_BLINK ( 0 )
-#define I2C_ADDR_MOT_DUTY_CYCLE_SET ( 1 )
-#define I2C_ADDR_MOT_DUTY_CYCLE_IS ( 2 )
-#define I2C_ADDR_MOT_DUTY_CYCLE_SLOPE_PER_S ( 3 )
+    enum
+    {
+        I2C_ADDR_LED_BLINK = 0,
+        I2C_ADDR_MOT_DUTY_CYCLE_SET,
+        I2C_ADDR_MOT_DUTY_CYCLE_IS,
+        I2C_ADDR_MOT_DUTY_CYCLE_SLOPE_PER_S,
+        I2C_ADDR_ENUM_END
+    }; typedef uint8_t I2C_ADDR_e;
 
 /* USER CODE END Private defines */
 
@@ -61,7 +64,7 @@ void MX_I2C1_Init(void);
 
     typedef struct
     {
-        volatile I2C_DATA_ENTRY_t data[ I2C_NUM_ADDRESS ];
+        volatile I2C_DATA_ENTRY_t data[ I2C_ADDR_ENUM_END ];
         uint8_t num_entries;
         volatile uint8_t has_update;
     } I2C_DATA_MEM_t;
