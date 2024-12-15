@@ -28,6 +28,7 @@ set(CMAKE_C_STANDARD 11)
 
 add_compile_options(-mcpu=cortex-m4 -mthumb -mthumb-interwork)
 add_compile_options(-ffunction-sections -fdata-sections -fno-common -fmessage-length=0)
+add_compile_options(-Wdouble-promotion)
 
 # uncomment to mitigate c++17 absolute addresses warnings
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-register")
@@ -49,11 +50,11 @@ else ()
     add_compile_options(-Og -g)
 endif ()
 
-include_directories(Core/Inc Drivers/STM32F3xx_HAL_Driver/Inc Drivers/STM32F3xx_HAL_Driver/Inc/Legacy Drivers/CMSIS/Device/ST/STM32F3xx/Include Drivers/CMSIS/Include)
+include_directories(Core/Inc Drivers/STM32F3xx_HAL_Driver/Inc Drivers/STM32F3xx_HAL_Driver/Inc/Legacy Middlewares/Third_Party/FreeRTOS/Source/include Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F Drivers/CMSIS/Device/ST/STM32F3xx/Include Drivers/CMSIS/Include Core/Inc Drivers/STM32F3xx_HAL_Driver/Inc Drivers/STM32F3xx_HAL_Driver/Inc/Legacy Drivers/CMSIS/Device/ST/STM32F3xx/Include Drivers/CMSIS/Include Core/Inc Drivers/STM32F3xx_HAL_Driver/Inc Drivers/STM32F3xx_HAL_Driver/Inc/Legacy Drivers/CMSIS/Device/ST/STM32F3xx/Include Drivers/CMSIS/Include)
 
-add_definitions(-DDEBUG -DUSE_HAL_DRIVER -DSTM32F303x8)
+add_definitions(-DDEBUG -DUSE_HAL_DRIVER -DSTM32F303x8 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F303x8 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F303x8)
 
-file(GLOB_RECURSE SOURCES "Core/*.*" "Drivers/*.*")
+file(GLOB_RECURSE SOURCES "Core/*.*" "Middlewares/*.*" "Drivers/*.*" "Core/*.*" "Drivers/*.*" "Core/*.*" "Drivers/*.*")
 
 set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32F303K8TX_FLASH.ld)
 
