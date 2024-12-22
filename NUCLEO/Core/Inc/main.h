@@ -57,8 +57,14 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define MOT_BREAK_Pin GPIO_PIN_1
+#define MOT_BREAK_GPIO_Port GPIOF
+#define MOT_PWM_Pin GPIO_PIN_3
+#define MOT_PWM_GPIO_Port GPIOA
 #define PIN_ONBOARD_LED_Pin GPIO_PIN_3
 #define PIN_ONBOARD_LED_GPIO_Port GPIOB
+#define MOT_FAULT_Pin GPIO_PIN_5
+#define MOT_FAULT_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

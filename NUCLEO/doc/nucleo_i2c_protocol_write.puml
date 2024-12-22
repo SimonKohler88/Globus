@@ -1,0 +1,60 @@
+@startuml
+
+hide time-axis
+
+concise "I2C Master" as Master
+concise "I2C Slave" as Slave
+
+
+
+Master is "start"
+Slave is {-}
+@1
+Master is "DevAddr[7:1] WR[0]"
+Slave is {-}
+@4
+Master is {-}
+Slave is Ack
+
+@5
+Slave is {-}
+Master is "RegAddr[7:0]"
+
+@7
+Master is {-}
+Slave is Ack
+@8
+Slave is {-}
+Master is "data[31:24]"
+
+@10
+Master is {-}
+Slave is Ack
+@11
+Slave is {-}
+Master is "data[23:16]"
+
+@13
+Master is {-}
+Slave is Ack
+@14
+Slave is {-}
+Master is "data[15:8]"
+
+@16
+Master is {-}
+Slave is Ack
+@17
+Slave is {-}
+Master is "data[7:0]"
+@19
+Master is {-}
+Slave is Ack
+@20
+Master is "Stop"
+Slave is {-}
+
+
+
+
+@enduml
