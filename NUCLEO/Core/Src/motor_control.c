@@ -3,6 +3,7 @@
 //
 
 #include "motor_control.h"
+#include "gpio.h"
 #include "i2c.h"
 
 static void set_timer_duty_cycle( MOT_CTRL_t* mot_ctrl, uint32_t value );
@@ -110,6 +111,10 @@ void mot_ctrl_update( MOT_CTRL_t* mot_ctrl, uint32_t tick )
     mot_ctrl->i2c_if.current_speed_duty_cycle = ( current_speed_duty_cycle_tim * 100 ) / MOT_CTRL_TIMER_RESOLUTION;  // intended non-float div
 
     mot_ctrl->last_tick = tick;
+
+    /* Brake Pin-> not implemented */
+    // TODO: implement Brake Pin
+    gpio_set_mot_brake( 1 );
 }
 
 static uint32_t get_timer_duty_cycle( MOT_CTRL_t* mot_ctrl )

@@ -45,7 +45,17 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(MOT_BREAK_GPIO_Port, MOT_BREAK_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(PIN_ONBOARD_LED_GPIO_Port, PIN_ONBOARD_LED_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = MOT_BREAK_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(MOT_BREAK_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = PIN_ONBOARD_LED_Pin;
@@ -53,6 +63,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(PIN_ONBOARD_LED_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = MOT_FAULT_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(MOT_FAULT_GPIO_Port, &GPIO_InitStruct);
 
 }
 
@@ -75,5 +91,16 @@ void gpio_update_onboard_led( GPIO_BLINK_PIN_t* pin, uint32_t tick )
     }
 }
 
+void gpio_set_mot_brake(uint8_t state)
+{
+    /* 1: not brake 0: brake*/
+    HAL_GPIO_WritePin(MOT_BREAK_GPIO_Port, MOT_BREAK_Pin, state);
+}
+
+uint8_t gpio_read_mot_fault()
+{
+    /*0: fault, 1: all good*/
+    return HAL_GPIO_ReadPin(MOT_FAULT_GPIO_Port, MOT_FAULT_Pin);
+}
 
 /* USER CODE END 2 */

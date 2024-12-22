@@ -55,8 +55,8 @@ static GPIO_BLINK_PIN_t gpio_blink_pin = {
 static MOT_CTRL_t motor_control = {
     .i2c_if =
         {
-                 .target_speed_duty_cycle = 60,
-                 .slope_duty_cycle_per_s  = 1,
+                 .target_speed_duty_cycle = 10,
+                 .slope_duty_cycle_per_s  = 5,
                  },
 };
 
