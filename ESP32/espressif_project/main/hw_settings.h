@@ -12,7 +12,8 @@
 
 /* Freertos */
 #define FREERTOS_STACK_SIZE_FPGA_CTRL      4096 * 2
-#define FREERTOS_STACK_SIZE_STATUS_CTRL    4096 * 2
+#define FREERTOS_STACK_SIZE_STATUS_CTRL    4096 * 3
+#define FREERTOS_STACK_SIZE_QSPI           4096 * 2
 #define FREERTOS_STACK_SIZE_WIFI           4096
 
 /* Status Control task */
@@ -71,6 +72,9 @@
 
 /* PSRAM FIFO */
 #define FIFO_NUMBER_OF_FRAMES            3
+
+/* UDP TX Task */
+#define UDP_TX_NUMBER_OF_CMD             3
 
 /* Networkk definitions */
 #define HW_SETTINGS_UDP_PACKET_SIZE      1500

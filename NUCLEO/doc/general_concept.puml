@@ -1,0 +1,18 @@
+@startuml
+start
+partition Initialization {
+:init Hardware;
+:intit static Structs;
+:init Modules;
+}
+partition Loop {
+
+repeat
+:Wait for Systick (10 ms);
+:update onboard LED;
+:update Motor Control;
+
+repeat while()
+}
+
+@endum

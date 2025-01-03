@@ -43,7 +43,7 @@ StackType_t xStatusControlStack[ FREERTOS_STACK_SIZE_STATUS_CTRL ];
 TaskHandle_t status_control_task_handle = NULL;
 
 StaticTask_t xFPGAQSPITaskBuffer;
-StackType_t xFPGAQSPIStack[ FREERTOS_STACK_SIZE_STATUS_CTRL ];
+StackType_t xFPGAQSPIStack[ FREERTOS_STACK_SIZE_QSPI ];
 TaskHandle_t FPGA_QSPI_task_handle = NULL;
 
 /* Interface structures initialisation */
@@ -70,7 +70,7 @@ void init_system()
     fpga_ctrl_init( &fpga_status, &fpga_task_status );
     register_status_struct( ( void * ) &fpga_status, sizeof( fpga_status ) );
 
-    status_control_init( &status_control_status, &command_ctrl_task );
+    status_control_init( &status_control_status, &command_ctrl_task, &fifo_status );
     // register_status_struct( ( void* ) &status_control_status, sizeof( status_control_status ) );
 
     // gpio_dump_io_configuration(stdout, SOC_GPIO_VALID_GPIO_MASK );
@@ -92,7 +92,7 @@ void app_main( void )
 
     FPGA_QSPI_task_handle = xTaskCreateStaticPinnedToCore( fpga_qspi_task,                  /* Function that implements the task. */
                                                            "fpga_qspi_task",                /* Text name for the task. */
-                                                           FREERTOS_STACK_SIZE_STATUS_CTRL, /* Number of indexes in the xStack array. */
+                                                           FREERTOS_STACK_SIZE_QSPI, /* Number of indexes in the xStack array. */
                                                            ( void * ) 1,                    /* Parameter passed into the task. */
                                                            tskIDLE_PRIORITY + 4,            /* Priority at which the task is created. */
                                                            xFPGAQSPIStack,                  /* Array to use as the task's stack. */

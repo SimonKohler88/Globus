@@ -30,8 +30,6 @@ static command_control_task_t* status = NULL;
 StaticQueue_t xQueueBuffer_command_queue;
 uint8_t command_queue_storage[ STAT_CTRL_QUEUE_NUMBER_OF_COMMANDS * sizeof( status_control_command_t ) ];
 
-fifo_frame_t* current_frame_download = NULL;
-
 /* Its here because all IO's are initialized/handled here */
 // void IRAM_ATTR frame_request_isr_cb( void* arg )
 // {
@@ -54,11 +52,12 @@ static void IRAM_ATTR frame_request_isr_cb( void* arg )
     portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
 
-void status_control_init( status_control_status_t* status_ptr, command_control_task_t* internal_status_ptr )
+void status_control_init( status_control_status_t* status_ptr, command_control_task_t* internal_status_ptr, fifo_status_t* fifo_status )
 {
     ESP_LOGI( STAT_CTRL_TAG, "Initializing status control..." );
     internal_status_ptr->status = status_ptr;
     status                      = internal_status_ptr;
+    status->fifo_status         = fifo_status;
 
     gpio_config_t config = {
         .intr_type = GPIO_INTR_POSEDGE, .mode = GPIO_MODE_INPUT, .pull_up_en = 1, .pin_bit_mask = 1 << STAT_CTRL_PIN_FRAME_REQUEST };
@@ -136,7 +135,7 @@ void status_control_task( void* pvParameter )
     }
 
     TickType_t xLastWakeTime    = xTaskGetTickCount();
-    const TickType_t xPeriod_ms = 10;
+    const TickType_t xPeriod_ms = 50;
 
     /* for toggling led */
     TickType_t time    = pdTICKS_TO_MS( xTaskGetTickCount() );
@@ -147,19 +146,53 @@ void status_control_task( void* pvParameter )
     while ( 1 )
     {
         // if not enough frames -> trigger one
+        fifo_update_stats();
+        uint8_t num_free_prog = status->fifo_status->current_frame_2_esp;
         if ( wifi_is_connected() )
         {
-            /* fifo gets us only one. this will be released by wifitask */
-            current_frame_download = fifo_get_free_frame();
-            if ( current_frame_download != NULL ) ESP_LOGI( STAT_CTRL_TAG, "got frame" );
-            // ESP_LOGI( STAT_CTRL_TAG, "got frame: %d", current_frame_download
-            // != NULL );
-
-            wifi_request_frame( current_frame_download );
-
-            // will be marked done by wifi
+            switch ( status->wifi_tftp_state )
+            {
+                case WIFI_TFTP_IDLE :
+                {
+                    if ( !fifo_is_free_frame_in_progress() )
+                    {
+                        uint8_t wifi_ret = wifi_request_frame();
+                        if ( wifi_ret != 0 ) status->wifi_tftp_state = WIFI_TFTP_FRAME_REQUESTED;
+                    }
+                    break;
+                }
+                case WIFI_TFTP_FRAME_REQUESTED :
+                {
+                    if ( fifo_is_free_frame_in_progress() )
+                    {
+                        status->wifi_tftp_state = WIFI_TFTP_IN_PROGRESS;
+                    }
+                    break;
+                }
+                case WIFI_TFTP_IN_PROGRESS :
+                {
+                    if ( !fifo_is_free_frame_in_progress() )
+                    {
+                        status->wifi_tftp_state = WIFI_TFTP_IDLE;
+                    }
+                    break;
+                }
+                default : break;
+            }
         }
 
+        uint8_t num_free      = status->fifo_status->free_frames;
+        uint8_t num_fpga      = status->fifo_status->ready_4_fpga_frames;
+        uint8_t num_fpga_prog = status->fifo_status->current_frame_2_fpga;
+        uint8_t num_frames    = num_free + num_fpga + num_free_prog + num_fpga_prog;
+        if ( num_frames != 3 )
+        {
+            ESP_LOGW( STAT_CTRL_TAG, "nfree: %d, nfpga: %d, pfree: %d, pfpga: %d", num_free, num_fpga, num_free_prog, num_fpga_prog );
+        }
+        // else
+        // {
+        //     ESP_LOGI( STAT_CTRL_TAG, "nfree: %d, nfpga: %d, pfree: %d, pfpga: %d", num_free, num_fpga, num_free_prog, num_fpga_prog);
+        // }
         // handle command handle
         uint8_t cmd_waiting = uxQueueMessagesWaiting( status->command_queue_handle );
         for ( uint8_t i = 0; i < cmd_waiting; i++ )

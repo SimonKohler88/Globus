@@ -8,40 +8,53 @@
 #ifndef MAIN_STATUS_CONTROL_TASK_H_
 #define MAIN_STATUS_CONTROL_TASK_H_
 
-#include "stdint.h"
+#include "PSRAM_FIFO.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "led_strip.h"
+#include "stdint.h"
 
 /* Structure for Interface */
-struct {
-	
-	
+struct
+{
+
 } typedef status_control_status_t;
 
 /* Command possibilities for task from ETH */
-enum {
-	COMMAND_DEBUG = 0,
-	COMMAND_SEND_STATUS,
-	
-}; typedef uint8_t COMMANDS_t;
+enum
+{
+    COMMAND_DEBUG = 0,
+    COMMAND_SEND_STATUS,
+};
+typedef uint8_t COMMANDS_t;
 
 /* Command Structure for Queue */
-struct {
-	COMMANDS_t command;
-	uint32_t value;
+struct
+{
+    COMMANDS_t command;
+    uint32_t value;
 } typedef status_control_command_t;
 
+enum
+{
+    WIFI_TFTP_IDLE,
+    WIFI_TFTP_FRAME_REQUESTED,
+    WIFI_TFTP_IN_PROGRESS,
+};
+typedef uint8_t wifi_tftp_state_t;
 
 /* Internal Structure */
-struct {
-	status_control_status_t* status;
-	QueueHandle_t command_queue_handle;
-	
-	/* LED Blink */
-	led_strip_handle_t led_strip;
-	uint8_t s_led_state;
-	
+struct
+{
+    status_control_status_t* status;
+    QueueHandle_t command_queue_handle;
+    fifo_status_t* fifo_status;
+    wifi_tftp_state_t wifi_tftp_state;
+
+    /* LED Blink */
+    led_strip_handle_t led_strip;
+    uint8_t s_led_state;
+
 } typedef command_control_task_t;
 
 /**
@@ -58,7 +71,7 @@ struct {
  *                            structure that manages internal command
  *                            and status handling for the task.
  */
-void status_control_init( status_control_status_t * status_ptr , command_control_task_t* internal_status_ptr );
+void status_control_init( status_control_status_t* status_ptr, command_control_task_t* internal_status_ptr, fifo_status_t* fifo_status );
 
 /**
  * @brief Task function for controlling status operations. This task manages the
@@ -69,7 +82,6 @@ void status_control_init( status_control_status_t * status_ptr , command_control
  *                    necessary for task operation. In this function, it might
  *                    relate to status control data.
  */
-void status_control_task( void * pvParameter );
-
+void status_control_task( void* pvParameter );
 
 #endif /* MAIN_STATUS_CONTROL_TASK_H_ */

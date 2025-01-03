@@ -11,7 +11,7 @@
 #include "stdint.h"
 #include "freertos/FreeRTOS.h"
 
-// TODO: put frame request pin to interrupt and call qspi_DMA_write
+
 struct 
 {
 	uint16_t missed_frames;

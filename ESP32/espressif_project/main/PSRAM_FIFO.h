@@ -109,6 +109,8 @@ uint8_t fifo_has_free_frame( void );
  */
 fifo_frame_t* fifo_get_free_frame( void );
 
+fifo_frame_t* fifo_get_current_free_frame( void );
+
 /**
  * @brief Marks the current frame being transferred from the Raspberry Pi (RPI) to the FIFO as done.
  *
@@ -130,6 +132,14 @@ fifo_frame_t* fifo_get_free_frame( void );
  * processing frames received over a network.
  */
 void fifo_mark_free_frame_done( void );
+
+/**
+ * Checks if a frame transfer from Rpi to ESP is currently in progress.
+ *
+ * @return A non-zero value if a frame transfer to the ESP is in progress;
+ *         zero if no transfer is in progress.
+ */
+uint8_t fifo_is_free_frame_in_progress( void );
 
 /**
  * @brief Returns the current frame from RPI back to the free frames queue.

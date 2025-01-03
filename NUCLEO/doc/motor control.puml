@@ -1,0 +1,14 @@
+@startuml
+start
+partition Data intake {
+:Turn off I2C Interrupts;
+:Copy Relevant data from I2c Interface;
+:Turn on I2C Interrupts;
+:read current duty cycle;
+}
+:Limit Variables if necessary;
+:Calculate new Duty Cycle;
+:update Timer;
+
+stop
+@enduml

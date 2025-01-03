@@ -29,11 +29,10 @@
 //
 // }; typedef uint32_t wifi_fd_command_t;
 
+
 struct
 {
     int UDP_socket;
-    fifo_frame_t* current_frame_download;
-    //	FRAME_DOWNLOAD_STATUS_t fd_status;
     uint16_t tftp_block_number;
     uint16_t s_retry_num;
     uint8_t wifi_connected;
@@ -132,7 +131,7 @@ void wifi_send_udp_task( void* pvParameters );
  * The frame is then prepared by setting its current and start pointers along with
  * resetting its size. The function logs the frame request status if logging is enabled.
  */
-uint8_t wifi_request_frame( fifo_frame_t* frame_info );
+uint8_t wifi_request_frame( void );
 
 /**
  * @brief Checks if the Wi-Fi is currently connected.

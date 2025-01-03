@@ -79,7 +79,7 @@ enum
 typedef uint8_t SEND_TASK_COMMAND_t;
 
 StaticQueue_t xQueueBuffer_send_task;
-uint8_t send_task[ FIFO_NUMBER_OF_FRAMES * sizeof( SEND_TASK_COMMAND_t ) ];
+uint8_t send_task[ UDP_TX_NUMBER_OF_CMD * sizeof( SEND_TASK_COMMAND_t ) ];
 QueueHandle_t send_task_cmd_queue_handle;
 
 void wifi_receive_event_handler( void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data )
@@ -162,21 +162,14 @@ void wifi_receive_init( void )
 
 uint8_t wifi_is_connected() { return wifi_stat.wifi_connected; }
 
-uint8_t wifi_request_frame( fifo_frame_t* frame_info )
+uint8_t wifi_request_frame( void )
 {
     if ( !wifi_stat.wifi_connected ) return 0;
-    if ( wifi_stat.current_frame_download != NULL ) return 0;
-    if ( frame_info == NULL ) return 0;
-    ESP_LOGI( "Wifi", "req_frame %d", frame_info == NULL );
+    if ( uxQueueMessagesWaiting( send_task_cmd_queue_handle ) == UDP_TX_NUMBER_OF_CMD ) return 0;
 
+    ESP_LOGI( "Wifi", "req_frame" );
     SEND_TASK_COMMAND_t cmd = WIFI_TX_SEND_FRAME_REQUEST;
-    uint8_t ret             = xQueueSend( send_task_cmd_queue_handle, ( void* ) &cmd, 1 );
-    if ( ret )
-    {
-        wifi_stat.current_frame_download              = frame_info;
-        wifi_stat.current_frame_download->current_ptr = wifi_stat.current_frame_download->frame_start_ptr;
-        wifi_stat.current_frame_download->size        = 0;
-    }
+    uint8_t ret             = xQueueSend( send_task_cmd_queue_handle, ( void* ) &cmd, 0 );
     return ret;
 }
 
@@ -234,29 +227,34 @@ void wifi_send_udp_task( void* pvParameters )  // todo
     {
         xReturn = xQueueReceive( send_task_cmd_queue_handle, &current_command, portMAX_DELAY );
 
-        /* Cant send stuff if we are not connected */
-        if ( !wifi_stat.wifi_connected || wifi_stat.UDP_socket < 0 ) xReturn = pdFALSE;
-
         if ( xReturn == pdTRUE )
         {
-            switch ( current_command )
+            /* Cant send stuff if we are not connected */
+            if ( ( !wifi_stat.wifi_connected ) || ( wifi_stat.UDP_socket < 0 ) )
             {
-                case WIFI_TX_SEND_FRAME_REQUEST :
-                {
-                    ret = wifi_send_packet( WIFI_REQUEST_FRAME_MESSAGE );
-                    if ( !ret ) xQueueSend( send_task_cmd_queue_handle, ( void* ) &current_command, 1 );
-                    break;
-                }
-                case WIFI_TX_SEND_STATUS :
-                {
-                    tx_buffer[ 0 ] = WIFI_CONTROL_STATUS_IDENTIFIER;
-                    uint32_t size  = get_status_data( tx_buffer + 1 );
-                    wifi_send_packet_raw( ( uint8_t* ) tx_buffer, size + 1 );
-                    break;
-                }
-                default: break;
-
+                xQueueSend( send_task_cmd_queue_handle, &current_command, 1 );
             }
+            else
+            {
+                switch ( current_command )
+                {
+                    case WIFI_TX_SEND_FRAME_REQUEST :
+                    {
+                        ret = wifi_send_packet( WIFI_REQUEST_FRAME_MESSAGE );
+                        if ( !ret ) xQueueSend( send_task_cmd_queue_handle, ( void* ) &current_command, 1 );
+                        break;
+                    }
+                    case WIFI_TX_SEND_STATUS :
+                    {
+                        tx_buffer[ 0 ] = WIFI_CONTROL_STATUS_IDENTIFIER;
+                        uint32_t size  = get_status_data( tx_buffer + 1 );
+                        wifi_send_packet_raw( ( uint8_t* ) tx_buffer, size + 1 );
+                        break;
+                    }
+                    default : break;
+                }
+            }
+            vTaskDelay( 10 );
         }
     }
 }
@@ -347,8 +345,9 @@ bool wifi_receive_packet()
         //		int len = recv( wifi_stat.UDP_socket, rx_buffer, sizeof(
         // rx_buffer ), 0 ); 		int len = recvfrom(wifi_stat.UDP_socket, rx_buffer,
         // sizeof(rx_buffer), 0, (struct sockaddr *)&msg_source_addr, &socklen);
-        int len         = recvmsg( wifi_stat.UDP_socket, &msg, 0 );
-        uint8_t tftp_ok = 1;
+        int len                     = recvmsg( wifi_stat.UDP_socket, &msg, 0 );
+        uint8_t tftp_ok             = 1;
+        uint8_t is_ctrl             = 0;
         // Error occurred during receiving
         if ( len < 0 )
         {
@@ -356,42 +355,35 @@ bool wifi_receive_packet()
             {
                 ESP_LOGE( "WIFI", "recvfrom failed: errno %d", errno );
             }
+            fifo_return_free_frame();
             return false;
         }
 
+        is_ctrl = ( ( rx_buffer[ 0 ] == WIFI_CONTROL_IDENTIFIER ) && ( len < 5 ) );
+        if ( is_ctrl )
+        {
+            wifi_receive_control_packet();
+        }
         else
         {
-            // inet_ntoa_r(((struct sockaddr_in *)&source_addr)->sin_addr,
-            // addr_str, sizeof(addr_str) - 1);
-            //	        for ( cmsgtmp = CMSG_FIRSTHDR(&msg); cmsgtmp != NULL;
-            // cmsgtmp = CMSG_NXTHDR(&msg, cmsgtmp) ) { 	            if ( cmsgtmp->cmsg_level
-            //== IPPROTO_IP && cmsgtmp->cmsg_type == IP_PKTINFO ) { 	                struct
-            // in_pktinfo *pktinfo; 	                pktinfo = (struct
-            // in_pktinfo*)CMSG_DATA(cmsgtmp); 	                ESP_LOGI("Wifi", "dest ip: %s",
-            // inet_ntoa(pktinfo->ipi_addr));
-            //	            }
-            //	        }
-            // Data received
+            fifo_frame_t* current_frame = fifo_get_current_free_frame();
 
-            if ( rx_buffer[ 0 ] == WIFI_CONTROL_IDENTIFIER )
-            {
-                wifi_receive_control_packet();
-            }
             /* TFTP Transfer start request */
-            else if ( ( rx_buffer[ 0 ] == ( uint8_t ) 0 ) && ( rx_buffer[ 1 ] == ( uint8_t ) eWriteRequest ) )
+            if ( ( rx_buffer[ 0 ] == ( uint8_t ) 0 ) && ( rx_buffer[ 1 ] == ( uint8_t ) eWriteRequest ) )
             {
+                current_frame = fifo_get_free_frame();
                 // 49600
                 // ESP_LOGI( "WIFI", "frame s %d ", source_addr.sin_port );
-                if ( wifi_stat.current_frame_download != NULL )
+                if ( current_frame != NULL )
                 {
                     // ESP_LOGI( "WIFI", "Frame start" );
                     wifi_stat.tftp_block_number = 0;
 
                     // vTaskDelay( 50 );
                     wifi_send_tftp_ack( 0, source_addr.sin_port );
-                    wifi_stat.current_frame_download->size        = 0;
-                    wifi_stat.current_frame_download->total_size  = 0;
-                    wifi_stat.current_frame_download->current_ptr = wifi_stat.current_frame_download->frame_start_ptr;
+                    current_frame->size        = 0;
+                    current_frame->total_size  = 0;
+                    current_frame->current_ptr = current_frame->frame_start_ptr;
                 }
                 else
                 {
@@ -401,9 +393,10 @@ bool wifi_receive_packet()
             }
             else /* TFTP data transfer */
             {
+
                 // ESP_LOGI( "WIFI", "data opcode  %x %x %x %x",  rx_buffer[ 0
                 // ], rx_buffer[ 1 ], rx_buffer[ 2 ], rx_buffer[ 3 ] );
-                if ( wifi_stat.current_frame_download == NULL )
+                if ( current_frame == NULL )
                 {
                     /* we lost the buffer*/
                     wifi_send_tftp_err( eFileNotFound, source_addr.sin_port );
@@ -420,7 +413,7 @@ bool wifi_receive_packet()
                     if ( ( op_code == ( uint16_t ) eData ) && ( block_nr == wifi_stat.tftp_block_number ) )
                     {
                         uint16_t data_len = len - 4;
-                        if ( data_len == 0 )
+                        if ( ( data_len == 0 ) && ( block_nr < 90 ) )
                         {
                             wifi_send_tftp_err( eUnknownTransferID, source_addr.sin_port );
                             tftp_ok = 0;
@@ -431,21 +424,21 @@ bool wifi_receive_packet()
                             // ESP_LOGI( "WIFI", "data  %d %d %d", op_code,
                             // block_nr, data_len );
 
-                            fifo_copy_mem_protected( ( void* ) wifi_stat.current_frame_download->current_ptr, ( void* ) &rx_buffer + 4, data_len );
+                            fifo_copy_mem_protected( ( void* ) current_frame->current_ptr, ( void* ) &rx_buffer + 4, data_len );
 
-                            wifi_stat.current_frame_download->size += ( data_len );
-                            wifi_stat.current_frame_download->current_ptr += ( data_len );
+                            current_frame->size += ( data_len );
+                            current_frame->current_ptr += ( data_len );
 
                             if ( data_len != CONFIG_UDP_FRAME_PACKET_SIZE )
                             {
                                 /* last packet received */
-                                uint32_t size = wifi_stat.current_frame_download->size;
+                                uint32_t size = current_frame->size;
                                 ESP_LOGI( "WIFI", "Frame Recv Finished %" PRIu32 " bytes", size );
 
-                                wifi_stat.current_frame_download->current_ptr = wifi_stat.current_frame_download->frame_start_ptr;
-                                wifi_stat.current_frame_download->total_size  = wifi_stat.current_frame_download->size;
+                                current_frame->current_ptr = current_frame->frame_start_ptr;
+                                current_frame->total_size  = current_frame->size;
 
-                                wifi_stat.current_frame_download = NULL;
+                                // wifi_stat.current_frame_download = NULL;
 
                                 fifo_mark_free_frame_done();
                             }
@@ -457,13 +450,13 @@ bool wifi_receive_packet()
                         tftp_ok = 0;
                     }
                 }
+            }
 
-                if ( tftp_ok == 0 )
-                {
-                    /* An Error Occured. we need to put back the taken frame*/
-                    fifo_return_free_frame();
-                    wifi_stat.current_frame_download = NULL;
-                }
+            if ( tftp_ok == 0 )
+            {
+                /* An Error Occured. we need to put back the taken frame*/
+                fifo_return_free_frame();
+                // wifi_stat.current_frame_download = NULL;
             }
         }
     }
@@ -533,6 +526,7 @@ static bool wifi_send_tftp_err( uint8_t error_code, uint16_t port )
 
 bool wifi_receive_control_packet( void )
 {
+    uint8_t ret = false;
     if ( HW_SETTINGS_DEBUG )
     {
         // ESP_LOGI( "WIFI", "Control Data packet received" );
@@ -542,7 +536,7 @@ bool wifi_receive_control_packet( void )
     {
         // ESP_LOGI( "WIFI", "Control Status packet received" );
         SEND_TASK_COMMAND_t cmd = WIFI_TX_SEND_STATUS;
-        uint8_t ret             = xQueueSend( send_task_cmd_queue_handle, ( void* ) &cmd, 1 );
+        ret                     = xQueueSend( send_task_cmd_queue_handle, ( void* ) &cmd, 1 );
     }
-
+    return !!ret;
 }
