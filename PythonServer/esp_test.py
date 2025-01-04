@@ -97,12 +97,22 @@ if __name__ == '__main__':
     frame_start_time = 0
     frame_end_time = 0
     current_index = 0
-    print('Start listening')
     client = None
     port = 1234
     _time = time.time()
-    s.settimeout(0.5)
     received_data = None
+
+    # flush receiving buffer before starting
+    s.settimeout(0.01)
+    while True:
+        try:
+            received_data, addr = s.recvfrom(128)  # Timeout programmieren?
+            if not received_data:
+                break
+        except TimeoutError:
+            break
+    s.settimeout(0.5)
+    print('Start listening')
     while True:
         if (time.time() - _time) >= 1:
             _time = time.time()
@@ -127,7 +137,7 @@ if __name__ == '__main__':
             client = tftpy.TftpClient(ip, my_port, options={'blksize': 1024})  # , localip=my_ip)
             print('Receiving CMD')
             ans = received_data.decode()
-            #print(ans)
+            # print(ans)
             if ans == 'FRAME':
                 try:
                     frame_start_time = time.time()

@@ -23,6 +23,7 @@
 
 static command_control_task_t* status = NULL;
 
+
 #define STAT_CTRL_TAG "status_control_task"
 
 // void IRAM_ATTR frame_request_isr_cb( void *arg );
@@ -147,40 +148,18 @@ void status_control_task( void* pvParameter )
     {
         // if not enough frames -> trigger one
         fifo_update_stats();
+        // uint8_t num_free_prog = status->fifo_status->current_frame_2_esp;
+        // // if not enough frames -> trigger one
+        // if( wifi_is_connected() )
+        // {
+        //     /* fifo gets us only one. this will be released by wifitask */
+        //     if( fifo_has_free_frame() )
+        //     {
+        //         ESP_LOGI( STAT_CTRL_TAG, "got frame" );
+        //         wifi_request_frame( );
+        //     }
+        // }
         uint8_t num_free_prog = status->fifo_status->current_frame_2_esp;
-        if ( wifi_is_connected() )
-        {
-            switch ( status->wifi_tftp_state )
-            {
-                case WIFI_TFTP_IDLE :
-                {
-                    if ( !fifo_is_free_frame_in_progress() )
-                    {
-                        uint8_t wifi_ret = wifi_request_frame();
-                        if ( wifi_ret != 0 ) status->wifi_tftp_state = WIFI_TFTP_FRAME_REQUESTED;
-                    }
-                    break;
-                }
-                case WIFI_TFTP_FRAME_REQUESTED :
-                {
-                    if ( fifo_is_free_frame_in_progress() )
-                    {
-                        status->wifi_tftp_state = WIFI_TFTP_IN_PROGRESS;
-                    }
-                    break;
-                }
-                case WIFI_TFTP_IN_PROGRESS :
-                {
-                    if ( !fifo_is_free_frame_in_progress() )
-                    {
-                        status->wifi_tftp_state = WIFI_TFTP_IDLE;
-                    }
-                    break;
-                }
-                default : break;
-            }
-        }
-
         uint8_t num_free      = status->fifo_status->free_frames;
         uint8_t num_fpga      = status->fifo_status->ready_4_fpga_frames;
         uint8_t num_fpga_prog = status->fifo_status->current_frame_2_fpga;

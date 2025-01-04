@@ -147,6 +147,8 @@ void fifo_mark_frame_4_fpga_done( void )
 uint8_t fifo_has_free_frame( void )
 {
     // ESP_LOGI( "FIFO", "has free" );
+    if (fifo_control.frame_rpi_2_fifo_in_progress) return 0;
+
     uint8_t num = 0;
     num         = uxQueueMessagesWaiting( fifo_control.free_frames );
     return num;
@@ -169,13 +171,13 @@ fifo_frame_t* fifo_get_current_free_frame( void )
 fifo_frame_t* fifo_get_free_frame( void )
 {
     uint8_t ret = 1;
-    ESP_LOGI( "FIFO", "fifo_get_free_frame " );
     if ( fifo_control.frame_rpi_2_fifo_in_progress == 1 ) ret = 0;
     if ( uxQueueMessagesWaiting( fifo_control.free_frames ) == 0 ) ret = 0;
     else
     {
-        xQueueReceive( fifo_control.free_frames, &fifo_control.current_frame_from_rpi, 0 );
+        ESP_LOGI( "FIFO", "fifo_get_free_frame " );
         fifo_control.frame_rpi_2_fifo_in_progress = 1;
+        xQueueReceive( fifo_control.free_frames, &fifo_control.current_frame_from_rpi, 0 );
     }
 
     if ( ret == 0 ) return NULL;

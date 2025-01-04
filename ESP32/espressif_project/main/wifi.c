@@ -71,6 +71,9 @@ static struct sockaddr_in dest_addr_tftp;
 
 static WIFI_STAT_INTERNAL_t wifi_stat;
 
+static TaskHandle_t wifi_task_handle      = NULL;
+static TaskHandle_t wifi_send_task_handle = NULL;
+
 enum
 {
     WIFI_TX_SEND_FRAME_REQUEST,
@@ -162,17 +165,6 @@ void wifi_receive_init( void )
 
 uint8_t wifi_is_connected() { return wifi_stat.wifi_connected; }
 
-uint8_t wifi_request_frame( void )
-{
-    if ( !wifi_stat.wifi_connected ) return 0;
-    if ( uxQueueMessagesWaiting( send_task_cmd_queue_handle ) == UDP_TX_NUMBER_OF_CMD ) return 0;
-
-    ESP_LOGI( "Wifi", "req_frame" );
-    SEND_TASK_COMMAND_t cmd = WIFI_TX_SEND_FRAME_REQUEST;
-    uint8_t ret             = xQueueSend( send_task_cmd_queue_handle, ( void* ) &cmd, 0 );
-    return ret;
-}
-
 bool wifi_send_packet( char* message )
 {
     if ( !wifi_stat.wifi_connected ) return false;
@@ -219,14 +211,91 @@ void wifi_send_udp_task( void* pvParameters )  // todo
     send_task_cmd_queue_handle =
         xQueueCreateStatic( WIFI_TX_CMD_QUEUE_SIZE, sizeof( SEND_TASK_COMMAND_t ), &send_task[ 0 ], &xQueueBuffer_send_task );
 
-    uint8_t ret;
+    // uint8_t ret;
     BaseType_t xReturn;
     SEND_TASK_COMMAND_t current_command;
+    TickType_t xLastWakeTime    = xTaskGetTickCount();
+    const TickType_t xPeriod_ms = 10;
+
+    wifi_send_task_handle     = xTaskGetCurrentTaskHandle();
+    wifi_stat.wifi_ctrl_state = WIFI_CTRL_IDLE;
+    uint32_t proc_counter     = 0;
+    uint32_t notify_value     = 0;
+    uint8_t num_free_frames   = 0;
 
     while ( 1 )
     {
-        xReturn = xQueueReceive( send_task_cmd_queue_handle, &current_command, portMAX_DELAY );
 
+        switch ( wifi_stat.wifi_ctrl_state )
+        {
+            case WIFI_CTRL_IDLE :
+            {
+                if ( ( !wifi_stat.wifi_connected ) || ( wifi_stat.UDP_socket < 0 ) ) break;
+
+                num_free_frames = fifo_has_free_frame();
+                if ( xTaskNotifyWaitIndexed( 0, ULONG_MAX, ULONG_MAX, &notify_value, 0 ) )
+                {
+                    /* Received first Block in between timeout and now... buffer is aquired and Transfer is in progress */
+                    if ( notify_value == WIFI_FIRST_PACKET_RECEIVED )
+                    {
+                        wifi_stat.wifi_ctrl_state = WIFI_CTRL_DATA_TRANSFER;
+                        proc_counter              = 0;
+                    }
+                }
+                else if ( fifo_has_free_frame() )
+                {
+                    /* No Messages from UDP RX, free frames available -> send request */
+                    // ESP_LOGI( "WIFI", "nr fframes  %"  PRIu8, num_free_frames );
+                    wifi_send_packet( WIFI_REQUEST_FRAME_MESSAGE );
+                    wifi_stat.wifi_ctrl_state = WIFI_CTRL_WAIT_FIRST_PKT;
+                    proc_counter              = 0;
+                }
+
+                break;
+            }
+
+            case WIFI_CTRL_WAIT_FIRST_PKT :
+            {
+                if ( xTaskNotifyWaitIndexed( 0, ULONG_MAX, ULONG_MAX, &notify_value, 0 ) )
+                {
+                    /* RX Task received first Packet */
+                    if ( notify_value == WIFI_FIRST_PACKET_RECEIVED )
+                    {
+                        wifi_stat.wifi_ctrl_state = WIFI_CTRL_DATA_TRANSFER;
+                        proc_counter              = 0;
+                    }
+                    /* RX Task could not aquire buffer from FIFO */
+                    else if ( notify_value == WIFI_DATA_TRANSFER_ERROR )
+                    {
+                        wifi_stat.wifi_ctrl_state = WIFI_CTRL_IDLE;
+                    }
+                }
+                else proc_counter++;
+
+                /* Waited some time until 1. packet should have arrived... go back and resend request */
+                if ( proc_counter >= 10 ) wifi_stat.wifi_ctrl_state = WIFI_CTRL_IDLE;
+                break;
+            }
+            case WIFI_CTRL_DATA_TRANSFER :
+            {
+                /* Wait until RX Task has finished transfer. Success/Failure does not matter, it will return buffer anyway */
+                if ( xTaskNotifyWaitIndexed( 0, ULONG_MAX, ULONG_MAX, &notify_value, 0 ) )
+                {
+                    if ( notify_value == WIFI_DATA_TRANSFER_COMPLETED || notify_value == WIFI_DATA_TRANSFER_ERROR )
+                    {
+                        wifi_stat.wifi_ctrl_state = WIFI_CTRL_IDLE;
+                    }
+                }
+                else proc_counter++;
+
+                /* Somehow transfer took longer than 1 sec without message from RX Task... Should not get here */
+                if ( proc_counter >= 100 ) wifi_stat.wifi_ctrl_state = WIFI_CTRL_IDLE;
+                break;
+            }
+            default : break;
+        }
+
+        xReturn = xQueueReceive( send_task_cmd_queue_handle, &current_command, 0 );
         if ( xReturn == pdTRUE )
         {
             /* Cant send stuff if we are not connected */
@@ -238,12 +307,6 @@ void wifi_send_udp_task( void* pvParameters )  // todo
             {
                 switch ( current_command )
                 {
-                    case WIFI_TX_SEND_FRAME_REQUEST :
-                    {
-                        ret = wifi_send_packet( WIFI_REQUEST_FRAME_MESSAGE );
-                        if ( !ret ) xQueueSend( send_task_cmd_queue_handle, ( void* ) &current_command, 1 );
-                        break;
-                    }
                     case WIFI_TX_SEND_STATUS :
                     {
                         tx_buffer[ 0 ] = WIFI_CONTROL_STATUS_IDENTIFIER;
@@ -254,15 +317,17 @@ void wifi_send_udp_task( void* pvParameters )  // todo
                     default : break;
                 }
             }
-            vTaskDelay( 10 );
         }
+
+        vTaskDelayUntil( &xLastWakeTime, xPeriod_ms );
     }
 }
 
 void wifi_receive_udp_task( void* pvParameters )
 {
-    int addr_family = AF_INET;
-    int ip_protocol = IPPROTO_IP;
+    int addr_family  = AF_INET;
+    int ip_protocol  = IPPROTO_IP;
+    wifi_task_handle = xTaskGetCurrentTaskHandle();
 
     while ( 1 )
     {
@@ -345,45 +410,43 @@ bool wifi_receive_packet()
         //		int len = recv( wifi_stat.UDP_socket, rx_buffer, sizeof(
         // rx_buffer ), 0 ); 		int len = recvfrom(wifi_stat.UDP_socket, rx_buffer,
         // sizeof(rx_buffer), 0, (struct sockaddr *)&msg_source_addr, &socklen);
-        int len                     = recvmsg( wifi_stat.UDP_socket, &msg, 0 );
-        uint8_t tftp_ok             = 1;
-        uint8_t is_ctrl             = 0;
+        int len         = recvmsg( wifi_stat.UDP_socket, &msg, 0 );
+        uint8_t tftp_ok = 1;
+        uint8_t is_ctrl = 0;
         // Error occurred during receiving
+
         if ( len < 0 )
         {
             if ( HW_SETTINGS_DEBUG )
             {
                 ESP_LOGE( "WIFI", "recvfrom failed: errno %d", errno );
             }
-            fifo_return_free_frame();
             return false;
-        }
-
-        is_ctrl = ( ( rx_buffer[ 0 ] == WIFI_CONTROL_IDENTIFIER ) && ( len < 5 ) );
-        if ( is_ctrl )
-        {
-            wifi_receive_control_packet();
         }
         else
         {
-            fifo_frame_t* current_frame = fifo_get_current_free_frame();
 
-            /* TFTP Transfer start request */
-            if ( ( rx_buffer[ 0 ] == ( uint8_t ) 0 ) && ( rx_buffer[ 1 ] == ( uint8_t ) eWriteRequest ) )
+            is_ctrl = ( ( rx_buffer[ 0 ] == WIFI_CONTROL_IDENTIFIER ) && ( len < 5 ) );
+            if ( is_ctrl )
             {
-                current_frame = fifo_get_free_frame();
-                // 49600
-                // ESP_LOGI( "WIFI", "frame s %d ", source_addr.sin_port );
-                if ( current_frame != NULL )
+                wifi_receive_control_packet();
+            }
+            /* TFTP Transfer start request */
+            else if ( ( rx_buffer[ 0 ] == ( uint8_t ) 0 ) && ( rx_buffer[ 1 ] == ( uint8_t ) eWriteRequest ) )
+            {
+
+                wifi_stat.current_frame_download = fifo_get_free_frame();
+
+                if ( wifi_stat.current_frame_download != NULL )
                 {
                     // ESP_LOGI( "WIFI", "Frame start" );
                     wifi_stat.tftp_block_number = 0;
 
                     // vTaskDelay( 50 );
                     wifi_send_tftp_ack( 0, source_addr.sin_port );
-                    current_frame->size        = 0;
-                    current_frame->total_size  = 0;
-                    current_frame->current_ptr = current_frame->frame_start_ptr;
+                    wifi_stat.current_frame_download->size        = 0;
+                    wifi_stat.current_frame_download->current_ptr = wifi_stat.current_frame_download->frame_start_ptr;
+                    xTaskNotifyIndexed( wifi_send_task_handle, 0, WIFI_FIRST_PACKET_RECEIVED, eSetBits );
                 }
                 else
                 {
@@ -393,10 +456,8 @@ bool wifi_receive_packet()
             }
             else /* TFTP data transfer */
             {
-
-                // ESP_LOGI( "WIFI", "data opcode  %x %x %x %x",  rx_buffer[ 0
-                // ], rx_buffer[ 1 ], rx_buffer[ 2 ], rx_buffer[ 3 ] );
-                if ( current_frame == NULL )
+                // ESP_LOGI( "WIFI", "data opcode  %x %x %x %x",  rx_buffer[ 0 ], rx_buffer[ 1 ], rx_buffer[ 2 ], rx_buffer[ 3 ] );
+                if ( wifi_stat.current_frame_download == NULL )
                 {
                     /* we lost the buffer*/
                     wifi_send_tftp_err( eFileNotFound, source_addr.sin_port );
@@ -413,7 +474,7 @@ bool wifi_receive_packet()
                     if ( ( op_code == ( uint16_t ) eData ) && ( block_nr == wifi_stat.tftp_block_number ) )
                     {
                         uint16_t data_len = len - 4;
-                        if ( ( data_len == 0 ) && ( block_nr < 90 ) )
+                        if ( data_len == 0 && ( block_nr < 90 ) )
                         {
                             wifi_send_tftp_err( eUnknownTransferID, source_addr.sin_port );
                             tftp_ok = 0;
@@ -421,26 +482,22 @@ bool wifi_receive_packet()
                         else
                         {
                             wifi_send_tftp_ack( wifi_stat.tftp_block_number, source_addr.sin_port );
-                            // ESP_LOGI( "WIFI", "data  %d %d %d", op_code,
-                            // block_nr, data_len );
+                            // ESP_LOGI( "WIFI", "data  %d %d %d", op_code, block_nr, data_len );
+                            memcpy( ( void* ) wifi_stat.current_frame_download->current_ptr, ( void* ) &rx_buffer + 4, data_len );
 
-                            fifo_copy_mem_protected( ( void* ) current_frame->current_ptr, ( void* ) &rx_buffer + 4, data_len );
-
-                            current_frame->size += ( data_len );
-                            current_frame->current_ptr += ( data_len );
+                            wifi_stat.current_frame_download->size += ( data_len );
+                            wifi_stat.current_frame_download->current_ptr += ( data_len );
 
                             if ( data_len != CONFIG_UDP_FRAME_PACKET_SIZE )
                             {
                                 /* last packet received */
-                                uint32_t size = current_frame->size;
-                                ESP_LOGI( "WIFI", "Frame Recv Finished %" PRIu32 " bytes", size );
-
-                                current_frame->current_ptr = current_frame->frame_start_ptr;
-                                current_frame->total_size  = current_frame->size;
-
-                                // wifi_stat.current_frame_download = NULL;
+                                uint32_t size = wifi_stat.current_frame_download->size;
+                                ESP_LOGI( "WIFI", "Frame Recv Finished %"PRIu32" bytes", size );
 
                                 fifo_mark_free_frame_done();
+                                wifi_stat.current_frame_download->current_ptr = wifi_stat.current_frame_download->frame_start_ptr;
+                                wifi_stat.current_frame_download              = NULL;
+                                xTaskNotifyIndexed( wifi_send_task_handle, 0, WIFI_DATA_TRANSFER_COMPLETED, eSetBits );
                             }
                         }
                     }
@@ -450,13 +507,14 @@ bool wifi_receive_packet()
                         tftp_ok = 0;
                     }
                 }
-            }
 
-            if ( tftp_ok == 0 )
-            {
-                /* An Error Occured. we need to put back the taken frame*/
-                fifo_return_free_frame();
-                // wifi_stat.current_frame_download = NULL;
+                if ( tftp_ok == 0 )
+                {
+                    /* An Error Occured. we need to put back the taken frame*/
+                    fifo_return_free_frame();
+                    wifi_stat.current_frame_download = NULL;
+                    xTaskNotifyIndexed( wifi_send_task_handle, 0, WIFI_DATA_TRANSFER_ERROR, eSetBits );
+                }
             }
         }
     }
