@@ -40,8 +40,8 @@ architecture rtl of qspi_interface is
 	signal sync_spi_d2_reg      : std_logic_vector(1 downto 0);
 	signal sync_spi_d3_reg      : std_logic_vector(1 downto 0);
 
-	signal sync_spi_clk_r1      : std_logic;
-	signal sync_spi_clk_r2      : std_logic;
+	--signal sync_spi_clk_r1      : std_logic;
+	--signal sync_spi_clk_r2      : std_logic;
 	signal sync_spi_cs          : std_logic;
 	signal sync_spi_data        : std_logic_vector(3 downto 0);
 
@@ -59,7 +59,9 @@ architecture rtl of qspi_interface is
 	signal valid_ff_pulse_reg   : std_logic_vector(1 downto 0);
 	signal valid_intern         : std_logic;
 
-	signal symbol_streamed      : std_logic;
+	signal symbol_streamed         : std_logic;
+	signal transfer_ongoing        : std_logic;
+	signal transfer_ongoing_ff     : std_logic_vector(1 downto 0);
 
 	type state_test is (none, t1, t_data2ram);
 	signal test_state         : state_test;
@@ -110,6 +112,7 @@ begin
 	end process;
 
 
+
 	-- sync in signals
 	p_sync: process(all)
 	begin
@@ -121,8 +124,6 @@ begin
 			sync_spi_d2_reg  <= (others =>'0');
 			sync_spi_d3_reg  <= (others =>'0');
 
-			data_takeover_pulse <= '0';
-
 		elsif rising_edge(clock_clk) then
 			sync_spi_clk_reg <=  sync_spi_clk_reg(0) & conduit_qspi_clk;
 			sync_spi_cs_reg  <=  sync_spi_cs_reg (0) & conduit_qspi_cs     ;
@@ -131,13 +132,10 @@ begin
 			sync_spi_d2_reg  <=  sync_spi_d2_reg (0) & conduit_qspi_data(2);
 			sync_spi_d3_reg  <=  sync_spi_d3_reg (0) & conduit_qspi_data(3);
 
-			if sync_spi_clk_reg = "01" then --pos edge
-				data_takeover_pulse <= '1';
-			else
-				data_takeover_pulse <= '0';
-			end if;
 		end if;
 	end process p_sync;
+
+	data_takeover_pulse <= '1' when sync_spi_clk_reg = "01" else '0';
 
 	conduit_ping_pong <= '0'; --not used
 
@@ -170,7 +168,7 @@ begin
 
 	p_data_collector: process(all)
 	begin
-		if reset_reset = '1'  or sync_spi_cs = '1' then
+		if reset_reset = '1' then
 			data_in_buffer <= (others => '0');
 			nibble_count <= 0;
 			valid_intern <= '0';
@@ -179,12 +177,19 @@ begin
 
 		elsif rising_edge(clock_clk) then
 
+			--if sync_spi_cs = '1' then
+			--end if;
+
 			if cs_edge_start = '1' then
+				--nibble_count <= 0;
+				--data_in_buffer <= (others => '0');
+				--valid_intern <= '0';
 				pixel_count <= 0;
 
 			elsif data_takeover_pulse='1' then
 				data_in_buffer <= data_in_buffer(19 downto 0) & sync_spi_data;
 
+				-- track nibbles
 				if nibble_count=5 then
 					nibble_count <= 0;
 					pixel_count <= pixel_count + 1;
@@ -192,20 +197,28 @@ begin
 					nibble_count <= nibble_count + 1;
 				end if;
 
-				if nibble_count=0 and pixel_count > 0 then
-					aso_out0_data <= data_in_buffer ;
-				end if;
+			end if;
 
-				if pixel_count > 0 and nibble_count >= 0 and nibble_count < 5 then
-					valid_intern <= '1';
-				else
-					valid_intern <= '0';
-				end if;
+			if nibble_count=0 and pixel_count > 0 then
+				aso_out0_data <= data_in_buffer ;
+			end if;
+
+			if pixel_count > 0 and nibble_count >= 0 and nibble_count < 5 then
+				valid_intern <= '1';
+			else
+				valid_intern <= '0';
+			end if;
+
+			if transfer_ongoing_ff = "10" then
+				nibble_count <= 0;
+				data_in_buffer <= (others => '0');
+				valid_intern <= '0';
+				pixel_count <= 0;
+				aso_out0_data <= (others => '0');
+
 			end if;
 		end if;
 	end process p_data_collector;
-	-- aso_out0_data <= data_in_buffer when (nibble_count=0 and pixel_count > 0) else (others=>'0');
-
 
 	p_valid_pos_edge:process(all)
 	begin
@@ -223,41 +236,63 @@ begin
 		if reset_reset = '1' then
 			symbol_streamed <= '0';
 			aso_out0_valid <= '0';
-			aso_out0_startofpacket <= '0';
-			last_pix <= 0;
 			aso_out0_endofpacket <= '0';
+			-- end_of_packet_streamed <= '1';
+			transfer_ongoing <= '0';
 
 		elsif rising_edge(clock_clk) then
 			aso_out0_endofpacket <= '0';
-			aso_out0_startofpacket <= '0';
 			aso_out0_valid <= '0';
 
-			if cs_edge_end = '1' then
-				last_pix <= pixel_count;
-			end if;
-
+			-- check for intern valid edge to restart symbol-straming
 			if valid_ff_pulse_reg="01" then
 				symbol_streamed <= '0';
 
-			elsif valid_ff_pulse_reg = "11" and symbol_streamed = '0' and aso_out0_ready = '1' then
+			elsif valid_ff_pulse_reg = "11" and sync_spi_cs='0' and
+					symbol_streamed = '0' and aso_out0_ready = '1' and pixel_count > 0 then
 				aso_out0_endofpacket <= '0';
 				symbol_streamed <= '1';
 				aso_out0_valid <= '1';
+			end if;
 
-				-- send start of packet at pix 1 (its actually pix 0, but currently receiving pix 1)
-				if pixel_count = 1 then
-					aso_out0_startofpacket <= '1';
-				end if;
+			-- send start of packet at pix 1 (its actually pix 0, but currently receiving pix 1)
+			if pixel_count = 1 and aso_out0_valid = '1' then
+				transfer_ongoing <= '1';
+			end if;
 
-			-- since we dont know
-			elsif pixel_count = last_pix and pixel_count > 0 then
+			-- last packet
+			if transfer_ongoing = '1' and sync_spi_cs='1' and aso_out0_ready = '1' then
 				aso_out0_endofpacket <= '1';
 				aso_out0_valid <= '1';
-				last_pix <= 0;
+				transfer_ongoing <= '0';
+			end if;
+
+			if transfer_ongoing_ff = "10" then
+
+
 			end if;
 		end if;
 	end process p_data_streamer;
 
+	aso_out0_startofpacket <= '1' when (pixel_count = 1 and aso_out0_valid = '1') else '0';
+
+	p_transfer_end_edge:process(all)
+	begin
+		if reset_reset = '1' then
+			transfer_ongoing_ff <= (others => '0');
+		elsif rising_edge(clock_clk) then
+			transfer_ongoing_ff <= transfer_ongoing_ff(0) & aso_out0_endofpacket ;
+		end if;
+	end process p_transfer_end_edge;
+
+	-- p_end_of_transfer: process(all)
+	-- begin
+	-- 	if reset_reset = '1' then
+	-- 		transfer_ongoing_ff <= (others => '0');
+	-- 	elsif rising_edge(clock_clk) then
+	-- 		transfer_ongoing_ff <= transfer_ongoing_ff(0) & transfer_ongoing;
+	-- 	end if;
+	-- end process p_end_of_transfer;
 
 	-- if reset_reset = '1' then
 	-- elsif rising_edge(clock_clk) then

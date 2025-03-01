@@ -14,9 +14,10 @@ use IEEE.numeric_std.all;
 
 entity ram_master is
 	generic (
-		image_cols : integer := 256;
-		-- image_rows : integer := 120
-		image_rows : integer := 20
+		--image_cols : integer := 256;
+		image_rows : integer := 120;
+		image_cols_bits: integer:= 8;
+		BASE_ADDR_2_OFFSET : unsigned  :=  X"020000"
 	);
 	port (
 		clock_clk                : in  std_logic                     := '0';             --                clock.clk
@@ -90,13 +91,17 @@ architecture rtl of ram_master is
 	constant BASE_ADDR_1      : unsigned(23 downto 0):= (others => '0');
 
 	-- 60'000 pixel need addr range of 120'000          (= 0x01E000)
-	constant BASE_ADDR_2: unsigned(23 downto 0):=   X"020000"; --TODO: this in real design
+	--constant BASE_ADDR_2: unsigned(23 downto 0):=   X"020000"; --TODO: this in real design
+	constant BASE_ADDR_2: unsigned(23 downto 0):=   BASE_ADDR_2_OFFSET;
 	-- constant BASE_ADDR_2      : unsigned(23 downto 0):=  X"001000"; -- only for testing
 	signal active_base_addr   : std_logic;
 
-	constant addr_row_to_row_offset  : integer := 2* image_cols -1;
-	constant addr_b_col_shift_offset : integer := image_cols/2;
-	signal addr_ab_converter         : unsigned (7 downto 0); -- TODO: only valid for 256 cols
+	constant addr_row_to_row_offset  : integer := 2* 2**image_cols_bits -1;
+	constant addr_b_col_shift_offset : integer := 2**image_cols_bits/2;
+	constant image_cols :integer := 2**image_cols_bits;
+
+	-- signal addr_ab_converter         : unsigned (7 downto 0); -- TODO: only valid for 256 cols
+	signal addr_ab_converter         : unsigned (image_cols_bits-1 downto 0); -- TODO: only valid for 256 cols
 
 	signal addr_ready                : std_logic;
 	signal addr_valid                : std_logic;
@@ -159,14 +164,16 @@ begin
 
 			when t_data_in =>
 				conduit_debug_ram_out(23 downto 0) <= asi_in0_data;
-				conduit_debug_ram_out(31) <= asi_in0_valid;
-				conduit_debug_ram_out(30) <= asi_in0_ready;
-				conduit_debug_ram_out(29) <= asi_in0_startofpacket;
-				conduit_debug_ram_out(28) <= asi_in0_endofpacket;
-				conduit_debug_ram_out(29 downto 4) <= (others => '0');
+				--conduit_debug_ram_out(31) <= asi_in0_valid;
+				--conduit_debug_ram_out(30) <= asi_in0_ready;
+				--conduit_debug_ram_out(29) <= asi_in0_startofpacket;
+				--conduit_debug_ram_out(28) <= asi_in0_endofpacket;
+				conduit_debug_ram_out(31 downto 24) <= (others => '0');
 
 				conduit_debug_ram_out_2(0) <= asi_in0_startofpacket;
-				conduit_debug_ram_out_2(31 downto 1) <= (others => '0');
+				conduit_debug_ram_out_2(1) <= asi_in0_valid;
+				conduit_debug_ram_out_2(2) <= asi_in0_endofpacket;
+				conduit_debug_ram_out_2(31 downto 3) <= (others => '0');
 
 			when others =>
 				conduit_debug_ram_out(31 downto 0) <= (others => '0');
@@ -205,6 +212,7 @@ begin
         end if;
     end process InitialDelay;
 
+    -- process prototype, no functionality
 	-- p_end_packet_switch :process(all)
 	-- begin
 	-- 	if reset_reset = '1' then
@@ -233,32 +241,28 @@ begin
 			if conduit_col_info_fire='1' and stage=0 then
 				addr_a_preload <= (others => '0');
 				addr_b_preload <= (others => '0');
+				addr_ab_converter <= (others => '0');
 
 				addr_valid <= '0';
 				stage := 1;
 
 			elsif stage=1 then
 
-				addr_a_preload(9 downto 1) <= unsigned(conduit_col_info_col_nr); -- *2 --TODO: need this
-				-- addr_a_preload(0) <= '0';
-				-- addr_a_preload(8 downto 0) <= unsigned(conduit_col_info_col_nr);
-
-				addr_ab_converter <= unsigned(conduit_col_info_col_nr( 7 downto 0 )); -- TODO: case 512 cols: need all bits
-
+				addr_a_preload(9 downto 1) <= unsigned(conduit_col_info_col_nr); -- factor 2 because every pix need 2 addresses
+				addr_ab_converter <= unsigned(conduit_col_info_col_nr( image_cols_bits-1 downto 0 ));
 
 				addr_valid <= '0';
 				stage:=2;
 			elsif stage=2 then
 				addr_a_preload <= addr_a_preload + addr_adder;
-				-- addr_b_preload(9 downto 0) <= (addr_ab_converter - addr_b_col_shift_offset) & "0"; -- let wrap around and shift for *2 (512 version)
-				addr_b_preload(8 downto 0) <= (addr_ab_converter - addr_b_col_shift_offset) & "0"; -- let wrap around and shift for *2
-				addr_b_preload(7 downto 0) <= (addr_ab_converter - addr_b_col_shift_offset);
+				addr_b_preload(image_cols_bits downto 0) <= (addr_ab_converter + addr_b_col_shift_offset) & "0"; -- let wrap around and shift for *2
+				-- addr_b_preload(image_cols_bits-1 downto 0) <= (addr_ab_converter - addr_b_col_shift_offset);
 
 				addr_valid <= '0';
 				stage:=3;
 
 			elsif stage=3 then
-				addr_b_preload <= addr_b_preload + addr_adder + image_cols; -- TODO:does that work when addr is doubled?
+				addr_b_preload <= addr_b_preload + addr_adder + image_cols + image_cols; -- TODO:does that work when addr is doubled?
 				addr_ready <= '1';
 				addr_valid <= '0';
 				stage := 0;
@@ -390,7 +394,6 @@ begin
 
 	p_AVM_Read_statemachine: process(all)
 	constant PIX_PER_ASO: integer:= image_rows/2;
-	-- constant PIX_PER_ASO: integer:= 20; --TODO:check value. must be 60 in real design
     begin
 		if (main_state = main_read_A or main_state = main_read_B) then
 			case read_state is
@@ -424,7 +427,7 @@ begin
 					end if;
 
 				when read_2 =>
-					if pix_count < PIX_PER_ASO then
+					if pix_count < PIX_PER_ASO-1 then
 						if avm_m0_waitrequest='1' then
 							next_read_state <= wait_read_1;
 						else
@@ -478,7 +481,7 @@ begin
 					if pix_count=0 and (next_read_state=read_1 or next_read_state=wait_read_1) then
 						active_aso_startofpacket <= '1';
 						active_aso_endofpacket <= '0';
-					elsif pix_count >= PIX_PER_ASO-1 and next_read_state=end_read then
+					elsif pix_count >= PIX_PER_ASO-2 and next_read_state=end_read then
 						active_aso_endofpacket <= '1';
 						active_aso_startofpacket <= '0';
 					else
@@ -547,8 +550,8 @@ begin
 				current_address_read <= current_address_read + 1;
 
 			elsif next_read_state= read_2 then -- TODO: change for hot version
-				current_address_read <= current_address_read + addr_row_to_row_offset;
-				-- current_address_read <= current_address_read + 1;--test version;
+			    -- always jump 2 rows
+				current_address_read <= current_address_read + addr_row_to_row_offset + addr_row_to_row_offset + 1;
 			end if;
 		end if;
 	end process p_update_addr;
@@ -591,7 +594,7 @@ begin
 		ELSIF rising_edge(clock_clk)THEN
 			write_state <= next_write_state;
 
-			-- buffering data in. we dont know if we can write it already
+			-- buffering data in. we dont know if we can write it already.
 			if asi_in0_valid = '1' then
 				data_in_buffer <= asi_in0_data;
 			end if;

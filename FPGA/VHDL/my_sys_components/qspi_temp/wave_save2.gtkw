@@ -1,0 +1,46 @@
+[*]
+[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
+[*] Mon Feb 24 12:20:08 2025
+[*]
+[dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\qspi_temp\func2.ghw"
+[dumpfile_mtime] "Mon Feb 24 06:43:59 2025"
+[dumpfile_size] 983657
+[savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\qspi_temp\wave_save2.gtkw"
+[timestart] 176
+[size] 1920 1017
+[pos] -1 -1
+*-5.000000 301 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.qspi_interface_tb.
+[treeopen] top.qspi_interface_tb.dut2.
+[sst_width] 385
+[signals_width] 288
+[sst_expanded] 1
+[sst_vpaned_height] 300
+@28
+top.qspi_interface_tb.s_clock_clk
+top.qspi_interface_tb.s_reset_reset
+@22
+#{top.qspi_interface_tb.s_conduit_qspi_data[3:0]} top.qspi_interface_tb.s_conduit_qspi_data[3] top.qspi_interface_tb.s_conduit_qspi_data[2] top.qspi_interface_tb.s_conduit_qspi_data[1] top.qspi_interface_tb.s_conduit_qspi_data[0]
+@28
+top.qspi_interface_tb.s_conduit_qspi_cs
+top.qspi_interface_tb.s_conduit_qspi_clk
+top.qspi_interface_tb.dut2.sync_qspi_clk_pulse
+@22
+#{top.qspi_interface_tb.dut2.data_in_buffer[23:0]} top.qspi_interface_tb.dut2.data_in_buffer[23] top.qspi_interface_tb.dut2.data_in_buffer[22] top.qspi_interface_tb.dut2.data_in_buffer[21] top.qspi_interface_tb.dut2.data_in_buffer[20] top.qspi_interface_tb.dut2.data_in_buffer[19] top.qspi_interface_tb.dut2.data_in_buffer[18] top.qspi_interface_tb.dut2.data_in_buffer[17] top.qspi_interface_tb.dut2.data_in_buffer[16] top.qspi_interface_tb.dut2.data_in_buffer[15] top.qspi_interface_tb.dut2.data_in_buffer[14] top.qspi_interface_tb.dut2.data_in_buffer[13] top.qspi_interface_tb.dut2.data_in_buffer[12] top.qspi_interface_tb.dut2.data_in_buffer[11] top.qspi_interface_tb.dut2.data_in_buffer[10] top.qspi_interface_tb.dut2.data_in_buffer[9] top.qspi_interface_tb.dut2.data_in_buffer[8] top.qspi_interface_tb.dut2.data_in_buffer[7] top.qspi_interface_tb.dut2.data_in_buffer[6] top.qspi_interface_tb.dut2.data_in_buffer[5] top.qspi_interface_tb.dut2.data_in_buffer[4] top.qspi_interface_tb.dut2.data_in_buffer[3] top.qspi_interface_tb.dut2.data_in_buffer[2] top.qspi_interface_tb.dut2.data_in_buffer[1] top.qspi_interface_tb.dut2.data_in_buffer[0]
+@420
+top.qspi_interface_tb.dut2.pixel_count
+top.qspi_interface_tb.dut2.nibble_count
+@22
+#{top.qspi_interface_tb.dut2.aso_out0_data[23:0]} top.qspi_interface_tb.dut2.aso_out0_data[23] top.qspi_interface_tb.dut2.aso_out0_data[22] top.qspi_interface_tb.dut2.aso_out0_data[21] top.qspi_interface_tb.dut2.aso_out0_data[20] top.qspi_interface_tb.dut2.aso_out0_data[19] top.qspi_interface_tb.dut2.aso_out0_data[18] top.qspi_interface_tb.dut2.aso_out0_data[17] top.qspi_interface_tb.dut2.aso_out0_data[16] top.qspi_interface_tb.dut2.aso_out0_data[15] top.qspi_interface_tb.dut2.aso_out0_data[14] top.qspi_interface_tb.dut2.aso_out0_data[13] top.qspi_interface_tb.dut2.aso_out0_data[12] top.qspi_interface_tb.dut2.aso_out0_data[11] top.qspi_interface_tb.dut2.aso_out0_data[10] top.qspi_interface_tb.dut2.aso_out0_data[9] top.qspi_interface_tb.dut2.aso_out0_data[8] top.qspi_interface_tb.dut2.aso_out0_data[7] top.qspi_interface_tb.dut2.aso_out0_data[6] top.qspi_interface_tb.dut2.aso_out0_data[5] top.qspi_interface_tb.dut2.aso_out0_data[4] top.qspi_interface_tb.dut2.aso_out0_data[3] top.qspi_interface_tb.dut2.aso_out0_data[2] top.qspi_interface_tb.dut2.aso_out0_data[1] top.qspi_interface_tb.dut2.aso_out0_data[0]
+@28
+#{top.qspi_interface_tb.dut2.sync_spi_clk_reg[1:0]} top.qspi_interface_tb.dut2.sync_spi_clk_reg[1] top.qspi_interface_tb.dut2.sync_spi_clk_reg[0]
+top.qspi_interface_tb.dut2.cs_edge_start
+top.qspi_interface_tb.dut2.cs_edge_end
+#{top.qspi_interface_tb.dut2.sync_ff_cs_reg[1:0]} top.qspi_interface_tb.dut2.sync_ff_cs_reg[1] top.qspi_interface_tb.dut2.sync_ff_cs_reg[0]
+#{top.qspi_interface_tb.dut2.sync_spi_cs_reg[1:0]} top.qspi_interface_tb.dut2.sync_spi_cs_reg[1] top.qspi_interface_tb.dut2.sync_spi_cs_reg[0]
+top.qspi_interface_tb.dut2.sync_spi_cs
+@29
+top.qspi_interface_tb.dut2.valid_intern
+[pattern_trace] 1
+[pattern_trace] 0

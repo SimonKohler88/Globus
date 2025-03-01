@@ -1,0 +1,300 @@
+     -:    0:Source:qspi_interface.vhd
+     -:    0:Working directory:
+     -:    1:-- qspi_interface.vhd
+     -:    2:
+     -:    3:-- This file was auto-generated as a prototype implementation of a module
+     -:    4:-- created in component editor.  It ties off all outputs to ground and
+     -:    5:-- ignores all inputs.  It needs to be edited to make it do something
+     -:    6:-- useful.
+     -:    7:-- 
+     -:    8:-- This file will not be automatically regenerated.  You should check it in
+     -:    9:-- to your version control system if you want to keep it.
+     -:   10:
+     -:   11:library IEEE;
+     -:   12:use IEEE.std_logic_1164.all;
+     -:   13:use IEEE.numeric_std.all;
+     -:   14:
+     -:   15:entity qspi_interface is
+     -:   16:	port (
+     -:   17:		aso_out0_data          : out std_logic_vector(23 downto 0);                    --          aso_out0.data
+     -:   18:		aso_out0_endofpacket   : out std_logic;                                       --                  .endofpacket
+     -:   19:		aso_out0_ready         : in  std_logic                    := '0';             --                  .ready
+     -:   20:		aso_out0_startofpacket : out std_logic;                                       --                  .startofpacket
+     -:   21:		aso_out0_valid         : out std_logic;                                       --                  .valid
+     -:   22:		clock_clk              : in  std_logic                    := '0';             --             clock.clk
+     -:   23:		reset_reset            : in  std_logic                    := '0';             --             reset.reset
+     -:   24:		conduit_qspi_data      : in  std_logic_vector(3 downto 0) := (others => '0'); --      conduit_qspi.qspi_data
+     -:   25:		conduit_qspi_clk       : in  std_logic                    := '0';             --                  .qspi_clk
+     -:   26:		conduit_qspi_cs        : in  std_logic                    := '0';             --                  .qspi_cs
+     -:   27:		conduit_ping_pong      : out std_logic                          ;              -- conduit_ping_pong.new_signal
+     -:   28:
+     -:   29:		conduit_debug_qspi_out    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_qspi.qspi_out
+     -:   30:		conduit_debug_qspi_out_2    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_qspi.qspi_out_2
+     -:   31:		conduit_debug_qspi_in     : in   std_logic_vector(31 downto 0)  := (others => '0') --                         .qspi_in
+     -:   32:	);
+     -:   33:end entity qspi_interface;
+     -:   34:
+     -:   35:architecture rtl of qspi_interface is
+     -:   36:	signal sync_spi_clk_reg     : std_logic_vector(1 downto 0);
+     -:   37:	signal sync_spi_cs_reg      : std_logic_vector(1 downto 0);
+     -:   38:	signal sync_spi_d0_reg      : std_logic_vector(1 downto 0);
+     -:   39:	signal sync_spi_d1_reg      : std_logic_vector(1 downto 0);
+     -:   40:	signal sync_spi_d2_reg      : std_logic_vector(1 downto 0);
+     -:   41:	signal sync_spi_d3_reg      : std_logic_vector(1 downto 0);
+     -:   42:
+     -:   43:	signal sync_spi_clk_r1      : std_logic;
+     -:   44:	signal sync_spi_clk_r2      : std_logic;
+     -:   45:	signal sync_spi_cs          : std_logic;
+     -:   46:	signal sync_spi_data        : std_logic_vector(3 downto 0);
+     -:   47:
+     -:   48:	signal sync_ff_cs_reg       : std_logic_vector(1 downto 0);
+     -:   49:	signal cs_edge_start        : std_logic;
+     -:   50:	signal cs_edge_end          : std_logic;
+     -:   51:	signal sync_ff_clk_reg      : std_logic_vector(1 downto 0);
+     -:   52:
+     -:   53:	signal data_in_buffer       : std_logic_vector(23 downto 0);
+     -:   54:	signal data_takeover_pulse  : std_logic;
+     -:   55:	signal nibble_count			: natural range 0 to 5  :=0;
+     -:   56:	signal pixel_count			: natural range 0 to 120*256 + 10 := 0;
+     -:   57:	signal last_pix  			: natural range 0 to 120*256 + 10 := 0;
+     -:   58:
+     -:   59:	signal valid_ff_pulse_reg   : std_logic_vector(1 downto 0);
+     -:   60:	signal valid_intern         : std_logic;
+     -:   61:
+     -:   62:	signal symbol_streamed      : std_logic;
+     -:   63:
+     -:   64:	type state_test is (none, t1, t_data2ram);
+     -:   65:	signal test_state         : state_test;
+     -:   66:
+     -:   67:
+     -:   68:begin
+     1:   69:	test_state <= t_data2ram;
+     -:   70:	p_test: process(all)
+     -:   71:	begin
+     1:   72:		case test_state is
+     -:   73:			when none =>
+     1:   74:				conduit_debug_qspi_out(31 downto 0) <= (others => '0');
+     1:   75:				conduit_debug_qspi_out_2(31 downto 0) <= (others => '0');
+     -:   76:
+     -:   77:			when t1 =>
+     -:   78:				-- Test 1: check first pixel after transfer initiated
+ #####:   79:				conduit_debug_qspi_out(23 downto 0) <= aso_out0_data;
+ #####:   80:				conduit_debug_qspi_out(31 downto 24) <= (others=>'0');
+     -:   81:
+ #####:   82:				if pixel_count=1 then
+ #####:   83:					conduit_debug_qspi_out_2(0) <= '1';
+     -:   84:				else
+ #####:   85:					conduit_debug_qspi_out_2(0) <= '0';
+     -:   86:				end if;
+ #####:   87:				conduit_debug_qspi_out_2(1) <= sync_spi_cs;
+ #####:   88:				conduit_debug_qspi_out_2(31 downto 2) <= (others=>'0');
+     -:   89:
+     -:   90:			when t_data2ram =>
+     1:   91:				conduit_debug_qspi_out(23 downto 0) <= aso_out0_data;
+     1:   92:				conduit_debug_qspi_out(31) <= aso_out0_valid;
+     1:   93:				conduit_debug_qspi_out(30) <= aso_out0_ready;
+     1:   94:				conduit_debug_qspi_out(29) <= aso_out0_startofpacket;
+     1:   95:				conduit_debug_qspi_out(28) <= aso_out0_endofpacket;
+     1:   96:				conduit_debug_qspi_out(27 downto 24) <= (others => '0');
+     -:   97:
+     1:   98:				if pixel_count=1 then
+     1:   99:					conduit_debug_qspi_out_2(0) <= '1';
+     -:  100:				else
+     1:  101:					conduit_debug_qspi_out_2(0) <= '0';
+     -:  102:				end if;
+     -:  103:
+     1:  104:				conduit_debug_qspi_out_2(31 downto 1) <= (others => '0');
+     -:  105:
+     -:  106:			when others =>
+ #####:  107:				conduit_debug_qspi_out(31 downto 0) <= (others => '0');
+ #####:  108:				conduit_debug_qspi_out_2(31 downto 0) <= (others => '0');
+     -:  109:		end case;
+     -:  110:	end process;
+     -:  111:
+     -:  112:
+     -:  113:
+     -:  114:	-- sync in signals
+     -:  115:	p_sync: process(all)
+     -:  116:	begin
+     1:  117:		if reset_reset = '1' then
+     1:  118:			sync_spi_clk_reg <= (others =>'0');
+     1:  119:			sync_spi_cs_reg  <= (others =>'0');
+     1:  120:			sync_spi_d0_reg  <= (others =>'0');
+     1:  121:			sync_spi_d1_reg  <= (others =>'0');
+     1:  122:			sync_spi_d2_reg  <= (others =>'0');
+     1:  123:			sync_spi_d3_reg  <= (others =>'0');
+     -:  124:
+     1:  125:			data_takeover_pulse <= '0';
+     -:  126:
+     -:  127:		elsif rising_edge(clock_clk) then
+     1:  128:			sync_spi_clk_reg <=  sync_spi_clk_reg(0) & conduit_qspi_clk;
+     1:  129:			sync_spi_cs_reg  <=  sync_spi_cs_reg (0) & conduit_qspi_cs     ;
+     1:  130:			sync_spi_d0_reg  <=  sync_spi_d0_reg (0) & conduit_qspi_data(0);
+     1:  131:			sync_spi_d1_reg  <=  sync_spi_d1_reg (0) & conduit_qspi_data(1);
+     1:  132:			sync_spi_d2_reg  <=  sync_spi_d2_reg (0) & conduit_qspi_data(2);
+     1:  133:			sync_spi_d3_reg  <=  sync_spi_d3_reg (0) & conduit_qspi_data(3);
+     -:  134:
+     1:  135:			if sync_spi_clk_reg = "01" then --pos edge
+     1:  136:				data_takeover_pulse <= '1';
+     -:  137:			else
+     1:  138:				data_takeover_pulse <= '0';
+     -:  139:			end if;
+     -:  140:		end if;
+     -:  141:	end process p_sync;
+     -:  142:
+     1:  143:	conduit_ping_pong <= '0'; --not used
+     -:  144:
+     1:  145:	sync_spi_cs      <= sync_spi_cs_reg(1);
+     1:  146:	sync_spi_data    <= sync_spi_d3_reg(1) & sync_spi_d2_reg(1) & sync_spi_d1_reg(1) & sync_spi_d0_reg(1);
+     -:  147:
+     -:  148:	-- generate some edges for packet start, packet end
+     -:  149:	p_generate_edges: process(all)
+     -:  150:	begin
+     1:  151:		if reset_reset = '1' then
+     1:  152:			sync_ff_cs_reg <= (others => '0');
+     1:  153:			cs_edge_start <= '0';
+     1:  154:			cs_edge_end   <= '0';
+     -:  155:
+     -:  156:		elsif rising_edge(clock_clk) then
+     1:  157:			sync_ff_cs_reg <= sync_ff_cs_reg(0) & sync_spi_cs;
+     -:  158:
+     -:  159:			-- generate edges
+     1:  160:			if sync_ff_cs_reg = "10" then
+     1:  161:				cs_edge_start <= '1';
+     -:  162:			elsif sync_ff_cs_reg = "01" then
+     1:  163:				cs_edge_end <= '1';
+     -:  164:			else
+     1:  165:				cs_edge_start <= '0';
+     1:  166:				cs_edge_end <= '0';
+     -:  167:			end if;
+     -:  168:		end if;
+     -:  169:	end process p_generate_edges;
+     -:  170:
+     -:  171:
+     -:  172:	p_data_collector: process(all)
+     -:  173:	begin
+     1:  174:		if reset_reset = '1'  or sync_spi_cs = '1' then
+     1:  175:			data_in_buffer <= (others => '0');
+     1:  176:			nibble_count <= 0;
+     1:  177:			valid_intern <= '0';
+     1:  178:			pixel_count <= 0;
+     1:  179:			aso_out0_data <= (others => '0');
+     -:  180:
+     -:  181:		elsif rising_edge(clock_clk) then
+     -:  182:
+     1:  183:			if cs_edge_start = '1' then
+     1:  184:				pixel_count <= 0;
+     -:  185:
+     -:  186:			elsif data_takeover_pulse='1' then
+     1:  187:				data_in_buffer <= data_in_buffer(19 downto 0) & sync_spi_data;
+     -:  188:
+     1:  189:				if nibble_count=5 then
+     1:  190:					nibble_count <= 0;
+     1:  191:					pixel_count <= pixel_count + 1;
+     -:  192:				else
+     1:  193:					nibble_count <= nibble_count + 1;
+     -:  194:				end if;
+     -:  195:
+     1:  196:				if nibble_count=0 and pixel_count > 0 then
+     1:  197:					aso_out0_data <= data_in_buffer ;
+     -:  198:				end if;
+     -:  199:
+     1:  200:				if pixel_count > 0 and nibble_count >= 0 and nibble_count < 5 then
+     1:  201:					valid_intern <= '1';
+     -:  202:				else
+     1:  203:					valid_intern <= '0';
+     -:  204:				end if;
+     -:  205:			end if;
+     -:  206:		end if;
+     -:  207:	end process p_data_collector;
+     -:  208:	-- aso_out0_data <= data_in_buffer when (nibble_count=0 and pixel_count > 0) else (others=>'0');
+     -:  209:
+     -:  210:
+     -:  211:	p_valid_pos_edge:process(all)
+     -:  212:	begin
+     1:  213:		if reset_reset = '1' then
+     1:  214:			valid_ff_pulse_reg <= (others => '0');
+     -:  215:		elsif rising_edge(clock_clk) then
+     1:  216:			valid_ff_pulse_reg <= valid_ff_pulse_reg(0) & valid_intern;
+     -:  217:		end if;
+     -:  218:	end process p_valid_pos_edge;
+     -:  219:
+     -:  220:
+     -:  221:	-- generate startofpacket, valid and endofpacket. data already setup previously
+     -:  222:	p_data_streamer: process(all)
+     -:  223:	begin
+     1:  224:		if reset_reset = '1' then
+     1:  225:			symbol_streamed <= '0';
+     1:  226:			aso_out0_valid <= '0';
+     1:  227:			aso_out0_startofpacket <= '0';
+     1:  228:			last_pix <= 0;
+     1:  229:			aso_out0_endofpacket <= '0';
+     -:  230:
+     -:  231:		elsif rising_edge(clock_clk) then
+     1:  232:			aso_out0_endofpacket <= '0';
+     1:  233:			aso_out0_startofpacket <= '0';
+     1:  234:			aso_out0_valid <= '0';
+     -:  235:
+     1:  236:			if cs_edge_end = '1' then
+     1:  237:				last_pix <= pixel_count;
+     -:  238:			end if;
+     -:  239:
+     1:  240:			if valid_ff_pulse_reg="01" then
+     1:  241:				symbol_streamed <= '0';
+     -:  242:
+     -:  243:			elsif valid_ff_pulse_reg = "11" and symbol_streamed = '0' and aso_out0_ready = '1' then
+     1:  244:				aso_out0_endofpacket <= '0';
+     1:  245:				symbol_streamed <= '1';
+     1:  246:				aso_out0_valid <= '1';
+     -:  247:
+     -:  248:				-- send start of packet at pix 1 (its actually pix 0, but currently receiving pix 1)
+     1:  249:				if pixel_count = 1 then
+     1:  250:					aso_out0_startofpacket <= '1';
+     -:  251:				end if;
+     -:  252:
+     -:  253:			-- since we dont know
+     -:  254:			elsif pixel_count = last_pix and pixel_count > 0 then
+ #####:  255:				aso_out0_endofpacket <= '1';
+ #####:  256:				aso_out0_valid <= '1';
+ #####:  257:				last_pix <= 0;
+     -:  258:			end if;
+     -:  259:		end if;
+     -:  260:	end process p_data_streamer;
+     -:  261:
+     -:  262:
+     -:  263:	-- if reset_reset = '1' then
+     -:  264:	-- elsif rising_edge(clock_clk) then
+     -:  265:	-- end if;
+     -:  266:
+     -:  267:
+     -:  268:
+     -:  269:
+     -:  270:
+     -:  271:
+     -:  272:
+     -:  273:
+     -:  274:
+     -:  275:
+     -:  276:
+     -:  277:
+     -:  278:
+     -:  279:
+     -:  280:
+     -:  281:
+     -:  282:
+     -:  283:
+     -:  284:
+     -:  285:
+     -:  286:
+     -:  287:
+     -:  288:
+     -:  289:
+     -:  290:
+     -:  291:
+     -:  292:
+     -:  293:
+     -:  294:
+     -:  295:
+     -:  296:
+     -:  297:
+     -:  298:end architecture rtl; -- of qspi_interface

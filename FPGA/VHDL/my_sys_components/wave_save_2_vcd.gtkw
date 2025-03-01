@@ -1,23 +1,78 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Wed Dec 04 21:06:20 2024
+[*] Tue Feb 25 16:13:05 2025
 [*]
 [dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\func2_vcd.vcd"
-[dumpfile_mtime] "Wed Dec 04 21:04:02 2024"
-[dumpfile_size] 2506506
+[dumpfile_mtime] "Tue Feb 25 16:12:03 2025"
+[dumpfile_size] 7151822
 [savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\wave_save_2_vcd.gtkw"
-[timestart] 28060
-[size] 1594 763
+[timestart] 101460
+[size] 1920 1017
 [pos] -1 -1
-*-13.000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-[treeopen] integration_tb.
-[sst_width] 325
-[signals_width] 206
+*-9.000000 102855 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] integration_complete_tb.
+[sst_width] 311
+[signals_width] 316
 [sst_expanded] 1
-[sst_vpaned_height] 210
+[sst_vpaned_height] 151
 @28
-integration_tb.s_conduit_qspi_clk
+integration_complete_tb.s_clock_clk
+integration_complete_tb.s_reset_reset
+@200
+-
+-Encoder
+@28
+integration_complete_tb.dut_encoder.conduit_intern_col_fire
+@22
+integration_complete_tb.dut_encoder.conduit_intern_col_nr[8:0]
+@200
+-
+-QSPI
+@28
+integration_complete_tb.dut_qspi.aso_out0_ready
+integration_complete_tb.dut_qspi.aso_out0_valid
+integration_complete_tb.dut_qspi.aso_out0_endofpacket
+integration_complete_tb.dut_qspi.aso_out0_startofpacket
+@22
+integration_complete_tb.dut_qspi.aso_out0_data[23:0]
+integration_complete_tb.dut_qspi.data_in_buffer[23:0]
+@28
+integration_complete_tb.dut_qspi.data_takeover_pulse
+@420
+integration_complete_tb.dut_qspi.pixel_count
+integration_complete_tb.dut_qspi.nibble_count
+@22
+integration_complete_tb.dut_qspi.sync_spi_data[3:0]
+@28
+integration_complete_tb.dut_qspi.transfer_ongoing
+@200
+-
+-LED_Interface
+@28
+integration_complete_tb.dut_led_interface.conduit_led_a_clk
+integration_complete_tb.dut_led_interface.conduit_led_a_data
+integration_complete_tb.dut_led_interface.conduit_led_b_data
+integration_complete_tb.dut_led_interface.conduit_led_c_data
+integration_complete_tb.dut_led_interface.conduit_led_d_data
+@22
+integration_complete_tb.dut_led_interface.asi_in0_data[23:0]
 @23
-integration_tb.sim_qspi.conduit_qspi_data[3:0]
+integration_complete_tb.dut_led_interface.asi_in1_data[23:0]
+@28
+integration_complete_tb.dut_led_interface.asi_in0_valid
+integration_complete_tb.dut_led_interface.asi_in0_ready
+integration_complete_tb.dut_led_interface.asi_in0_endofpacket
+@420
+integration_complete_tb.dut_led_interface.pix_in_counter_a
+@28
+integration_complete_tb.dut_led_interface.asi_in1_endofpacket
+@420
+integration_complete_tb.dut_led_interface.pix_in_counter_b
+@200
+-
+-RAM Master
+@22
+integration_complete_tb.dut_ram_master.read_address[23:0]
+integration_complete_tb.dut_ram_master.current_address_read[23:0]
 [pattern_trace] 1
 [pattern_trace] 0

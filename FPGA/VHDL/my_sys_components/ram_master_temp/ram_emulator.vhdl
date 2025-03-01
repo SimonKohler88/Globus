@@ -7,6 +7,9 @@ library std;
 use std.textio.all;
 
 entity avalon_slave_ram_emulator is
+generic (
+		RAM_ADDR_BITS : integer := 10
+	);
 	port (
 		rst : in std_ulogic;
 		clk : in std_ulogic;
@@ -42,13 +45,13 @@ architecture rtl of avalon_slave_ram_emulator is
   -- signal cas_delay: unsigned(1 downto 0):= (others => '0');
 
   -- constant RAM_ADDR_BITS : integer := 18;
-  constant RAM_ADDR_BITS : integer := 13;
+  --constant RAM_ADDR_BITS : integer := 10;
   --type t_mem is array (0 to 2**24-1) of std_ulogic_vector(15 downto 0);
-  -- type t_mem is array (0 to 2** RAM_ADDR_BITS-1) of std_ulogic_vector(15 downto 0);
+  type t_mem is array (0 to 2** RAM_ADDR_BITS -1) of std_ulogic_vector(15 downto 0);
   signal read_data_buf : std_ulogic_vector(15 downto 0) := (others=>'0');
   -- type t_mem is array (0 to 511) of std_ulogic_vector(15 downto 0);
   -- type t_mem is array (0 to 16383) of std_ulogic_vector(15 downto 0);
-  type t_mem is array (0 to 122880) of std_ulogic_vector(15 downto 0);
+  -- type t_mem is array (0 to 122880) of std_ulogic_vector(15 downto 0);
   signal mem : t_mem := (others=>(others=>'0'));
 
  -- file input_file : text open read_mode is "./ram_content.txt";
@@ -169,7 +172,7 @@ begin
       mem <= (others => (others => '0'));
     elsif rising_edge(clk) then
       if waitrequest = '0' and write_en_int = '1' then
-        mem(to_integer(unsigned(address(RAM_ADDR_BITS downto 0)))) <= writedata;
+        mem(to_integer(unsigned(address(RAM_ADDR_BITS-1 downto 0)))) <= writedata;
       end if;
     end if;
   end process p_store;
@@ -192,6 +195,6 @@ begin
     end if;
   end process p_read;
 
-  read_data_buf <= mem(to_integer(unsigned(address(RAM_ADDR_BITS downto 0))));
+  read_data_buf <= mem(to_integer(unsigned(address(RAM_ADDR_BITS-1 downto 0))));
 
 end architecture rtl;

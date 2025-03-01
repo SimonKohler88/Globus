@@ -1,43 +1,48 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Sun Dec 01 10:17:46 2024
+[*] Tue Feb 25 13:47:10 2025
 [*]
-[dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\qspi_temp\func.vcd"
-[dumpfile_mtime] "Sun Dec 01 10:09:26 2024"
-[dumpfile_size] 3752276
+[dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\qspi_temp\func.ghw"
+[dumpfile_mtime] "Tue Feb 25 13:46:01 2025"
+[dumpfile_size] 1020631
 [savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\qspi_temp\wave_save.gtkw"
-[timestart] 136468
+[timestart] 58234
 [size] 1920 1017
-[pos] -2006 -138
-*-6.794608 136867 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-[treeopen] qspi_interface_tb.
-[sst_width] 239
-[signals_width] 288
+[pos] -1 -1
+*-6.794608 58450 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.qspi_interface_tb.
+[treeopen] top.qspi_interface_tb.dut.
+[sst_width] 197
+[signals_width] 282
 [sst_expanded] 1
 [sst_vpaned_height] 298
 @28
-qspi_interface_tb.dut.clock_clk
-qspi_interface_tb.dut.sync_spi_cs
+top.qspi_interface_tb.s_clock_clk
 @22
-qspi_interface_tb.dut.sync_spi_data[3:0]
+#{top.qspi_interface_tb.dut.sync_spi_data[3:0]} top.qspi_interface_tb.dut.sync_spi_data[3] top.qspi_interface_tb.dut.sync_spi_data[2] top.qspi_interface_tb.dut.sync_spi_data[1] top.qspi_interface_tb.dut.sync_spi_data[0]
 @28
-qspi_interface_tb.dut.data_takeover_pulse
-@23
-qspi_interface_tb.dut.data_in_buffer[23:0]
-@420
-qspi_interface_tb.dut.nibble_count
+top.qspi_interface_tb.dut.cs_edge_end
+top.qspi_interface_tb.dut.sync_spi_cs
+top.qspi_interface_tb.dut.data_takeover_pulse
 @22
-qspi_interface_tb.dut.aso_out0_data[23:0]
+#{top.qspi_interface_tb.dut.data_in_buffer[23:0]} top.qspi_interface_tb.dut.data_in_buffer[23] top.qspi_interface_tb.dut.data_in_buffer[22] top.qspi_interface_tb.dut.data_in_buffer[21] top.qspi_interface_tb.dut.data_in_buffer[20] top.qspi_interface_tb.dut.data_in_buffer[19] top.qspi_interface_tb.dut.data_in_buffer[18] top.qspi_interface_tb.dut.data_in_buffer[17] top.qspi_interface_tb.dut.data_in_buffer[16] top.qspi_interface_tb.dut.data_in_buffer[15] top.qspi_interface_tb.dut.data_in_buffer[14] top.qspi_interface_tb.dut.data_in_buffer[13] top.qspi_interface_tb.dut.data_in_buffer[12] top.qspi_interface_tb.dut.data_in_buffer[11] top.qspi_interface_tb.dut.data_in_buffer[10] top.qspi_interface_tb.dut.data_in_buffer[9] top.qspi_interface_tb.dut.data_in_buffer[8] top.qspi_interface_tb.dut.data_in_buffer[7] top.qspi_interface_tb.dut.data_in_buffer[6] top.qspi_interface_tb.dut.data_in_buffer[5] top.qspi_interface_tb.dut.data_in_buffer[4] top.qspi_interface_tb.dut.data_in_buffer[3] top.qspi_interface_tb.dut.data_in_buffer[2] top.qspi_interface_tb.dut.data_in_buffer[1] top.qspi_interface_tb.dut.data_in_buffer[0]
 @420
-qspi_interface_tb.dut.pixel_count
+top.qspi_interface_tb.dut.nibble_count
+top.qspi_interface_tb.dut.pixel_count
+top.qspi_interface_tb.dut.last_pix
 @28
-qspi_interface_tb.dut.cs_edge_start
-qspi_interface_tb.dut.aso_out0_ready
-qspi_interface_tb.dut.valid_intern
-qspi_interface_tb.dut.valid_ff_pulse_reg[1:0]
-qspi_interface_tb.dut.aso_out0_valid
-qspi_interface_tb.dut.symbol_streamed
-qspi_interface_tb.dut.aso_out0_endofpacket
-qspi_interface_tb.dut.aso_out0_startofpacket
+#{top.qspi_interface_tb.dut.valid_ff_pulse_reg[1:0]} top.qspi_interface_tb.dut.valid_ff_pulse_reg[1] top.qspi_interface_tb.dut.valid_ff_pulse_reg[0]
+top.qspi_interface_tb.dut.valid_intern
+top.qspi_interface_tb.s_aso_out0_valid
+@22
+#{top.qspi_interface_tb.s_aso_out0_data[23:0]} top.qspi_interface_tb.s_aso_out0_data[23] top.qspi_interface_tb.s_aso_out0_data[22] top.qspi_interface_tb.s_aso_out0_data[21] top.qspi_interface_tb.s_aso_out0_data[20] top.qspi_interface_tb.s_aso_out0_data[19] top.qspi_interface_tb.s_aso_out0_data[18] top.qspi_interface_tb.s_aso_out0_data[17] top.qspi_interface_tb.s_aso_out0_data[16] top.qspi_interface_tb.s_aso_out0_data[15] top.qspi_interface_tb.s_aso_out0_data[14] top.qspi_interface_tb.s_aso_out0_data[13] top.qspi_interface_tb.s_aso_out0_data[12] top.qspi_interface_tb.s_aso_out0_data[11] top.qspi_interface_tb.s_aso_out0_data[10] top.qspi_interface_tb.s_aso_out0_data[9] top.qspi_interface_tb.s_aso_out0_data[8] top.qspi_interface_tb.s_aso_out0_data[7] top.qspi_interface_tb.s_aso_out0_data[6] top.qspi_interface_tb.s_aso_out0_data[5] top.qspi_interface_tb.s_aso_out0_data[4] top.qspi_interface_tb.s_aso_out0_data[3] top.qspi_interface_tb.s_aso_out0_data[2] top.qspi_interface_tb.s_aso_out0_data[1] top.qspi_interface_tb.s_aso_out0_data[0]
+@28
+top.qspi_interface_tb.s_aso_out0_startofpacket
+top.qspi_interface_tb.s_aso_out0_endofpacket
+top.qspi_interface_tb.dut.symbol_streamed
+top.qspi_interface_tb.dut.transfer_ongoing
+@29
+top.qspi_interface_tb.dut.aso_out0_ready
 [pattern_trace] 1
 [pattern_trace] 0

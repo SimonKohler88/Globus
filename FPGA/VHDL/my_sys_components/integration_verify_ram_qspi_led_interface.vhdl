@@ -73,7 +73,7 @@ architecture rtl of integration_verify_ram_qspi_led_interface is
     end procedure qspi_write_pixel;
 
 	procedure qspi_write_n_pixel (
-		constant pixel_to_write    : in integer range 0 to 60000;
+		constant pixel_to_write  : in integer range 0 to 60000;
 		signal clk               : in std_logic;
         signal qspi_clk          : out std_logic;
         signal qspi_cs           : out std_logic;
@@ -85,12 +85,17 @@ architecture rtl of integration_verify_ram_qspi_led_interface is
         variable v_input_line : line;
 	begin
 		qspi_cs <= '0';
-        wait for 2 ns;
+        wait for 10 ns;
         for i in 0 to pixel_to_write-1 loop
             readline(input_file, v_input_line);
             hread(v_input_line, v_write_data);
             qspi_write_pixel(v_write_data, clk, qspi_clk, data );
+
+            if i rem 30 = 0 then
+				wait for 20 ns;
+			end if;
         end loop;
+        wait for 10 ns;
         qspi_cs <= '1';
 	end procedure;
 
@@ -107,6 +112,9 @@ architecture rtl of integration_verify_ram_qspi_led_interface is
 
 
     component avalon_slave_ram_emulator is
+    generic (
+		RAM_ADDR_BITS : integer := 10
+	);
 	port (
 		rst : in std_ulogic;
 		clk : in std_ulogic;
@@ -142,7 +150,9 @@ architecture rtl of integration_verify_ram_qspi_led_interface is
 
 
 begin
-	 helper_ram_emulator: avalon_slave_ram_emulator port map (
+	 helper_ram_emulator: avalon_slave_ram_emulator
+	 generic map (RAM_ADDR_BITS => 14)
+	 port map (
 		rst           => reset_reset               ,
 		clk           => clock_clk               ,
         address       => avm_m0_address           ,
@@ -221,7 +231,7 @@ begin
         conduit_qspi_data <= (others => '0');
 
 
-        wait for 50 ns;
+        wait for 11 us;
 
 		qspi_write_n_pixel(100, internal_qspi_clock, conduit_qspi_clk, conduit_qspi_cs, conduit_qspi_data );
         -- conduit_qspi_cs <= '0';
@@ -235,6 +245,11 @@ begin
 
         wait for 50 us;
 
+        qspi_write_n_pixel(100, internal_qspi_clock, conduit_qspi_clk, conduit_qspi_cs, conduit_qspi_data );
+
+		wait for 50 us;
+
+		qspi_write_n_pixel(100, internal_qspi_clock, conduit_qspi_clk, conduit_qspi_cs, conduit_qspi_data );
         -- conduit_qspi_cs <= '0';
         -- wait for 2 ns;
         -- for i in 0 to c_pixel_to_send loop
@@ -303,12 +318,6 @@ begin
     begin
 		conduit_encoder_sim_switch <= '0';
 		conduit_encoder_sim_pulse <= '0';
-
-		wait for 50 ns;
-
-
-        wait for 200 us;
-
         wait;
     end process p_stimuli;
 
@@ -324,7 +333,7 @@ begin
 		wait for 20 ns;
 		s_dump_ram <= '0';
 
-		wait for 120 us;
+		wait for 400 us;
 		enable <= false;
 		enable_a_b <= '0';
 		write(output, "all tested " & to_string(now) & lf);

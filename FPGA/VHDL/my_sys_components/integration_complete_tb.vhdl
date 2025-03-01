@@ -417,5 +417,8 @@ begin
      );
 
 
+end architecture rtl;
 
-end architecture rtl; -- of ram_master
+
+
+

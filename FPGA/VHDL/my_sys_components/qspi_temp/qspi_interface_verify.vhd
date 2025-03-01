@@ -68,7 +68,7 @@ architecture rtl of qspi_interface_verify is
     begin
 
        cs <= '0';
-        wait for 2 ns;
+        wait for 10 ns;
         for i in 0 to c_num-1 loop
             readline(input_file, v_input_line);
             hread(v_input_line, v_input_data);

@@ -1,22 +1,22 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Fri Nov 29 11:44:39 2024
+[*] Tue Feb 25 14:13:38 2025
 [*]
 [dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\func2.ghw"
-[dumpfile_mtime] "Fri Nov 29 11:43:56 2024"
-[dumpfile_size] 1636984
+[dumpfile_mtime] "Tue Feb 25 14:02:36 2025"
+[dumpfile_size] 8449922
 [savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\wave_save_2.gtkw"
-[timestart] 78398500000
-[size] 1679 994
+[timestart] 0
+[size] 1800 994
 [pos] -1 -1
-*-24.855644 78517900000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-26.855644 161500000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.integration_complete_tb.
-[treeopen] top.integration_complete_tb.dut_ram_master.
+[treeopen] top.integration_complete_tb.dut_qspi.
 [sst_width] 388
 [signals_width] 371
 [sst_expanded] 1
-[sst_vpaned_height] 608
+[sst_vpaned_height] 422
 @28
 top.integration_complete_tb.s_clock_clk
 top.integration_complete_tb.s_reset_reset
@@ -33,6 +33,19 @@ top.integration_complete_tb.dut_encoder.conduit_intern_col_fire
 @22
 #{top.integration_complete_tb.dut_qspi.aso_out0_data[23:0]} top.integration_complete_tb.dut_qspi.aso_out0_data[23] top.integration_complete_tb.dut_qspi.aso_out0_data[22] top.integration_complete_tb.dut_qspi.aso_out0_data[21] top.integration_complete_tb.dut_qspi.aso_out0_data[20] top.integration_complete_tb.dut_qspi.aso_out0_data[19] top.integration_complete_tb.dut_qspi.aso_out0_data[18] top.integration_complete_tb.dut_qspi.aso_out0_data[17] top.integration_complete_tb.dut_qspi.aso_out0_data[16] top.integration_complete_tb.dut_qspi.aso_out0_data[15] top.integration_complete_tb.dut_qspi.aso_out0_data[14] top.integration_complete_tb.dut_qspi.aso_out0_data[13] top.integration_complete_tb.dut_qspi.aso_out0_data[12] top.integration_complete_tb.dut_qspi.aso_out0_data[11] top.integration_complete_tb.dut_qspi.aso_out0_data[10] top.integration_complete_tb.dut_qspi.aso_out0_data[9] top.integration_complete_tb.dut_qspi.aso_out0_data[8] top.integration_complete_tb.dut_qspi.aso_out0_data[7] top.integration_complete_tb.dut_qspi.aso_out0_data[6] top.integration_complete_tb.dut_qspi.aso_out0_data[5] top.integration_complete_tb.dut_qspi.aso_out0_data[4] top.integration_complete_tb.dut_qspi.aso_out0_data[3] top.integration_complete_tb.dut_qspi.aso_out0_data[2] top.integration_complete_tb.dut_qspi.aso_out0_data[1] top.integration_complete_tb.dut_qspi.aso_out0_data[0]
 @28
+top.integration_complete_tb.dut_qspi.aso_out0_valid
+top.integration_complete_tb.s_conduit_qspi_cs
+top.integration_complete_tb.s_conduit_qspi_clk
+@22
+#{top.integration_complete_tb.s_conduit_qspi_data[3:0]} top.integration_complete_tb.s_conduit_qspi_data[3] top.integration_complete_tb.s_conduit_qspi_data[2] top.integration_complete_tb.s_conduit_qspi_data[1] top.integration_complete_tb.s_conduit_qspi_data[0]
+@420
+top.integration_complete_tb.dut_qspi.pixel_count
+@28
+top.integration_complete_tb.dut_qspi.aso_out0_startofpacket
+top.integration_complete_tb.dut_qspi.aso_out0_endofpacket
+@22
+#{top.integration_complete_tb.dut_qspi.aso_out0_data[23:0]} top.integration_complete_tb.dut_qspi.aso_out0_data[23] top.integration_complete_tb.dut_qspi.aso_out0_data[22] top.integration_complete_tb.dut_qspi.aso_out0_data[21] top.integration_complete_tb.dut_qspi.aso_out0_data[20] top.integration_complete_tb.dut_qspi.aso_out0_data[19] top.integration_complete_tb.dut_qspi.aso_out0_data[18] top.integration_complete_tb.dut_qspi.aso_out0_data[17] top.integration_complete_tb.dut_qspi.aso_out0_data[16] top.integration_complete_tb.dut_qspi.aso_out0_data[15] top.integration_complete_tb.dut_qspi.aso_out0_data[14] top.integration_complete_tb.dut_qspi.aso_out0_data[13] top.integration_complete_tb.dut_qspi.aso_out0_data[12] top.integration_complete_tb.dut_qspi.aso_out0_data[11] top.integration_complete_tb.dut_qspi.aso_out0_data[10] top.integration_complete_tb.dut_qspi.aso_out0_data[9] top.integration_complete_tb.dut_qspi.aso_out0_data[8] top.integration_complete_tb.dut_qspi.aso_out0_data[7] top.integration_complete_tb.dut_qspi.aso_out0_data[6] top.integration_complete_tb.dut_qspi.aso_out0_data[5] top.integration_complete_tb.dut_qspi.aso_out0_data[4] top.integration_complete_tb.dut_qspi.aso_out0_data[3] top.integration_complete_tb.dut_qspi.aso_out0_data[2] top.integration_complete_tb.dut_qspi.aso_out0_data[1] top.integration_complete_tb.dut_qspi.aso_out0_data[0]
+@29
 top.integration_complete_tb.dut_qspi.aso_out0_valid
 @200
 -
@@ -59,7 +72,7 @@ top.integration_complete_tb.dut_ram_master.aso_out0_endofpacket_1
 top.integration_complete_tb.dut_ram_master.read_state
 @22
 #{top.integration_complete_tb.dut_ram_master.pix_count[7:0]} top.integration_complete_tb.dut_ram_master.pix_count[7] top.integration_complete_tb.dut_ram_master.pix_count[6] top.integration_complete_tb.dut_ram_master.pix_count[5] top.integration_complete_tb.dut_ram_master.pix_count[4] top.integration_complete_tb.dut_ram_master.pix_count[3] top.integration_complete_tb.dut_ram_master.pix_count[2] top.integration_complete_tb.dut_ram_master.pix_count[1] top.integration_complete_tb.dut_ram_master.pix_count[0]
-@23
 #{top.integration_complete_tb.dut_ram_master.ram_read_1_buffer[15:0]} top.integration_complete_tb.dut_ram_master.ram_read_1_buffer[15] top.integration_complete_tb.dut_ram_master.ram_read_1_buffer[14] top.integration_complete_tb.dut_ram_master.ram_read_1_buffer[13] top.integration_complete_tb.dut_ram_master.ram_read_1_buffer[12] top.integration_complete_tb.dut_ram_master.ram_read_1_buffer[11] top.integration_complete_tb.dut_ram_master.ram_read_1_buffer[10] top.integration_complete_tb.dut_ram_master.ram_read_1_buffer[9] top.integration_complete_tb.dut_ram_master.ram_read_1_buffer[8] top.integration_complete_tb.dut_ram_master.ram_read_1_buffer[7] top.integration_complete_tb.dut_ram_master.ram_read_1_buffer[6] top.integration_complete_tb.dut_ram_master.ram_read_1_buffer[5] top.integration_complete_tb.dut_ram_master.ram_read_1_buffer[4] top.integration_complete_tb.dut_ram_master.ram_read_1_buffer[3] top.integration_complete_tb.dut_ram_master.ram_read_1_buffer[2] top.integration_complete_tb.dut_ram_master.ram_read_1_buffer[1] top.integration_complete_tb.dut_ram_master.ram_read_1_buffer[0]
+#{top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[31:0]} top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[31] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[30] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[29] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[28] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[27] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[26] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[25] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[24] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[23] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[22] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[21] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[20] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[19] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[18] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[17] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[16] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[15] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[14] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[13] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[12] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[11] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[10] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[9] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[8] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[7] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[6] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[5] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[4] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[3] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[2] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[1] top.integration_complete_tb.dut_ram_master.conduit_debug_ram_out[0]
 [pattern_trace] 1
 [pattern_trace] 0

@@ -104,7 +104,7 @@ architecture rtl of led_interface is
 	signal spi_state : t_spi_state;
 	signal next_spi_state : t_spi_state;
 
-		type state_test is (none, t1);
+	type state_test is (none, t1);
 	signal test_state         : state_test;
 
 
@@ -159,16 +159,16 @@ begin
 		if reset_reset ='1' then
 			in_buffer_stream_A  <= (others =>(others => '0'));
 			pix_in_counter_A <= 0;
+
 		elsif rising_edge(clock_clk) then
 			if asi_in0_valid = '1' and asi_in0_ready ='1' and pix_in_counter_A < PIX_PER_STREAM_IN then
 				in_buffer_stream_A( pix_in_counter_A ) <= asi_in0_data;
 				pix_in_counter_A <= pix_in_counter_A + 1;
-				if asi_in0_endofpacket = '1' then
-					pix_in_counter_A <= 0;
-				end if;
 			end if;
 
-
+			if asi_in0_endofpacket = '1' then
+				pix_in_counter_A <= 0;
+			end if;
 		end if;
 	end process p_receive_stream_A;
 
@@ -176,13 +176,16 @@ begin
 	begin
 		if reset_reset ='1' then
 			in_buffer_stream_B  <= (others =>(others => '0'));
+			pix_in_counter_B <= 0;
+
 		elsif rising_edge(clock_clk) then
 			if asi_in1_valid = '1' and asi_in1_ready ='1' and pix_in_counter_B < PIX_PER_STREAM_IN then
 				in_buffer_stream_B( pix_in_counter_B ) <= asi_in1_data;
 				pix_in_counter_B <= pix_in_counter_B + 1;
-				if asi_in0_endofpacket = '1' then
-					pix_in_counter_B <= 0;
-				end if;
+			end if;
+
+			if asi_in1_endofpacket = '1' then
+				pix_in_counter_B <= 0;
 			end if;
 		end if;
 	end process p_receive_stream_B;

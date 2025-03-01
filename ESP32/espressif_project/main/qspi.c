@@ -196,7 +196,7 @@ void set_cs_gpio( uint8_t state )
     if ( ret != ESP_OK ) ESP_LOGE( "QSPI", "Err Set CS: %d", ret );
 }
 
-#define TEST 0
+#define TEST 1
 void fpga_qspi_task( void* pvParameter )
 {
 

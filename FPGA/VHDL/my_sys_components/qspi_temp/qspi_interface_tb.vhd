@@ -36,6 +36,26 @@ architecture rtl of qspi_interface_tb is
 	);
 	end component;
 
+
+	component qspi_interface2 is
+	port (
+		aso_out0_data          : out std_logic_vector(23 downto 0);                    --          aso_out0.data
+		aso_out0_endofpacket   : out std_logic;                                       --                  .endofpacket
+		aso_out0_ready         : in  std_logic                    := '0';             --                  .ready
+		aso_out0_startofpacket : out std_logic;                                       --                  .startofpacket
+		aso_out0_valid         : out std_logic;                                       --                  .valid
+		clock_clk              : in  std_logic                    := '0';             --             clock.clk
+		reset_reset            : in  std_logic                    := '0';             --             reset.reset
+		conduit_qspi_data      : in  std_logic_vector(3 downto 0) := (others => '0'); --      conduit_qspi.qspi_data
+		conduit_qspi_clk       : in  std_logic                    := '0';             --                  .qspi_clk
+		conduit_qspi_cs        : in  std_logic                    := '0';             --                  .qspi_cs
+		conduit_ping_pong      : out std_logic;                                        -- conduit_ping_pong.new_signal
+		conduit_debug_qspi_out : out std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_qspi.qspi_out
+		conduit_debug_qspi_out_2 : out std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_qspi.qspi_out
+		conduit_debug_qspi_in  : in  std_logic_vector(31 downto 0)  := (others => '0') --                         .qspi_in
+	);
+	end component;
+
 	component qspi_interface_verify is
 	port (
 		aso_out0_data          : in   std_ulogic_vector(23 downto 0);
@@ -103,5 +123,31 @@ begin
 		conduit_debug_qspi_out_2 => s_conduit_debug_qspi_out_2 ,
 		conduit_debug_qspi_in  => s_conduit_debug_qspi_in
 	);
+
+	-- dut2: qspi_interface2
+	-- port map (
+	-- 	aso_out0_data          =>  s_aso_out0_data          ,
+	-- 	aso_out0_endofpacket   =>  s_aso_out0_endofpacket   ,
+	-- 	aso_out0_ready         =>  s_aso_out0_ready         ,
+	-- 	aso_out0_startofpacket =>  s_aso_out0_startofpacket ,
+	-- 	aso_out0_valid         =>  s_aso_out0_valid         ,
+	-- 	clock_clk              =>  s_clock_clk              ,
+	-- 	reset_reset            =>  s_reset_reset            ,
+	-- 	conduit_qspi_data      =>  s_conduit_qspi_data      ,
+	-- 	conduit_qspi_clk       =>  s_conduit_qspi_clk       ,
+	-- 	conduit_qspi_cs        =>  s_conduit_qspi_cs        ,
+	-- 	conduit_ping_pong      =>  s_conduit_ping_pong,
+	-- 	conduit_debug_qspi_out => s_conduit_debug_qspi_out ,
+	-- 	conduit_debug_qspi_out_2 => s_conduit_debug_qspi_out_2 ,
+	-- 	conduit_debug_qspi_in  => s_conduit_debug_qspi_in
+	-- );
+
+
+	s_conduit_debug_qspi_in <= (others=>'0');
+
+	-- psL default clock is rising_edge(s_clock_clk);
+	-- psl lbl: assert always s_conduit_qspi_cs |-> s_aso_out0_startofpacket;
+	-- psL f_01: assert always (s_aso_out0_startofpacket -> next[1]( s_aso_out0_valid));
+
 
 end architecture rtl; -- of qspi_interface

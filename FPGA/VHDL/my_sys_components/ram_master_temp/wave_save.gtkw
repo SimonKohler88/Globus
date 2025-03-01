@@ -1,0 +1,82 @@
+[*]
+[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
+[*] Sat Mar 01 15:59:33 2025
+[*]
+[dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\ram_master_temp\func.ghw"
+[dumpfile_mtime] "Sat Mar 01 15:54:54 2025"
+[dumpfile_size] 1582383
+[savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\ram_master_temp\wave_save.gtkw"
+[timestart] 87189
+[size] 1670 890
+[pos] -1 -1
+*-5.000000 87259 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.ram_master_tb.
+[treeopen] top.ram_master_tb.dut_ram_master.
+[treeopen] top.ram_master_tb.verify_ram_master.
+[sst_width] 246
+[signals_width] 294
+[sst_expanded] 1
+[sst_vpaned_height] 306
+@28
+top.ram_master_tb.verify_ram_master.clock_clk
+top.ram_master_tb.verify_ram_master.reset_reset
+@200
+-
+-stream2ram
+@28
+top.ram_master_tb.verify_ram_master.aso_out0_valid
+top.ram_master_tb.verify_ram_master.aso_out0_startofpacket
+top.ram_master_tb.verify_ram_master.aso_out0_ready
+top.ram_master_tb.verify_ram_master.aso_out0_endofpacket
+@22
+#{top.ram_master_tb.verify_ram_master.aso_out0_data[23:0]} top.ram_master_tb.verify_ram_master.aso_out0_data[23] top.ram_master_tb.verify_ram_master.aso_out0_data[22] top.ram_master_tb.verify_ram_master.aso_out0_data[21] top.ram_master_tb.verify_ram_master.aso_out0_data[20] top.ram_master_tb.verify_ram_master.aso_out0_data[19] top.ram_master_tb.verify_ram_master.aso_out0_data[18] top.ram_master_tb.verify_ram_master.aso_out0_data[17] top.ram_master_tb.verify_ram_master.aso_out0_data[16] top.ram_master_tb.verify_ram_master.aso_out0_data[15] top.ram_master_tb.verify_ram_master.aso_out0_data[14] top.ram_master_tb.verify_ram_master.aso_out0_data[13] top.ram_master_tb.verify_ram_master.aso_out0_data[12] top.ram_master_tb.verify_ram_master.aso_out0_data[11] top.ram_master_tb.verify_ram_master.aso_out0_data[10] top.ram_master_tb.verify_ram_master.aso_out0_data[9] top.ram_master_tb.verify_ram_master.aso_out0_data[8] top.ram_master_tb.verify_ram_master.aso_out0_data[7] top.ram_master_tb.verify_ram_master.aso_out0_data[6] top.ram_master_tb.verify_ram_master.aso_out0_data[5] top.ram_master_tb.verify_ram_master.aso_out0_data[4] top.ram_master_tb.verify_ram_master.aso_out0_data[3] top.ram_master_tb.verify_ram_master.aso_out0_data[2] top.ram_master_tb.verify_ram_master.aso_out0_data[1] top.ram_master_tb.verify_ram_master.aso_out0_data[0]
+@28
+top.ram_master_tb.verify_ram_master.transfer_out_ongoing
+@200
+-
+-Fire
+@22
+#{top.ram_master_tb.verify_ram_master.conduit_intern_col_nr[8:0]} top.ram_master_tb.verify_ram_master.conduit_intern_col_nr[8] top.ram_master_tb.verify_ram_master.conduit_intern_col_nr[7] top.ram_master_tb.verify_ram_master.conduit_intern_col_nr[6] top.ram_master_tb.verify_ram_master.conduit_intern_col_nr[5] top.ram_master_tb.verify_ram_master.conduit_intern_col_nr[4] top.ram_master_tb.verify_ram_master.conduit_intern_col_nr[3] top.ram_master_tb.verify_ram_master.conduit_intern_col_nr[2] top.ram_master_tb.verify_ram_master.conduit_intern_col_nr[1] top.ram_master_tb.verify_ram_master.conduit_intern_col_nr[0]
+@28
+top.ram_master_tb.verify_ram_master.conduit_intern_col_fire
+@200
+-
+-dut internal
+@28
+top.ram_master_tb.dut_ram_master.reset_reset
+top.ram_master_tb.dut_ram_master.fire_pending
+top.ram_master_tb.dut_ram_master.conduit_col_info_fire
+@420
+top.ram_master_tb.dut_ram_master.main_state
+top.ram_master_tb.dut_ram_master.read_state
+top.ram_master_tb.dut_ram_master.next_write_state
+@22
+#{top.ram_master_tb.dut_ram_master.current_address_read[23:0]} top.ram_master_tb.dut_ram_master.current_address_read[23] top.ram_master_tb.dut_ram_master.current_address_read[22] top.ram_master_tb.dut_ram_master.current_address_read[21] top.ram_master_tb.dut_ram_master.current_address_read[20] top.ram_master_tb.dut_ram_master.current_address_read[19] top.ram_master_tb.dut_ram_master.current_address_read[18] top.ram_master_tb.dut_ram_master.current_address_read[17] top.ram_master_tb.dut_ram_master.current_address_read[16] top.ram_master_tb.dut_ram_master.current_address_read[15] top.ram_master_tb.dut_ram_master.current_address_read[14] top.ram_master_tb.dut_ram_master.current_address_read[13] top.ram_master_tb.dut_ram_master.current_address_read[12] top.ram_master_tb.dut_ram_master.current_address_read[11] top.ram_master_tb.dut_ram_master.current_address_read[10] top.ram_master_tb.dut_ram_master.current_address_read[9] top.ram_master_tb.dut_ram_master.current_address_read[8] top.ram_master_tb.dut_ram_master.current_address_read[7] top.ram_master_tb.dut_ram_master.current_address_read[6] top.ram_master_tb.dut_ram_master.current_address_read[5] top.ram_master_tb.dut_ram_master.current_address_read[4] top.ram_master_tb.dut_ram_master.current_address_read[3] top.ram_master_tb.dut_ram_master.current_address_read[2] top.ram_master_tb.dut_ram_master.current_address_read[1] top.ram_master_tb.dut_ram_master.current_address_read[0]
+@23
+#{top.ram_master_tb.dut_ram_master.addr_b_preload[23:0]} top.ram_master_tb.dut_ram_master.addr_b_preload[23] top.ram_master_tb.dut_ram_master.addr_b_preload[22] top.ram_master_tb.dut_ram_master.addr_b_preload[21] top.ram_master_tb.dut_ram_master.addr_b_preload[20] top.ram_master_tb.dut_ram_master.addr_b_preload[19] top.ram_master_tb.dut_ram_master.addr_b_preload[18] top.ram_master_tb.dut_ram_master.addr_b_preload[17] top.ram_master_tb.dut_ram_master.addr_b_preload[16] top.ram_master_tb.dut_ram_master.addr_b_preload[15] top.ram_master_tb.dut_ram_master.addr_b_preload[14] top.ram_master_tb.dut_ram_master.addr_b_preload[13] top.ram_master_tb.dut_ram_master.addr_b_preload[12] top.ram_master_tb.dut_ram_master.addr_b_preload[11] top.ram_master_tb.dut_ram_master.addr_b_preload[10] top.ram_master_tb.dut_ram_master.addr_b_preload[9] top.ram_master_tb.dut_ram_master.addr_b_preload[8] top.ram_master_tb.dut_ram_master.addr_b_preload[7] top.ram_master_tb.dut_ram_master.addr_b_preload[6] top.ram_master_tb.dut_ram_master.addr_b_preload[5] top.ram_master_tb.dut_ram_master.addr_b_preload[4] top.ram_master_tb.dut_ram_master.addr_b_preload[3] top.ram_master_tb.dut_ram_master.addr_b_preload[2] top.ram_master_tb.dut_ram_master.addr_b_preload[1] top.ram_master_tb.dut_ram_master.addr_b_preload[0]
+@200
+-
+-streamFromRam
+-Stream AB
+@28
+top.ram_master_tb.verify_ram_master.asi_in0_endofpacket
+top.ram_master_tb.verify_ram_master.asi_in0_startofpacket
+top.ram_master_tb.verify_ram_master.asi_in0_valid
+top.ram_master_tb.verify_ram_master.asi_in0_ready
+@22
+#{top.ram_master_tb.verify_ram_master.asi_in0_data[23:0]} top.ram_master_tb.verify_ram_master.asi_in0_data[23] top.ram_master_tb.verify_ram_master.asi_in0_data[22] top.ram_master_tb.verify_ram_master.asi_in0_data[21] top.ram_master_tb.verify_ram_master.asi_in0_data[20] top.ram_master_tb.verify_ram_master.asi_in0_data[19] top.ram_master_tb.verify_ram_master.asi_in0_data[18] top.ram_master_tb.verify_ram_master.asi_in0_data[17] top.ram_master_tb.verify_ram_master.asi_in0_data[16] top.ram_master_tb.verify_ram_master.asi_in0_data[15] top.ram_master_tb.verify_ram_master.asi_in0_data[14] top.ram_master_tb.verify_ram_master.asi_in0_data[13] top.ram_master_tb.verify_ram_master.asi_in0_data[12] top.ram_master_tb.verify_ram_master.asi_in0_data[11] top.ram_master_tb.verify_ram_master.asi_in0_data[10] top.ram_master_tb.verify_ram_master.asi_in0_data[9] top.ram_master_tb.verify_ram_master.asi_in0_data[8] top.ram_master_tb.verify_ram_master.asi_in0_data[7] top.ram_master_tb.verify_ram_master.asi_in0_data[6] top.ram_master_tb.verify_ram_master.asi_in0_data[5] top.ram_master_tb.verify_ram_master.asi_in0_data[4] top.ram_master_tb.verify_ram_master.asi_in0_data[3] top.ram_master_tb.verify_ram_master.asi_in0_data[2] top.ram_master_tb.verify_ram_master.asi_in0_data[1] top.ram_master_tb.verify_ram_master.asi_in0_data[0]
+@24
+#{top.ram_master_tb.verify_ram_master.pix_count_asi_in0[8:0]} top.ram_master_tb.verify_ram_master.pix_count_asi_in0[8] top.ram_master_tb.verify_ram_master.pix_count_asi_in0[7] top.ram_master_tb.verify_ram_master.pix_count_asi_in0[6] top.ram_master_tb.verify_ram_master.pix_count_asi_in0[5] top.ram_master_tb.verify_ram_master.pix_count_asi_in0[4] top.ram_master_tb.verify_ram_master.pix_count_asi_in0[3] top.ram_master_tb.verify_ram_master.pix_count_asi_in0[2] top.ram_master_tb.verify_ram_master.pix_count_asi_in0[1] top.ram_master_tb.verify_ram_master.pix_count_asi_in0[0]
+@200
+-
+-Stream CD
+@28
+top.ram_master_tb.verify_ram_master.asi_in1_endofpacket
+top.ram_master_tb.verify_ram_master.asi_in1_startofpacket
+top.ram_master_tb.verify_ram_master.asi_in1_valid
+top.ram_master_tb.verify_ram_master.asi_in1_ready
+@22
+#{top.ram_master_tb.verify_ram_master.asi_in1_data[23:0]} top.ram_master_tb.verify_ram_master.asi_in1_data[23] top.ram_master_tb.verify_ram_master.asi_in1_data[22] top.ram_master_tb.verify_ram_master.asi_in1_data[21] top.ram_master_tb.verify_ram_master.asi_in1_data[20] top.ram_master_tb.verify_ram_master.asi_in1_data[19] top.ram_master_tb.verify_ram_master.asi_in1_data[18] top.ram_master_tb.verify_ram_master.asi_in1_data[17] top.ram_master_tb.verify_ram_master.asi_in1_data[16] top.ram_master_tb.verify_ram_master.asi_in1_data[15] top.ram_master_tb.verify_ram_master.asi_in1_data[14] top.ram_master_tb.verify_ram_master.asi_in1_data[13] top.ram_master_tb.verify_ram_master.asi_in1_data[12] top.ram_master_tb.verify_ram_master.asi_in1_data[11] top.ram_master_tb.verify_ram_master.asi_in1_data[10] top.ram_master_tb.verify_ram_master.asi_in1_data[9] top.ram_master_tb.verify_ram_master.asi_in1_data[8] top.ram_master_tb.verify_ram_master.asi_in1_data[7] top.ram_master_tb.verify_ram_master.asi_in1_data[6] top.ram_master_tb.verify_ram_master.asi_in1_data[5] top.ram_master_tb.verify_ram_master.asi_in1_data[4] top.ram_master_tb.verify_ram_master.asi_in1_data[3] top.ram_master_tb.verify_ram_master.asi_in1_data[2] top.ram_master_tb.verify_ram_master.asi_in1_data[1] top.ram_master_tb.verify_ram_master.asi_in1_data[0]
+[pattern_trace] 1
+[pattern_trace] 0
