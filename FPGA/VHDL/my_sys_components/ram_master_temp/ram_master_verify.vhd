@@ -7,6 +7,12 @@ library std;
 use std.textio.all;
 
 entity ram_master_verify is
+generic (
+		--image_cols : integer := 256;
+		image_rows : integer := 120;
+		image_cols_bits : integer := 8;
+		ram_address_bits :integer := 10
+	);
 	port (
         clock_clk              : out  std_ulogic                   ;
         reset_reset            : out  std_ulogic                   ;
@@ -120,7 +126,7 @@ procedure avalon_stream_out_write_many_pixel(
             signal clk          :in std_ulogic ) is
         variable pix_count: integer:=0;
         variable v_output_line : line;
-        file pix_stream_file : text open write_mode is "./stream/"& to_string(f_nr) & "_in" & to_string(ab) & "_col" & to_hstring(col_nr) & ".txt";
+        file pix_stream_file : text open write_mode is "./stream_"& to_string(image_rows)&"x"&to_string(2**image_cols_bits)&"/"& to_string(f_nr) & "_in" & to_string(ab) & "_col" & to_hstring(col_nr) & ".txt";
     begin
         pix_count := pix_count + 1;
 
@@ -174,7 +180,8 @@ procedure avalon_stream_out_write_many_pixel(
 
 begin
 
-    helper_ram_emulator: avalon_slave_ram_emulator generic map(
+    helper_ram_emulator: avalon_slave_ram_emulator
+    generic map(
         RAM_ADDR_BITS => 13
     )
     port map (

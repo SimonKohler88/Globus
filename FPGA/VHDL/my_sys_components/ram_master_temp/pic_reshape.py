@@ -4,7 +4,7 @@ f = 'Earth_relief_120x256_raw2'
 
 with open(f'{f}.txt', 'r') as fily:
     all_lines = fily.readlines()
-cols = 8
+cols = 256
 rows = 120
 new_name = f'{f}_reshaped_{cols}x{rows}.txt'
 with open(new_name, 'w') as fily:

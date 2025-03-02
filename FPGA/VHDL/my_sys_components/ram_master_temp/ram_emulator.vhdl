@@ -55,7 +55,7 @@ architecture rtl of avalon_slave_ram_emulator is
   signal mem : t_mem := (others=>(others=>'0'));
 
  -- file input_file : text open read_mode is "./ram_content.txt";
-  file output_file : text open write_mode is "./ram_dumps/ram_content_verify_ram_qspi.txt";
+  file output_file : text open write_mode is "./ram_dumps/ram_content.txt";
 
 
   type state_delay is (idle, delay, access_ok);
