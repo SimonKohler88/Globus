@@ -58,6 +58,12 @@ component ram_master is
 
 
  component ram_master_verify is
+ generic (
+		--image_cols : integer := 256;
+		image_rows : integer := 120;
+		image_cols_bits : integer := 8;
+		ram_address_bits :integer := 10
+	);
 	port (
         clock_clk              : out  std_ulogic                   ;
         reset_reset            : out  std_ulogic                   ;
@@ -180,7 +186,13 @@ begin
 		conduit_debug_ram_in     => s_conduit_debug_ram_in
 	);
 
-    verify_ram_master: ram_master_verify port map(
+    verify_ram_master: ram_master_verify
+    generic map(
+		image_rows => 120,
+		image_cols_bits => 3,
+		ram_address_bits => 13
+    )
+    port map(
 
         clock_clk                => s_clock_clk                ,
 		reset_reset              => s_reset_reset              ,

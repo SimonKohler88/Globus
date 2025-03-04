@@ -62,10 +62,12 @@ procedure avalon_stream_out_write_many_pixel(
         signal in_ready    : in std_ulogic;
         signal packet_start: out std_ulogic;
         signal packet_end  : out std_ulogic;
-        constant delay_ready2valid_clocks : in integer
+        constant delay_ready2valid_clocks : in integer;
+        signal which_file :in std_ulogic
 
     ) is
         file input_file : text open read_mode is "./Earth_relief_120x256_raw2.txt";
+        file input_file_2 : text open read_mode is "./Earth_relief_120x256_raw2_inverted.txt";
         variable v_input_data : std_ulogic_vector(23 downto 0);
         variable v_input_line : line;
         variable pix_count : integer := 0;
@@ -73,7 +75,11 @@ procedure avalon_stream_out_write_many_pixel(
 
         wait for 10 ns;
         for i in 0 to c_num-1 loop
-            readline(input_file, v_input_line);
+            if which_file = '0' then
+                readline(input_file, v_input_line);
+            else
+                readline(input_file_2, v_input_line);
+            end if;
             hread(v_input_line, v_input_data);
 
             wait until rising_edge(in_ready);
@@ -117,24 +123,23 @@ procedure avalon_stream_out_write_many_pixel(
 
     procedure save_stream(
             constant ab         :in std_ulogic;
-            constant f_nr       :in integer;
+            signal f_nr       :in integer;
             constant assert_num :in integer;
             signal col_nr       :in std_logic_vector(8 downto 0);
             signal valid        :in std_ulogic;
             signal data         :in std_ulogic_vector(23 downto 0);
             signal endofpacket  :in std_ulogic;
-            signal clk          :in std_ulogic ) is
+            signal clk          :in std_ulogic;
+            signal ready        :in std_logic;
+            signal startofpacket  :in std_ulogic) is
         variable pix_count: integer:=0;
         variable v_output_line : line;
-        file pix_stream_file : text open write_mode is "./stream_"& to_string(image_rows)&"x"&to_string(2**image_cols_bits)&"/"& to_string(f_nr) & "_in" & to_string(ab) & "_col" & to_hstring(col_nr) & ".txt";
+        file pix_stream_file : text open write_mode is "./stream_"& to_string(image_rows)&"x"&to_string(2**image_cols_bits)&"/"& to_string(f_nr) & "_in" & to_string(ab) & "_col_" & to_string(to_integer(unsigned(col_nr))) & ".txt";
     begin
-        pix_count := pix_count + 1;
+        pix_count := 0;
 
+        -- write header in file
         write(v_output_line, "col " & to_hstring(conduit_intern_col_nr));
-        writeline(pix_stream_file, v_output_line);
-        wait until falling_edge(clk);
-        write(v_output_line, to_string(pix_count), left, 5);
-        write(v_output_line, to_hstring(data) );
         writeline(pix_stream_file, v_output_line);
 
         while true loop
@@ -144,12 +149,19 @@ procedure avalon_stream_out_write_many_pixel(
             write(v_output_line, to_string(pix_count), left, 5);
             write(v_output_line, to_hstring(data) );
             writeline(pix_stream_file, v_output_line);
-             if endofpacket = '1' then
+
+            if pix_count = 1 then
+                assert startofpacket='1' report "testcase " & to_string(f_nr) & " in" & to_string(ab) & ": no startofpacket received" severity error;
+            end if;
+            assert ready = '1' report "testcase " & to_string(f_nr) & " in" & to_string(ab) & ": received valid while not ready" severity error;
+
+            if endofpacket = '1' then
                 exit;
+
             end if;
 
         end loop;
-        assert pix_count = assert_num report "in" & to_string(ab) & ": Received wrong amount of pixels: expected " & to_string(assert_num) & ", received " & to_string(pix_count) & lf severity error;
+        assert pix_count = assert_num report "testcase " & to_string(f_nr) & " in" & to_string(ab) & ": Received wrong amount of pixels: expected " & to_string(assert_num) & ", received " & to_string(pix_count) severity error;
     end procedure save_stream;
 
     component avalon_slave_ram_emulator is
@@ -176,13 +188,15 @@ procedure avalon_stream_out_write_many_pixel(
     signal enable :boolean:=true;
 
     signal transfer_out_ongoing : std_ulogic;
+    signal test_case_nr : integer;
+    signal test_ongoing: std_ulogic;
 
-
+    signal input_file: std_ulogic;
 begin
 
     helper_ram_emulator: avalon_slave_ram_emulator
     generic map(
-        RAM_ADDR_BITS => 13
+        RAM_ADDR_BITS => ram_address_bits
     )
     port map (
 		rst           => reset_reset              ,
@@ -228,6 +242,7 @@ begin
         aso_out0_startofpacket <= '0';
         transfer_out_ongoing <= '0';
         s_dump_ram <= '0';
+        input_file <= '0';
         write(output, "addr row2row off: " & to_string(dut_const_row2row_offset) & lf);
         write(output, "addr_b_col_shift_offset: " & to_string(addr_b_col_shift_offset) & lf);
         write(output, "image_cols: " & to_string(image_cols) & lf);
@@ -236,9 +251,20 @@ begin
 
         transfer_out_ongoing <= '1';
         avalon_stream_out_write_many_pixel(960, 20, clock_clk, aso_out0_data, aso_out0_valid,
-                aso_out0_ready, aso_out0_startofpacket, aso_out0_endofpacket, 0 );
+                aso_out0_ready, aso_out0_startofpacket, aso_out0_endofpacket, 0, input_file );
         transfer_out_ongoing <= '0';
-        pulse_out(s_dump_ram, clock_clk);
+        -- pulse_out(s_dump_ram, clock_clk);
+
+        wait on test_case_nr;
+
+        input_file <= '1';
+        transfer_out_ongoing <= '1';
+        wait for 50 ns;
+        wait until rising_edge(clock_clk);
+        write(output, "testcase 1 sending " & lf);
+        avalon_stream_out_write_many_pixel(960, 20, clock_clk, aso_out0_data, aso_out0_valid,
+                aso_out0_ready, aso_out0_startofpacket, aso_out0_endofpacket, 2, input_file );
+
         wait;
 
 	end process p_stimuli_avs_out;
@@ -246,7 +272,10 @@ begin
 	begin
         conduit_intern_col_fire <= '0';
         conduit_intern_col_nr <= (others => '0');
+        test_case_nr <= 0;
+        test_ongoing <= '1';
 
+        -- test case 0: Check if pixels are correctly written and read
         wait until falling_edge(transfer_out_ongoing);
 
         wait for 10 ns;
@@ -260,6 +289,24 @@ begin
         wait for 20 ns;
         conduit_intern_col_nr(3 downto 0) <= X"6";
         pulse_out(conduit_intern_col_fire, clock_clk);
+
+        wait until falling_edge(asi_in1_endofpacket);
+
+        test_ongoing <= '0';
+        wait for 10 ns;
+
+        -- test case 1: check if write works with delayed ready->valid, correct memory-space swap
+        test_case_nr <= 1;
+        wait for 10 ns;
+        test_ongoing <= '1';
+        wait until rising_edge(aso_out0_endofpacket);
+        wait for 10 ns;
+        conduit_intern_col_nr(3 downto 0) <= X"2";
+        pulse_out(conduit_intern_col_fire, clock_clk);
+        wait until falling_edge(asi_in1_endofpacket);
+        test_ongoing <= '0';
+        wait for 10 ns;
+
         wait;
 
 	end process p_stimuli_fire;
@@ -276,14 +323,14 @@ begin
 	p_stimuli_avs_in_AB: process
 	begin
         asi_in0_ready <= '1';
+        wait for 10 ns;
 
-        wait until rising_edge(asi_in0_startofpacket);
-        save_stream('0', 1, 60, conduit_intern_col_nr, asi_in0_valid, asi_in0_data, asi_in0_endofpacket, clock_clk );
-        wait until rising_edge(asi_in0_startofpacket);
-        save_stream('0', 1, 60, conduit_intern_col_nr, asi_in0_valid, asi_in0_data, asi_in0_endofpacket, clock_clk );
-        wait until rising_edge(asi_in0_startofpacket);
-        save_stream('0', 1, 60, conduit_intern_col_nr, asi_in0_valid, asi_in0_data, asi_in0_endofpacket, clock_clk );
+        save_stream('0', test_case_nr, 60, conduit_intern_col_nr, asi_in0_valid, asi_in0_data, asi_in0_endofpacket, clock_clk, asi_in0_ready, asi_in0_startofpacket);
+        save_stream('0', test_case_nr, 60, conduit_intern_col_nr, asi_in0_valid, asi_in0_data, asi_in0_endofpacket, clock_clk, asi_in0_ready, asi_in0_startofpacket );
+        save_stream('0', test_case_nr, 60, conduit_intern_col_nr, asi_in0_valid, asi_in0_data, asi_in0_endofpacket, clock_clk, asi_in0_ready, asi_in0_startofpacket );
 
+        wait on test_case_nr;
+        save_stream('0', test_case_nr, 60, conduit_intern_col_nr, asi_in0_valid, asi_in0_data, asi_in0_endofpacket, clock_clk, asi_in0_ready, asi_in0_startofpacket );
 
 		wait;
 
@@ -299,13 +346,15 @@ begin
 	p_stimuli_avs_in_CD: process
 	begin
         asi_in1_ready <= '1';
+        wait for 10 ns;
 
-        wait until rising_edge(asi_in1_startofpacket);
-        save_stream('1', 1, 60, conduit_intern_col_nr, asi_in1_valid, asi_in1_data, asi_in1_endofpacket, clock_clk );
-        wait until rising_edge(asi_in1_startofpacket);
-        save_stream('1', 1, 60, conduit_intern_col_nr, asi_in1_valid, asi_in1_data, asi_in1_endofpacket, clock_clk );
-        wait until rising_edge(asi_in1_startofpacket);
-        save_stream('1', 1, 60, conduit_intern_col_nr, asi_in1_valid, asi_in1_data, asi_in1_endofpacket, clock_clk );
+        save_stream('1', test_case_nr, 60, conduit_intern_col_nr, asi_in1_valid, asi_in1_data, asi_in1_endofpacket, clock_clk, asi_in1_ready, asi_in1_startofpacket );
+        save_stream('1', test_case_nr, 60, conduit_intern_col_nr, asi_in1_valid, asi_in1_data, asi_in1_endofpacket, clock_clk, asi_in1_ready, asi_in1_startofpacket );
+        save_stream('1', test_case_nr, 60, conduit_intern_col_nr, asi_in1_valid, asi_in1_data, asi_in1_endofpacket, clock_clk, asi_in1_ready, asi_in1_startofpacket );
+
+        wait on test_case_nr;
+        save_stream('1', test_case_nr, 60, conduit_intern_col_nr, asi_in1_valid, asi_in1_data, asi_in1_endofpacket, clock_clk, asi_in1_ready, asi_in1_startofpacket );
+
 		wait;
 
 	end process p_stimuli_avs_in_CD;

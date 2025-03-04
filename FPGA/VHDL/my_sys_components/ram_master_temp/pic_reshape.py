@@ -1,10 +1,10 @@
 
 
-f = 'Earth_relief_120x256_raw2'
+f = 'Earth_relief_120x256_raw2_inverted'
 
 with open(f'{f}.txt', 'r') as fily:
     all_lines = fily.readlines()
-cols = 256
+cols = 8
 rows = 120
 new_name = f'{f}_reshaped_{cols}x{rows}.txt'
 with open(new_name, 'w') as fily:
