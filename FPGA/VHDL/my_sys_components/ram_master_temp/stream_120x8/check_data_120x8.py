@@ -1,16 +1,11 @@
 import os
 
-input_file = 'Earth_relief_120x256_raw2_reshaped_256x120.txt'
-with open(input_file, 'r') as fily:
-    all_lines = fily.readlines()
-
-all_lines = all_lines[1:]
-all_lines = [a.split() for a in all_lines]
-all_lines = [a[1:] for a in all_lines]
-errors = 0
+input_file = 'Earth_relief_120x256_raw2_reshaped_8x120.txt'
+input_file_inv = 'Earth_relief_120x256_raw2_inverted_reshaped_8x120.txt'
 
 this_file_path = os.path.dirname(os.path.abspath(__file__))
-COLUMNS = 256
+
+COLUMNS = 8
 
 
 def read_file(file):
@@ -26,6 +21,14 @@ def read_file(file):
 
 if __name__ == '__main__':
     print('python check starting')
+
+    all_lines = read_file(input_file)
+    all_lines_inv = read_file(input_file_inv)
+
+    print(f'Dimension Input {input_file}: x:{len(all_lines[0])}, y:{len(all_lines)}')
+    print(f'Dimension Input {input_file_inv}: x:{len(all_lines_inv[0])}, y:{len(all_lines_inv)}')
+
+    errors = 0
     for file in os.listdir(this_file_path):
         if file[0].isdigit():  # first letter of filename must be a "zahl"
             splitted = file.split('_')
@@ -56,7 +59,8 @@ if __name__ == '__main__':
                     pix_num = i * 2 + 1
 
                 try:
-                    num_soll = all_lines[pix_num][col_nr]
+                    num_soll = all_lines[pix_num][col_nr] if testcase == 0 else all_lines_inv[pix_num][col_nr]
+
                     if num_soll != num:
                         has_error = True
                         errors += 1

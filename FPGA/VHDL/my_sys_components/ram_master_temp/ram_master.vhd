@@ -405,8 +405,8 @@ begin
 					end if;
 
 				when wait_read_1 =>
-					-- if active_aso_ready='1' and avm_m0_readdatavalid='1' and avm_m0_waitrequest='0' then
-					if active_aso_ready='1' and avm_m0_waitrequest='0' then
+
+				if active_aso_ready='1' and avm_m0_waitrequest='0' then
 						next_read_state <= read_1;
 					else
 						next_read_state <= wait_read_1;

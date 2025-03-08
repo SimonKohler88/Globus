@@ -36,6 +36,8 @@ ren coverage-* coverage.json
 ghdl coverage  coverage.json
 echo ------------------
 
+python .\stream_120x8\check_data_120x8.py
+
 if %ERRORLEVEL%==1 (
 	PAUSE
 ) else (

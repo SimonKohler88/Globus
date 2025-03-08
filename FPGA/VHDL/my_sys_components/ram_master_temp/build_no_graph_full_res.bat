@@ -31,12 +31,12 @@ if %ERRORLEVEL%==1 (
 
 echo:
 echo --------------------COVERAGE-------------------------
-del coverage.json
-ren coverage-* coverage.json
-ghdl coverage  coverage.json
+del coverage_full_res.json
+ren coverage-* coverage_full_res.json
+ghdl coverage  coverage_full_res.json
 echo ------------------PYTHON CHECK DATA OUTPUT--------------------
 
-python \stream_120x256\check_data.py
+python .\stream_120x256\check_data.py
 PAUSE
 :end
 
