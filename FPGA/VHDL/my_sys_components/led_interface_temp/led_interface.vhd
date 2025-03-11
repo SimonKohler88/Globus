@@ -103,6 +103,7 @@ architecture rtl of led_interface is
 	type t_spi_state is (idle, send_start_frame, send_buffer, send_end_frame, end_send);
 	signal spi_state : t_spi_state;
 	signal next_spi_state : t_spi_state;
+	signal spi_in_progress: std_logic;
 
 	type state_test is (none, t1);
 	signal test_state         : state_test;
@@ -117,8 +118,9 @@ begin
 				conduit_debug_led_led_dbg_out <= (others=>'0');
 				conduit_debug_led_led_dbg_out_2 <= (others=>'0');
 
-			when t1 =>
-				conduit_debug_led_led_dbg_out <= (others=>'0');
+			when t1 => -- measure spi time
+				conduit_debug_led_led_dbg_out(0) <= spi_in_progress;
+				conduit_debug_led_led_dbg_out(31 downto 1) <= (others=>'0');
 				conduit_debug_led_led_dbg_out_2 <= (others=>'0');
 
 			when others =>
@@ -337,7 +339,7 @@ begin
 
 			when send_buffer =>
 
-				conduit_LED_A_DATA <= pix_out_A(spi_pix_count_A)(spi_bit_count_A); --todo: change when spi count differ in A,B,C,D
+				conduit_LED_A_DATA <= pix_out_A(spi_pix_count_A)(spi_bit_count_A); --todo: change when pixel count differ in A,B,C,D
 				conduit_LED_B_DATA <= pix_out_B(spi_pix_count_A)(spi_bit_count_A);
 				conduit_LED_C_DATA <= pix_out_C(spi_pix_count_A)(spi_bit_count_A);
 				conduit_LED_D_DATA <= pix_out_D(spi_pix_count_A)(spi_bit_count_A);
@@ -370,6 +372,8 @@ begin
 	conduit_LED_B_CLK <= clock_led_spi_clk when spi_out_enable else '0';
 	conduit_LED_C_CLK <= clock_led_spi_clk when spi_out_enable else '0';
 	conduit_LED_D_CLK <= clock_led_spi_clk when spi_out_enable else '0';
+
+	spi_in_progress <= '0' when spi_state=idle else '1';
 
 	asi_in1_ready <= '1';
 

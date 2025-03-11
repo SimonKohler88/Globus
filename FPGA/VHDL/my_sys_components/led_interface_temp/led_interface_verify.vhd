@@ -61,6 +61,74 @@ end entity led_interface_verify;
 
 architecture rtl of led_interface_verify is
 
+
+procedure avalon_stream_out_write_many_pixel(
+        constant c_num     : in integer;
+        constant c_time_intervall_ns : in integer range 5 to 100;
+        signal clk         : in std_ulogic;
+        signal data        : out std_ulogic_vector(23 downto 0);
+        signal valid       : out std_ulogic;
+        signal in_ready    : in std_ulogic;
+        signal packet_start: out std_ulogic;
+        signal packet_end  : out std_ulogic;
+        constant delay_ready2valid_clocks : in integer;
+        signal which_file :in std_ulogic;
+        constant c_start_line: in integer
+
+    ) is
+        file input_file : text open read_mode is "./row_col_num.txt";
+        -- file input_file_2 : text open read_mode is "./Earth_relief_120x256_raw2_inverted.txt";
+        variable v_input_data : std_ulogic_vector(23 downto 0);
+        variable v_input_line : line;
+        variable pix_count : integer := 0;
+    begin
+
+		for i in 0 to c_start_line-1 loop
+			readline(input_file, v_input_line);
+		end loop;
+
+        wait for 10 ns;
+        for i in 0 to c_num-1 loop
+
+			readline(input_file, v_input_line);
+
+            hread(v_input_line, v_input_data);
+
+            if in_ready = '0' then
+                wait until rising_edge(in_ready);
+            end if;
+
+            if delay_ready2valid_clocks > 0 then
+                for j in 0 to delay_ready2valid_clocks loop
+                    wait until rising_edge(clock_clk);
+                end loop;
+			else
+				wait until rising_edge(clock_clk);
+            end if;
+
+            if i=0 then
+                packet_start <= '1';
+            end if;
+
+            if i=c_num-1 then
+                packet_end <= '1';
+            end if;
+
+            data <= v_input_data;
+            valid <= '1';
+            pix_count := pix_count +1;
+
+            wait until rising_edge(clk);
+            valid <= '0';
+            packet_start <= '0';
+            packet_end <= '0';
+
+            wait for 10 ns;
+            --qspi_write_pixel(v_input_data, clk, qspi_clk, data );
+        end loop;
+        write(output, "Pixel Sent: " & to_string(pix_count) & lf);
+    end procedure avalon_stream_out_write_many_pixel;
+
     procedure avs_stream_pixel(
         constant c_data    : in std_ulogic_vector(23 downto 0);
         signal clk         : in std_ulogic;
@@ -82,9 +150,19 @@ architecture rtl of led_interface_verify is
         END LOOP;
     end procedure avs_stream_pixel;
 
+	procedure pulse_out(signal out_signal: out std_ulogic; signal clk : in std_ulogic) is
+    begin
+        wait until rising_edge(clk);
+        out_signal <= '1';
+        wait until rising_edge(clk);
+        out_signal <= '0';
+    end procedure pulse_out;
 
 	constant c_cycle_time_100M : time := 10 ns;
 	constant c_cycle_time_26M : time := 33 ns;
+
+	constant c_cycle_real_firepulse: time := 117 us; --1.1764705e-4 = 0.117... ms = 8.5 kHz
+
     signal enable :boolean:=true;
 
 
@@ -99,8 +177,10 @@ architecture rtl of led_interface_verify is
 	signal rec_D: std_ulogic_vector(7 downto 0);
 
 
-	file input_file : text open read_mode is "./row_col_num.txt";
-    constant c_pixel_to_send : integer := 60-1;
+	signal input_file : std_ulogic;
+
+	signal test_case : integer;
+
 
 begin
 
@@ -127,95 +207,67 @@ begin
 		wait;  -- don't do it again
 	end process p_spi_clk;
 
-    reset_reset <= transport '1', '0' after 5 ns;
+    reset_reset <= transport '1', '0' after 20 ns;
 
 	 p_store_stream_A: process --untested yet
-        variable v_output_line : line;
+        variable v_output_line_A : line;
+        variable v_output_line_B : line;
+        variable v_output_line_C : line;
+        variable v_output_line_D : line;
         variable bitcount: integer := 0;
+        variable byte_count: integer := 0;
     begin
-		wait until conduit_LED_A_CLK ='1';
-		rec_A(bitcount) <= conduit_LED_A_DATA;
+		wait until falling_edge(conduit_LED_A_CLK);
+		rec_A <= rec_A(7 downto 1) & conduit_LED_A_DATA;
+		rec_B(bitcount) <= conduit_LED_B_DATA;
+		rec_C(bitcount) <= conduit_LED_C_DATA;
+		rec_D(bitcount) <= conduit_LED_D_DATA;
 		bitcount := bitcount + 1;
+
 		if bitcount = 7 then
-			write(v_output_line, to_string(now), left, 16);
-			write(v_output_line, to_hstring(rec_A));
-			writeline(output_file_stream_A, v_output_line);
+			write(v_output_line_A, to_string(byte_count), left, 16);
+			write(v_output_line_A, to_hstring(rec_A));
+			writeline(output_file_stream_A, v_output_line_A);
+
+			write(v_output_line_B, to_string(byte_count), left, 16);
+			write(v_output_line_B, to_hstring(rec_B));
+			writeline(output_file_stream_B, v_output_line_B);
+
+			write(v_output_line_C, to_string(byte_count), left, 16);
+			write(v_output_line_C, to_hstring(rec_C));
+			writeline(output_file_stream_C, v_output_line_C);
+
+			write(v_output_line_D, to_string(byte_count), left, 16);
+			write(v_output_line_D, to_hstring(rec_D));
+			writeline(output_file_stream_D, v_output_line_D);
+
 			bitcount := 0;
+			byte_count := byte_count + 1;
 		end if;
-		wait until conduit_LED_A_CLK ='0';
+		-- wait until conduit_LED_A_CLK ='0';
     end process p_store_stream_A;
-  --
-  --    p_store_stream_B: process(all) --untested yet
-  --       variable v_output_line : line;
-  --   begin
-  --       if rising_edge(clock_clk) then
-  --           if aso_out1_B_ready = '1' and aso_out1_B_valid ='1' then
-  --               write(v_output_line, to_string(now), left, 16);
-  --               write(v_output_line, to_hstring(aso_out1_B_data));
-  --               writeline(output_file_stream_B, v_output_line);
-  --           end if;
-  --       end if;
-  --   end process p_store_stream_B;
+
 
 	p_stim_stream_out: process
 		variable v_write_data : std_ulogic_vector(23 downto 0);
         variable v_input_line : line;
     begin
+		input_file <= '0';
+		wait until falling_edge(reset_reset);
         wait for 20 ns;
         while enable loop
 			wait until conduit_col_info_out_fire = '1';
 			wait for 20 ns;
 			wait until rising_edge(clock_clk);
 
-			for i in 0 to c_pixel_to_send loop
-				wait until rising_edge(clock_clk);
-				if asi_in0_ready='1' then
-					readline(input_file, v_input_line);
-					hread(v_input_line, v_write_data);
-					if i =0 then
-						asi_in0_startofpacket <= '1';
-					elsif i = c_pixel_to_send then
-						asi_in0_endofpacket   <= '1';
-					else
-						asi_in0_startofpacket <= '0';
-						asi_in0_endofpacket   <= '0';
-					end if;
-					asi_in0_data <= v_write_data;
-					asi_in0_valid <= '1';
-				else
-					asi_in0_valid <= '0';
-				end if;
-			end loop;
-			wait until rising_edge(clock_clk);
-			asi_in0_endofpacket   <= '0';
-			asi_in0_data <= (others => '0');
-			asi_in0_valid <= '0';
+			avalon_stream_out_write_many_pixel(60, 20, clock_clk, asi_in0_data, asi_in0_valid,
+                asi_in0_ready, asi_in0_startofpacket, asi_in0_endofpacket, 0, input_file, 0 );
 
+			wait until rising_edge(clock_clk);
 			wait for 50 ns;
 
-			for i in 0 to c_pixel_to_send loop
-				wait until rising_edge(clock_clk);
-				if asi_in1_ready='1' then
-					readline(input_file, v_input_line);
-					hread(v_input_line, v_write_data);
-					if i =0 then
-						asi_in1_startofpacket <= '1';
-					elsif i = c_pixel_to_send then
-						asi_in1_endofpacket   <= '1';
-					else
-						asi_in1_startofpacket <= '0';
-						asi_in1_endofpacket   <= '0';
-					end if;
-					asi_in1_data <= v_write_data;
-					asi_in1_valid <= '1';
-				else
-					asi_in1_valid <= '0';
-				end if;
-			end loop;
-			wait until rising_edge(clock_clk);
-			asi_in1_endofpacket   <= '0';
-			asi_in1_data <= (others => '0');
-			asi_in1_valid <= '0';
+			avalon_stream_out_write_many_pixel(60, 20, clock_clk, asi_in1_data, asi_in1_valid,
+                asi_in1_ready, asi_in1_startofpacket, asi_in1_endofpacket, 0, input_file, 100 );
 		end loop;
 
         wait for 200 us;
@@ -225,21 +277,30 @@ begin
 
     p_encoder_stim: process
     begin
+		test_case <= 0;
 		wait for 50 ns;
+		-- load first buffer
 		conduit_col_info <= "0" & X"16";
-		wait until rising_edge(clock_clk);
-		conduit_fire <= '1';
-		wait until rising_edge(clock_clk);
-		conduit_fire <= '0';
+		pulse_out(conduit_fire, clock_clk);
 
-		wait for 50 us;
-		conduit_fire <= '1';
+		wait for c_cycle_real_firepulse;
+		-- load second buffer
 		conduit_col_info <= "0" & X"17";
-		wait until rising_edge(clock_clk);
-		conduit_fire <= '0';
+		pulse_out(conduit_fire, clock_clk);
+
+		wait for 10 us;
+
+		-- check consecutive firepulses while spi transfer --> no harm --> need locking mechanism?
+		test_case <= 1;
+  --
+		-- conduit_col_info <= "0" & X"17";
+		-- pulse_out(conduit_fire, clock_clk);
+  --
+		-- wait for 100 ns;
+		-- pulse_out(conduit_fire, clock_clk);
+
+
 		wait;
-
-
 
     end process p_encoder_stim;
 
@@ -248,8 +309,9 @@ begin
 
     begin
 
-		wait for 120 us;
+		wait for 500 us;
 		enable <= false;
+
 		write(output, "all tested " & to_string(now) & lf);
 		wait;
     end process p_monitor;

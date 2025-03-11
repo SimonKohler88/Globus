@@ -132,10 +132,10 @@ begin
 
         wait for 50 ns;
 
-        for p in 0 to 5 loop
+        for p in 0 to 4 loop
             qspi_write_many_pixel(256, internal_qspi_clock, conduit_qspi_clk, conduit_qspi_data, conduit_qspi_cs);
 
-            wait for 10 us;
+            wait for 5 us;
         end loop;
 
 

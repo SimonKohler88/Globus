@@ -143,8 +143,7 @@ end component;
 
 begin
 
-	-- TODO: Auto-generated HDL template
-
+   default clock is rising_edge (s_clock_clk);
 
 	verify_led_if: led_interface_verify port map (
         clock_clk                   => s_clock_clk                   ,
@@ -217,8 +216,22 @@ begin
         conduit_debug_led_led_dbg_in   => s_conduit_debug_led_in
      );
 
+     -- avalon stream checking
+	in0_sop_eop:     assert always s_asi_in0_startofpacket -> eventually! s_asi_in0_endofpacket;
+	in0_sop_valid:   assert always s_asi_in0_startofpacket -> s_asi_in0_valid;
+	in0_eop_valid:   assert always s_asi_in0_startofpacket -> s_asi_in0_valid;
+	in0_ready_valid: assert always s_asi_in0_valid -> s_asi_in0_ready;
 
+    in1_sop_eop:     assert always s_asi_in1_startofpacket -> eventually! s_asi_in1_endofpacket;
+	in1_sop_valid:   assert always s_asi_in1_startofpacket -> s_asi_in1_valid;
+	in1_eop_valid:   assert always s_asi_in1_startofpacket -> s_asi_in1_valid;
+	in1_ready_valid: assert always s_asi_in1_valid -> s_asi_in1_ready;
 
+	-- fire to spi delay check
+	fire_to_spi_A: assert always s_conduit_fire -> next_e[0 to 10] (s_conduit_LED_A_CLK);
+	fire_to_spi_B: assert always s_conduit_fire -> next_e[0 to 10] (s_conduit_LED_B_CLK);
+	fire_to_spi_C: assert always s_conduit_fire -> next_e[0 to 10] (s_conduit_LED_C_CLK);
+	fire_to_spi_D: assert always s_conduit_fire -> next_e[0 to 10] (s_conduit_LED_D_CLK);
 
 
 

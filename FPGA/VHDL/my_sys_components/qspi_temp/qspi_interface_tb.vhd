@@ -89,6 +89,8 @@ architecture rtl of qspi_interface_tb is
 
 
 begin
+	-- some psl stuff
+    default clock is rising_edge (s_clock_clk);
 
 	verify : qspi_interface_verify
 	port map (
@@ -142,12 +144,16 @@ begin
 	-- 	conduit_debug_qspi_in  => s_conduit_debug_qspi_in
 	-- );
 
+	-- avalon stream checking
+	sop_eop: assert always s_aso_out0_startofpacket -> eventually! s_aso_out0_endofpacket;
+	assert always s_aso_out0_startofpacket -> s_aso_out0_valid;
+	assert always s_aso_out0_valid -> s_aso_out0_ready;
+
+	-- qspi checking
+	assert always s_conduit_qspi_clk -> not s_conduit_qspi_cs;
 
 	s_conduit_debug_qspi_in <= (others=>'0');
 
-	-- psL default clock is rising_edge(s_clock_clk);
-	-- psl lbl: assert always s_conduit_qspi_cs |-> s_aso_out0_startofpacket;
-	-- psL f_01: assert always (s_aso_out0_startofpacket -> next[1]( s_aso_out0_valid));
 
 
 end architecture rtl; -- of qspi_interface

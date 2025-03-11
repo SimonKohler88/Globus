@@ -24,7 +24,7 @@ if %ERRORLEVEL%==1 (
 )
 
 ::ghdl -r --std=08 --time-resolution=ns %MODULE%_tb --vcd=func.vcd --stop-time=600us
-ghdl -r --coverage --std=08 --time-resolution=ns %MODULE%_tb --wave=func.ghw --stop-time=600us --psl-report=PSL_REP.json --psl-report-uncovered
+ghdl -r --coverage --std=08 --time-resolution=ns %MODULE%_tb --wave=func.ghw --stop-time=800us --psl-report=PSL_REP.json --psl-report-uncovered
 
 if %ERRORLEVEL%==1 (
 	PAUSE

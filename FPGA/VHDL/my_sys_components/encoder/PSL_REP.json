@@ -1,0 +1,13 @@
+{ "details" : [
+],
+ "summary" : {
+  "assert": 0,
+  "assert-failure": 0,
+  "assert-pass": 0,
+  "assume": 0,
+  "assume-failure": 0,
+  "assume-pass": 0,
+  "cover": 0,
+  "cover-failure": 0,
+  "cover-pass": 0}
+}

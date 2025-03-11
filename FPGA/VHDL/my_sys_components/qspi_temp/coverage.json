@@ -2,22 +2,22 @@
  'app': 'GHDL coverage output file',
  'version': '1.0.0',
  'testcase': 'unknown',
- 'timestamp': '20250301074757.187',
+ 'timestamp': '20250310063444.727',
  [
   {
    'file': 'qspi_interface_tb.vhd',
    'dir': '.',
-   'sha1': 'e08a3c58c0eaadef89b6c949124126a107a49589',
+   'sha1': 'a61e4dc8f357d236de6b45c55167c935de98efb1',
    'mode': 'stmt',
-   'max-line': 146,
+   'max-line': 155,
    'result': [
-    '146': 1
+    '155': 1
    ]
   },
   {
    'file': 'qspi_interface_verify.vhd',
    'dir': '.',
-   'sha1': '42f52e9fcc1063b7196f1136efdf441e1554e4e8',
+   'sha1': '165c7d7c7aacab4302259b192ee52ff5b87d1a66',
    'mode': 'stmt',
    'max-line': 165,
    'result': [
@@ -58,7 +58,7 @@
     '135': 1,
     '136': 1,
     '138': 1,
-    '142': 0,
+    '142': 1,
     '149': 1,
     '150': 1,
     '151': 1,

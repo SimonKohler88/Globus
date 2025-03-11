@@ -57,6 +57,8 @@ architecture rtl of new_encoder_tb is
 	signal s_conduit_encoder_index       :  std_logic                    ;
 	signal s_conduit_encoder_sim_switch  :  std_logic                    ;
 	signal s_conduit_encoder_sim_pulse   :  std_logic                    ;
+	signal s_conduit_encoder_sim_pulse_A   :  std_logic                    ;
+	signal s_conduit_encoder_sim_pulse_17k   :  std_logic                    ;
 	signal s_conduit_intern_col_nr       :  std_logic_vector(8 downto 0) ;
 	signal s_conduit_intern_col_fire     :  std_logic                    ;
 	signal s_conduit_debug_enc_out      : std_logic_vector(31 downto 0);
@@ -68,14 +70,19 @@ architecture rtl of new_encoder_tb is
 	constant c_enc_t_per_u :time := 100 us;
 	constant c_enc_index_time : time := 195 ns; --c_enc_t_per_u/512;
 	constant c_enc_S_time : time := 49 ns; --c_enc_index_time/4;
+	constant c_enc_sim_17kHz_pulse_half : time := 29400 ns; --2.94e-5
+
 	signal enable         : boolean := true;
 	signal enable_a_b         : std_ulogic := '1';
 	signal A :std_ulogic_vector(3 downto 0) := "1100";
 	signal B :std_ulogic_vector(3 downto 0) := "0110";
 	signal indexCount : unsigned(8 downto 0);
 
+	signal test_case : integer;
+
 
 begin
+	default clock is rising_edge (clk);
 
 	dut:  new_encoder
 	port map(
@@ -117,14 +124,26 @@ begin
 	sim_pulse_clk_proc :process
 	begin
 		while enable loop
-		s_conduit_encoder_sim_pulse <= '0';
+		s_conduit_encoder_sim_pulse_A <= '0';
 		wait for c_enc_index_time;
-		s_conduit_encoder_sim_pulse <= '1';
+		s_conduit_encoder_sim_pulse_A <= '1';
 		wait for c_enc_index_time;
 		end loop;
 		wait;
 
 	end process sim_pulse_clk_proc;
+
+	sim_pulse_clk_17kHz_proc :process
+	begin
+		while enable loop
+		s_conduit_encoder_sim_pulse_17k <= '0';
+		wait for c_enc_sim_17kHz_pulse_half;
+		s_conduit_encoder_sim_pulse_17k <= '1';
+		wait for c_enc_sim_17kHz_pulse_half;
+		end loop;
+		wait;
+
+	end process sim_pulse_clk_17kHz_proc;
 
 	stim_proc_encoder: process
 	begin
@@ -173,34 +192,48 @@ begin
         wait;
     end process stim_proc_encoder;
 
-	s_conduit_encoder_index <= '0' when indexCount = 55 else '1';
+	s_conduit_encoder_index <= '0' when indexCount = 15 else '1';
+
+	s_conduit_encoder_sim_pulse <= s_conduit_encoder_sim_pulse_A when test_case = 2 else
+									s_conduit_encoder_sim_pulse_17k when test_case = 3 else
+									'0';
+
 
     stim_main_proc: process
     begin
-    --reset <= transport '1', '0' after 5 ns;
+      test_case <= 0;
 		reset <= '1';
 		enable_a_b<='1';
 		s_conduit_encoder_sim_switch <= '0';
 		-- normal counting up
 		wait for 15 ns;
 		reset <= '0';
+
   --
 		-- --normal counting down
-		-- enable_a_b <= '0';
 		wait for 170 us;
+		test_case <= 1;
+		enable_a_b <= '0';
 
+		wait for 50 us;
+		test_case <= 2;
 		--setup for sim
-		-- enable_a_b <= '1';
-		-- wait for 50 us;
-		-- check if feeding in simulation signals works
 		s_conduit_encoder_sim_switch <= '1';
 		reset <= '1';
-		wait for 150 ns;
+		wait for 50 ns;
+		wait until falling_edge(s_conduit_encoder_sim_pulse_17k);
 		reset <= '0';
-		wait for 170 us;
+		wait for 50 us;
 
-		wait for 10 us;
+		test_case <= 3;
+
+		-- reset <= '1';
+		wait for 200 ns;
+
+		-- reset <= '0';
+		wait for 300 us;
 		enable <= false;
+		wait;
 
     end process stim_main_proc;
 
