@@ -14,7 +14,6 @@ use IEEE.numeric_std.all;
 
 entity ram_master is
 	generic (
-		--image_cols : integer := 256;
 		image_rows : integer := 120;
 		image_cols_bits: integer:= 8;
 		BASE_ADDR_2_OFFSET : unsigned  :=  X"020000"
@@ -63,7 +62,7 @@ entity ram_master is
 		conduit_debug_ram_out    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_ram.ram_out
 		conduit_debug_ram_out_2    : out  std_logic_vector(31 downto 0)  := (others => '0'); --     conduit_debug_ram.ram_out_2
 		conduit_debug_ram_in     : in   std_logic_vector(31 downto 0)  := (others => '0') --                         .ram_in
-	);--avs_s1_waitrequest
+	);
 end entity ram_master;
 
 architecture rtl of ram_master is
@@ -127,12 +126,12 @@ architecture rtl of ram_master is
 	signal ram_read_1_buffer : std_logic_vector(15 downto 0);
 
 
-	type state_test is (none, t1, t_data_in, t_col_nr);
+	type state_test is (none, t1, t_data_in, t_col_nr, t_read_0);
 	signal test_state         : state_test;
 
 
 begin
-	test_state <= t_col_nr;
+	test_state <= t_read_0;
 	p_test: process(all)
 	begin
 		case test_state is
@@ -142,32 +141,22 @@ begin
 				conduit_debug_ram_out_2(31 downto 0) <= (others => '0');
 
 			when t1 =>
-
-				-- conduit_debug_ram_out_2(0) <= '1' when ((main_state=main_write) and (avm_m0_address="000000") and (not avm_m0_write_n)) else '0';
-				if (main_state=main_write) then
-					if (avm_m0_address=X"000000") then
-						if ( avm_m0_write_n='0') then
-							conduit_debug_ram_out_2(0) <= '1';
-						else
-							conduit_debug_ram_out_2(0) <= '0';
-						end if;
-					else
-						conduit_debug_ram_out_2(0) <= '0';
-					end if;
+				if main_state=main_write and avm_m0_address=X"000000" and avm_m0_write_n='0' then
+					conduit_debug_ram_out_2(0) <= '1';
 				else
 					conduit_debug_ram_out_2(0) <= '0';
 				end if;
 
 				conduit_debug_ram_out(15 downto 0) <= avm_m0_writedata;
 				conduit_debug_ram_out(31 downto 16) <= (others => '0');
-				conduit_debug_ram_out_2(31 downto 1) <= (others => '0');
+				conduit_debug_ram_out_2(1) <= avm_m0_read_n;
+				conduit_debug_ram_out_2(25 downto 2) <= avm_m0_address;
+				conduit_debug_ram_out_2(26) <= avm_m0_waitrequest;
+				conduit_debug_ram_out_2(27) <= avm_m0_write_n;
+				conduit_debug_ram_out_2(31 downto 28) <= (others => '0');
 
 			when t_data_in =>
 				conduit_debug_ram_out(23 downto 0) <= asi_in0_data;
-				--conduit_debug_ram_out(31) <= asi_in0_valid;
-				--conduit_debug_ram_out(30) <= asi_in0_ready;
-				--conduit_debug_ram_out(29) <= asi_in0_startofpacket;
-				--conduit_debug_ram_out(28) <= asi_in0_endofpacket;
 				conduit_debug_ram_out(31 downto 24) <= (others => '0');
 
 				conduit_debug_ram_out_2(0) <= asi_in0_startofpacket;
@@ -179,6 +168,21 @@ begin
 				conduit_debug_ram_out(8 downto 0) <= conduit_col_info_col_nr;
 				conduit_debug_ram_out_2(31 downto 1) <= (others => '0');
 				conduit_debug_ram_out_2(0) <= conduit_col_info_fire;
+			when t_read_0 =>
+				if main_state=main_read_A and (avm_m0_address=X"000000" or avm_m0_address=std_logic_vector(BASE_ADDR_2)) and avm_m0_read_n='0' then
+					conduit_debug_ram_out_2(0) <= '1';
+				else
+					conduit_debug_ram_out_2(0) <= '0';
+				end if;
+
+				conduit_debug_ram_out(15 downto 0) <= avm_m0_readdata;
+				conduit_debug_ram_out(31 downto 16) <= (others => '0');
+				conduit_debug_ram_out_2(1) <= avm_m0_read_n;
+				conduit_debug_ram_out_2(25 downto 2) <= avm_m0_address;
+				conduit_debug_ram_out_2(26) <= avm_m0_waitrequest;
+				conduit_debug_ram_out_2(27) <= avm_m0_write_n;
+				conduit_debug_ram_out_2(28) <= avm_m0_readdatavalid;
+				conduit_debug_ram_out_2(31 downto 29) <= (others => '0');
 
 			when others =>
 				conduit_debug_ram_out(31 downto 0) <= (others => '0');

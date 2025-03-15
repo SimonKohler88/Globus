@@ -1,20 +1,18 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Sat Mar 08 11:23:51 2025
+[*] Sat Mar 15 16:06:16 2025
 [*]
 [dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\ram_master_temp\func.ghw"
-[dumpfile_mtime] "Sat Mar 08 10:31:52 2025"
-[dumpfile_size] 1981563
+[dumpfile_mtime] "Sat Mar 15 16:03:35 2025"
+[dumpfile_size] 2033493
 [savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\ram_master_temp\wave_save.gtkw"
 [timestart] 77618
 [size] 1920 1017
 [pos] -1 -1
-*-8.000000 109868 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-8.000000 78148 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.ram_master_tb.
 [treeopen] top.ram_master_tb.dut_ram_master.
-[treeopen] top.ram_master_tb.verify_ram_master.
-[treeopen] top.ram_master_tb.verify_ram_master.helper_ram_emulator.
 [sst_width] 246
 [signals_width] 294
 [sst_expanded] 1
@@ -47,12 +45,24 @@ top.ram_master_tb.verify_ram_master.helper_ram_emulator.refresh_ram
 #{top.ram_master_tb.verify_ram_master.helper_ram_emulator.readdata[15:0]} top.ram_master_tb.verify_ram_master.helper_ram_emulator.readdata[15] top.ram_master_tb.verify_ram_master.helper_ram_emulator.readdata[14] top.ram_master_tb.verify_ram_master.helper_ram_emulator.readdata[13] top.ram_master_tb.verify_ram_master.helper_ram_emulator.readdata[12] top.ram_master_tb.verify_ram_master.helper_ram_emulator.readdata[11] top.ram_master_tb.verify_ram_master.helper_ram_emulator.readdata[10] top.ram_master_tb.verify_ram_master.helper_ram_emulator.readdata[9] top.ram_master_tb.verify_ram_master.helper_ram_emulator.readdata[8] top.ram_master_tb.verify_ram_master.helper_ram_emulator.readdata[7] top.ram_master_tb.verify_ram_master.helper_ram_emulator.readdata[6] top.ram_master_tb.verify_ram_master.helper_ram_emulator.readdata[5] top.ram_master_tb.verify_ram_master.helper_ram_emulator.readdata[4] top.ram_master_tb.verify_ram_master.helper_ram_emulator.readdata[3] top.ram_master_tb.verify_ram_master.helper_ram_emulator.readdata[2] top.ram_master_tb.verify_ram_master.helper_ram_emulator.readdata[1] top.ram_master_tb.verify_ram_master.helper_ram_emulator.readdata[0]
 @28
 top.ram_master_tb.verify_ram_master.helper_ram_emulator.write_en
-@29
 top.ram_master_tb.verify_ram_master.helper_ram_emulator.write_en_int
-@28
 top.ram_master_tb.verify_ram_master.helper_ram_emulator.read_n
 top.ram_master_tb.verify_ram_master.helper_ram_emulator.waitrequest
 top.ram_master_tb.verify_ram_master.helper_ram_emulator.readdatavalid
+@200
+-
+@201
+-avalon_mm
+@28
+top.ram_master_tb.s_avm_m0_write
+top.ram_master_tb.s_avm_m0_readdatavalid
+top.ram_master_tb.s_avm_m0_read
+@22
+#{top.ram_master_tb.s_avm_m0_writedata[15:0]} top.ram_master_tb.s_avm_m0_writedata[15] top.ram_master_tb.s_avm_m0_writedata[14] top.ram_master_tb.s_avm_m0_writedata[13] top.ram_master_tb.s_avm_m0_writedata[12] top.ram_master_tb.s_avm_m0_writedata[11] top.ram_master_tb.s_avm_m0_writedata[10] top.ram_master_tb.s_avm_m0_writedata[9] top.ram_master_tb.s_avm_m0_writedata[8] top.ram_master_tb.s_avm_m0_writedata[7] top.ram_master_tb.s_avm_m0_writedata[6] top.ram_master_tb.s_avm_m0_writedata[5] top.ram_master_tb.s_avm_m0_writedata[4] top.ram_master_tb.s_avm_m0_writedata[3] top.ram_master_tb.s_avm_m0_writedata[2] top.ram_master_tb.s_avm_m0_writedata[1] top.ram_master_tb.s_avm_m0_writedata[0]
+#{top.ram_master_tb.s_avm_m0_readdata[15:0]} top.ram_master_tb.s_avm_m0_readdata[15] top.ram_master_tb.s_avm_m0_readdata[14] top.ram_master_tb.s_avm_m0_readdata[13] top.ram_master_tb.s_avm_m0_readdata[12] top.ram_master_tb.s_avm_m0_readdata[11] top.ram_master_tb.s_avm_m0_readdata[10] top.ram_master_tb.s_avm_m0_readdata[9] top.ram_master_tb.s_avm_m0_readdata[8] top.ram_master_tb.s_avm_m0_readdata[7] top.ram_master_tb.s_avm_m0_readdata[6] top.ram_master_tb.s_avm_m0_readdata[5] top.ram_master_tb.s_avm_m0_readdata[4] top.ram_master_tb.s_avm_m0_readdata[3] top.ram_master_tb.s_avm_m0_readdata[2] top.ram_master_tb.s_avm_m0_readdata[1] top.ram_master_tb.s_avm_m0_readdata[0]
+#{top.ram_master_tb.s_avm_m0_address[23:0]} top.ram_master_tb.s_avm_m0_address[23] top.ram_master_tb.s_avm_m0_address[22] top.ram_master_tb.s_avm_m0_address[21] top.ram_master_tb.s_avm_m0_address[20] top.ram_master_tb.s_avm_m0_address[19] top.ram_master_tb.s_avm_m0_address[18] top.ram_master_tb.s_avm_m0_address[17] top.ram_master_tb.s_avm_m0_address[16] top.ram_master_tb.s_avm_m0_address[15] top.ram_master_tb.s_avm_m0_address[14] top.ram_master_tb.s_avm_m0_address[13] top.ram_master_tb.s_avm_m0_address[12] top.ram_master_tb.s_avm_m0_address[11] top.ram_master_tb.s_avm_m0_address[10] top.ram_master_tb.s_avm_m0_address[9] top.ram_master_tb.s_avm_m0_address[8] top.ram_master_tb.s_avm_m0_address[7] top.ram_master_tb.s_avm_m0_address[6] top.ram_master_tb.s_avm_m0_address[5] top.ram_master_tb.s_avm_m0_address[4] top.ram_master_tb.s_avm_m0_address[3] top.ram_master_tb.s_avm_m0_address[2] top.ram_master_tb.s_avm_m0_address[1] top.ram_master_tb.s_avm_m0_address[0]
+@28
+top.ram_master_tb.s_avm_m0_waitrequest
 @200
 -
 -Fire

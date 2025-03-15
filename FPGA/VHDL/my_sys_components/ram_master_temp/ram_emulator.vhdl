@@ -63,6 +63,14 @@ architecture rtl of avalon_slave_ram_emulator is
   signal next_delay_state : state_delay:=idle;
   signal wait_req_intern : std_ulogic;
 
+  signal readvalid_counter: integer;
+  signal readdatavalid_intern: std_logic;
+  constant C_VALID_1 : integer:= 10;
+  constant C_VALID_1_OFF : integer:=  17;
+  constant C_VALID_2 : integer:= 26;
+  constant C_VALID_2_OFF : integer:= 28;
+
+
 begin
   write_en_int <= not write_en;
   read_n <= not read;
@@ -177,24 +185,51 @@ begin
     end if;
   end process p_store;
 
-  -- read:
+  -- -- read:
+  -- p_read : process(rst, clk)
+  -- begin
+  --   if rst = '1' then
+  --     readdatavalid <= '0';
+  --     readdata <= (others => '0');
+  --
+  --   elsif rising_edge(clk) then
+  --     if waitrequest = '0' and read_n = '1' then
+  --       readdatavalid <= '1';
+  --       readdata <= read_data_buf;
+  --     else
+  --       readdatavalid <= '0';
+  --       readdata <= (others => '0');
+  --     end if;
+  --   end if;
+  -- end process p_read;
+
+
+  -- signal readvalid_counter: integer;
+  -- signal readdatavalid_intern: std_logic;
+  -- constant C_VALID_1 : integer:= 10;
+  -- constant C_VALID_1_OFF : integer:=  17;
+  -- constant C_VALID_2 : integer:= 26;
+  -- constant C_VALID_2_OFF : integer:= 28;
+  --read:
   p_read : process(rst, clk)
   begin
     if rst = '1' then
-      readdatavalid <= '0';
-      readdata <= (others => '0');
+      readvalid_counter <= 0;
 
     elsif rising_edge(clk) then
-      if waitrequest = '0' and read_n = '1' then
-        readdatavalid <= '1';
-        readdata <= read_data_buf;
+      if read_n = '1' and readvalid_counter < C_VALID_2_OFF then
+        readvalid_counter <= readvalid_counter +1;
       else
-        readdatavalid <= '0';
-        readdata <= (others => '0');
+        readvalid_counter <= 0;
       end if;
-    end if;
-  end process p_read;
 
-  read_data_buf <= mem(to_integer(unsigned(address(RAM_ADDR_BITS-1 downto 0))));
+    end if;
+  end process;
+
+ readdatavalid <= '1' when read_n='1' and waitrequest = '0' and ( (readvalid_counter >= C_VALID_1 and readvalid_counter < C_VALID_1_OFF) or( readvalid_counter >= C_VALID_2 and readvalid_counter < C_VALID_2_OFF  )) else '0';
+
+
+  -- read_data_buf <= mem(to_integer(unsigned(address(RAM_ADDR_BITS-1 downto 0))));
+  readdata <= mem(to_integer(unsigned(address(RAM_ADDR_BITS-1 downto 0))));
 
 end architecture rtl;

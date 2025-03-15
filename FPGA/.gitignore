@@ -5,6 +5,7 @@
 *.do
 *.wlf
 *transcript
+/wave_data
 
 
 /VHDL/my_sys_components/work/

@@ -135,6 +135,9 @@ end component;
 	signal s_conduit_debug_ram_out_2    : std_logic_vector(31 downto 0);
 	signal s_conduit_debug_ram_in     : std_logic_vector(31 downto 0);
 
+	signal s_avm_m0_readdatavalid_latency :std_logic_vector(10 downto 0);
+	signal s_avm_m0_readdatavalid_late : std_logic;
+
 begin
 
     dut_ram_master: ram_master
@@ -151,7 +154,7 @@ begin
 		avm_m0_read_n            => s_avm_m0_read              ,
 		avm_m0_waitrequest       => s_avm_m0_waitrequest       ,
 		avm_m0_readdata          => s_avm_m0_readdata          ,
-		avm_m0_readdatavalid     => s_avm_m0_readdatavalid     ,
+		avm_m0_readdatavalid     => s_avm_m0_readdatavalid_late     ,
 		avm_m0_write_n           => s_avm_m0_write             ,
 		avm_m0_writedata         => s_avm_m0_writedata         ,
 		asi_in0_data             => s_asi_in0_data             ,
@@ -229,6 +232,7 @@ begin
 
 
     );
+
 end architecture rtl; -- of ram_master
 
 

@@ -66,6 +66,7 @@ architecture rtl of led_interface is
 	constant BIT_PER_LED_FRAME :integer := 32;
 	constant BIT_PER_SPI_START_END_FRAME: integer:= 32;
 	constant BRIGHTNESS : std_logic_vector(4 downto 0) := "01000";
+	-- constant BRIGHTNESS : std_logic_vector(4 downto 0) := "01111";
 	-- 0100 0000 == 0x40
 	-- 00001000 == 0x08
 	-- from protocol: 1110 1000 = 0xE8
@@ -168,6 +169,7 @@ begin
 		elsif rising_edge(clock_clk) then
 			if asi_in0_valid = '1' and asi_in0_ready ='1' and pix_in_counter_A < PIX_PER_STREAM_IN then
 				in_buffer_stream_A( pix_in_counter_A ) <= asi_in0_data;
+				-- in_buffer_stream_A( pix_in_counter_A ) <= X"FFFFFF";
 				pix_in_counter_A <= pix_in_counter_A + 1;
 			end if;
 
@@ -186,6 +188,7 @@ begin
 		elsif rising_edge(clock_clk) then
 			if asi_in1_valid = '1' and asi_in1_ready ='1' and pix_in_counter_B < PIX_PER_STREAM_IN then
 				in_buffer_stream_B( pix_in_counter_B ) <= asi_in1_data;
+				-- in_buffer_stream_B( pix_in_counter_B ) <= X"FFFFFF";
 				pix_in_counter_B <= pix_in_counter_B + 1;
 			end if;
 
@@ -224,13 +227,13 @@ begin
 				for c in 0 to (pix_out_C'length -1) loop
 					pix_out_C(c)(23 downto 0)<= in_buffer_stream_B(c);
 					pix_out_C(c)(31 downto 29) <= "111";
-					pix_out_C(c)(28 downto 24)  <= BRIGHTNESS; -- must change order
+					pix_out_C(c)(28 downto 24)  <= BRIGHTNESS;
 				end loop;
 
 				for d in 0 to (pix_out_D'length -1) loop -- change direction
 					pix_out_D(d)(23 downto 0) <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d);
 					pix_out_D(d)(31 downto 29)  <= "111";
-					pix_out_D(d)(28 downto 24)  <= BRIGHTNESS; -- must change order
+					pix_out_D(d)(28 downto 24)  <= BRIGHTNESS;
 				end loop;
 
 				spi_pulse_stretch <= spi_pulse_stretch(5 downto 0) & "1";
@@ -348,6 +351,7 @@ begin
 				conduit_LED_B_DATA <= pix_out_B(spi_pix_count_A)(spi_bit_count_A);
 				conduit_LED_C_DATA <= pix_out_C(spi_pix_count_A)(spi_bit_count_A);
 				conduit_LED_D_DATA <= pix_out_D(spi_pix_count_A)(spi_bit_count_A);
+
 				spi_out_enable   <= '1';
 
 			when send_end_frame =>
