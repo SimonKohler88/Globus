@@ -9,14 +9,14 @@ Set FILES=%MODULE%.vhd %MODULE%_tb.vhd %MODULE%_verify.vhd
 ghdl -v
 echo ---------------------------------------------
 
-ghdl -a  --std=08 %FILES% 
+ghdl -a -fpsl --std=08 %FILES% 
 
 if %ERRORLEVEL%==1 (
 	PAUSE
 	goto end
 )
 REM ghdl -r --std=08 --time-resolution=ns integration_tb --vcd=func.vcd --stop-time=120us
-ghdl -r --std=08 --coverage --time-resolution=ns %MODULE%_tb   --stop-time=500us --wave=func.ghw --psl-report=psl_report.json --psl-report-uncovered
+ghdl -r --std=08  --coverage --time-resolution=ns %MODULE%_tb   --stop-time=500us --wave=func.ghw --psl-report=psl_report.json --psl-report-uncovered
 
 
 if %ERRORLEVEL%==1 (

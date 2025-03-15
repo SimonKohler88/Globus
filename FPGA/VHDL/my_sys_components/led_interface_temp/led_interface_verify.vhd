@@ -176,6 +176,7 @@ procedure avalon_stream_out_write_many_pixel(
 	signal rec_C: std_ulogic_vector(7 downto 0);
 	signal rec_D: std_ulogic_vector(7 downto 0);
 
+	signal bitcount: integer := 0;
 
 	signal input_file : std_ulogic;
 
@@ -209,43 +210,62 @@ begin
 
     reset_reset <= transport '1', '0' after 20 ns;
 
-	 p_store_stream_A: process --untested yet
+  	 p_store_stream: process
         variable v_output_line_A : line;
         variable v_output_line_B : line;
         variable v_output_line_C : line;
         variable v_output_line_D : line;
-        variable bitcount: integer := 0;
         variable byte_count: integer := 0;
+        variable byte_written: std_ulogic;
     begin
-		wait until falling_edge(conduit_LED_A_CLK);
-		rec_A <= rec_A(7 downto 1) & conduit_LED_A_DATA;
-		rec_B(bitcount) <= conduit_LED_B_DATA;
-		rec_C(bitcount) <= conduit_LED_C_DATA;
-		rec_D(bitcount) <= conduit_LED_D_DATA;
-		bitcount := bitcount + 1;
+		byte_written := '0';
+		bitcount <= 0;
+		while enable loop
+			wait until rising_edge(conduit_LED_A_CLK);
 
-		if bitcount = 7 then
-			write(v_output_line_A, to_string(byte_count), left, 16);
-			write(v_output_line_A, to_hstring(rec_A));
-			writeline(output_file_stream_A, v_output_line_A);
+			rec_A(7-bitcount) <= conduit_LED_A_DATA;
+			rec_B(7-bitcount) <= conduit_LED_B_DATA;
+			rec_C(7-bitcount) <= conduit_LED_C_DATA;
+			rec_D(7-bitcount) <= conduit_LED_D_DATA;
 
-			write(v_output_line_B, to_string(byte_count), left, 16);
-			write(v_output_line_B, to_hstring(rec_B));
-			writeline(output_file_stream_B, v_output_line_B);
 
-			write(v_output_line_C, to_string(byte_count), left, 16);
-			write(v_output_line_C, to_hstring(rec_C));
-			writeline(output_file_stream_C, v_output_line_C);
+			if bitcount = 7 then
+				wait for 11 ns;
 
-			write(v_output_line_D, to_string(byte_count), left, 16);
-			write(v_output_line_D, to_hstring(rec_D));
-			writeline(output_file_stream_D, v_output_line_D);
 
-			bitcount := 0;
-			byte_count := byte_count + 1;
-		end if;
+				bitcount <= 0;
+				byte_count := byte_count + 1;
+				byte_written := '0';
+			-- elsif bitcount = 0 and byte_written = '0' then
+				write(v_output_line_A, to_string(byte_count), left, 16);
+				write(v_output_line_A, to_hstring(rec_A));
+				writeline(output_file_stream_A, v_output_line_A);
+
+				write(v_output_line_B, to_string(byte_count), left, 16);
+				write(v_output_line_B, to_hstring(rec_B));
+				writeline(output_file_stream_B, v_output_line_B);
+
+				write(v_output_line_C, to_string(byte_count), left, 16);
+				write(v_output_line_C, to_hstring(rec_C));
+				writeline(output_file_stream_C, v_output_line_C);
+
+				write(v_output_line_D, to_string(byte_count), left, 16);
+				write(v_output_line_D, to_hstring(rec_D));
+				writeline(output_file_stream_D, v_output_line_D);
+				byte_written := '1';
+
+			else
+				bitcount <= bitcount + 1;
+			end if;
+
+
+
+
+		end loop;
 		-- wait until conduit_LED_A_CLK ='0';
-    end process p_store_stream_A;
+    end process p_store_stream;
+
+
 
 
 	p_stim_stream_out: process

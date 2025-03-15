@@ -66,6 +66,9 @@ architecture rtl of led_interface is
 	constant BIT_PER_LED_FRAME :integer := 32;
 	constant BIT_PER_SPI_START_END_FRAME: integer:= 32;
 	constant BRIGHTNESS : std_logic_vector(4 downto 0) := "01000";
+	-- 0100 0000 == 0x40
+	-- 00001000 == 0x08
+	-- from protocol: 1110 1000 = 0xE8
 
 
 	type t_pixel_buffer_in_array is array (0 to PIX_PER_STREAM_IN-1) of std_logic_vector(23 downto 0);
@@ -98,7 +101,7 @@ architecture rtl of led_interface is
 
 	signal spi_out_enable :std_logic;
 	signal spi_bit_count_A: natural range 0 to 32;
-	signal spi_pix_count_A: natural range 0 to PIX_OUT_PER_SPI-1;
+	signal spi_pix_count_A: natural range 0 to PIX_OUT_PER_SPI; -- need one more
 
 	type t_spi_state is (idle, send_start_frame, send_buffer, send_end_frame, end_send);
 	signal spi_state : t_spi_state;
@@ -110,7 +113,7 @@ architecture rtl of led_interface is
 
 
 begin
-	test_state <= none;
+	test_state <= t1;
 	p_test: process(all)
 	begin
 		case test_state is
@@ -237,11 +240,11 @@ begin
 		end if;
 	end process;
 
+	-- stretch spi start pulse for clock domain crossing
 	start_spi_pulse <= spi_pulse_stretch(6) or spi_pulse_stretch(5) or spi_pulse_stretch(4) or spi_pulse_stretch(3) or
 					   spi_pulse_stretch(2) or spi_pulse_stretch(1) or spi_pulse_stretch(0);
 
-
-	-- synchronize spi start pulse
+	-- generate start pulse in spi clock domain
 	p_spi_sync: process(all)
 	begin
 		if reset_reset ='1' then
@@ -251,7 +254,6 @@ begin
 		end if;
 	end process;
 	sync_start_spi_pulse <= sync_start_spi_pulse_ff(0) and  not sync_start_spi_pulse_ff(1);
-
 
 	-- state machine for spi led
 	p_spi_state_clocked: process(all)
@@ -266,8 +268,11 @@ begin
 			spi_state <= next_spi_state;
 
 			if spi_state /= next_spi_state then
+
 				spi_bit_count_A  <= BIT_PER_LED_FRAME-1;
-				spi_pix_count_A <= 0;
+				if sync_start_spi_pulse='1' then
+					spi_pix_count_A <= 0;
+				end if;
 
 			elsif spi_state /= idle then
 				if spi_state=send_start_frame or spi_state=send_end_frame then
@@ -303,7 +308,7 @@ begin
 				end if;
 
 			when send_buffer =>
-				if spi_pix_count_A = PIX_OUT_PER_SPI-1 then
+				if spi_pix_count_A = PIX_OUT_PER_SPI-1 and spi_bit_count_A = 0 then
 					next_spi_state <= send_end_frame;
 				else
 					next_spi_state <= send_buffer;
