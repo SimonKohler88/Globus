@@ -47,7 +47,7 @@ architecture rtl of qspi_interface is
 
 	signal sync_ff_cs_reg       : std_logic_vector(1 downto 0);
 	signal cs_edge_start        : std_logic;
-	signal cs_edge_end          : std_logic;
+	-- signal cs_edge_end          : std_logic;
 	signal sync_ff_clk_reg      : std_logic_vector(1 downto 0);
 
 	signal data_in_buffer       : std_logic_vector(23 downto 0);
@@ -148,7 +148,7 @@ begin
 		if reset_reset = '1' then
 			sync_ff_cs_reg <= (others => '0');
 			cs_edge_start <= '0';
-			cs_edge_end   <= '0';
+			-- cs_edge_end   <= '0';
 
 		elsif rising_edge(clock_clk) then
 			sync_ff_cs_reg <= sync_ff_cs_reg(0) & sync_spi_cs;
@@ -157,10 +157,10 @@ begin
 			if sync_ff_cs_reg = "10" then
 				cs_edge_start <= '1';
 			elsif sync_ff_cs_reg = "01" then
-				cs_edge_end <= '1';
+				-- cs_edge_end <= '1';
 			else
 				cs_edge_start <= '0';
-				cs_edge_end <= '0';
+				-- cs_edge_end <= '0';
 			end if;
 		end if;
 	end process p_generate_edges;
