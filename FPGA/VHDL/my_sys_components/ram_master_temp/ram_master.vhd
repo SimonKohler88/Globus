@@ -127,12 +127,12 @@ architecture rtl of ram_master is
 	signal ram_read_1_buffer : std_logic_vector(15 downto 0);
 
 
-	type state_test is (none, t1, t_data_in);
+	type state_test is (none, t1, t_data_in, t_col_nr);
 	signal test_state         : state_test;
 
 
 begin
-	test_state <= t_data_in;
+	test_state <= t_col_nr;
 	p_test: process(all)
 	begin
 		case test_state is
@@ -174,6 +174,11 @@ begin
 				conduit_debug_ram_out_2(1) <= asi_in0_valid;
 				conduit_debug_ram_out_2(2) <= asi_in0_endofpacket;
 				conduit_debug_ram_out_2(31 downto 3) <= (others => '0');
+			when t_col_nr =>
+				conduit_debug_ram_out(31 downto 9) <= (others => '0');
+				conduit_debug_ram_out(8 downto 0) <= conduit_col_info_col_nr;
+				conduit_debug_ram_out_2(31 downto 1) <= (others => '0');
+				conduit_debug_ram_out_2(0) <= conduit_col_info_fire;
 
 			when others =>
 				conduit_debug_ram_out(31 downto 0) <= (others => '0');
