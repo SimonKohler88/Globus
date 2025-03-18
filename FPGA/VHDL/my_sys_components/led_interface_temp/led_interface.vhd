@@ -94,15 +94,9 @@ architecture rtl of led_interface is
 	signal pix_in_counter_A : natural range 0 to 70 := 0;
 	signal pix_in_counter_B : natural range 0 to 70 := 0;
 
-	-- signal sync_spi_clk_ff:std_logic_vector(1 downto 0);
-	-- signal sync_spi_clk:std_logic;
-
-	-- signal sync_reset_ff:std_logic_vector(1 downto 0);
-	-- signal sync_reset:std_logic;
-
 	signal spi_out_enable :std_logic;
-	signal spi_bit_count_A: natural range 0 to 32;
-	signal spi_pix_count_A: natural range 0 to PIX_OUT_PER_SPI; -- need one more
+	signal spi_bit_count_A: natural range 0 to 32 := 0;
+	signal spi_pix_count_A: natural range 0 to PIX_OUT_PER_SPI := 0;
 
 	type t_spi_state is (idle, send_start_frame, send_buffer, send_end_frame, end_send);
 	signal spi_state : t_spi_state;

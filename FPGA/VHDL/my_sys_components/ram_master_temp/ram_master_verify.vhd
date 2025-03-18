@@ -100,6 +100,15 @@ procedure avalon_stream_out_write_many_pixel(
                 packet_end <= '1';
             end if;
 
+
+            -- testing lock of sop/eop
+            if i=50 then
+                packet_end <= '1';
+            end if;
+            if i = 51 then
+                packet_start <= '1';
+            end if;
+
             data <= v_input_data;
             valid <= '1';
             pix_count := pix_count +1;
@@ -250,7 +259,7 @@ begin
 
 	begin
         aso_out0_data <= (others => '0');
-        aso_out0_Valid <= '0';
+        aso_out0_valid <= '0';
         aso_out0_endofpacket <= '0';
         aso_out0_startofpacket <= '0';
         transfer_out_ongoing <= '0';
@@ -259,6 +268,7 @@ begin
         write(output, "addr row2row off: " & to_string(dut_const_row2row_offset) & lf);
         write(output, "addr_b_col_shift_offset: " & to_string(addr_b_col_shift_offset) & lf);
         write(output, "image_cols: " & to_string(image_cols) & lf);
+        write(output, "------------------------------------------------" & lf);
 
         wait for 50 ns;
 
@@ -277,10 +287,22 @@ begin
         write(output, "testcase 1 sending " & lf);
         avalon_stream_out_write_many_pixel(960, 20, clock_clk, aso_out0_data, aso_out0_valid,
                 aso_out0_ready, aso_out0_startofpacket, aso_out0_endofpacket, 2, input_file );
+        transfer_out_ongoing <= '0';
+
+        wait on test_case_nr;
+        input_file <= '0';
+        transfer_out_ongoing <= '1';
+        wait for 50 ns;
+        wait until rising_edge(clock_clk);
+        write(output, "testcase 2 sending " & lf);
+        avalon_stream_out_write_many_pixel(960, 20, clock_clk, aso_out0_data, aso_out0_valid,
+                aso_out0_ready, aso_out0_startofpacket, aso_out0_endofpacket, 1, input_file );
+        transfer_out_ongoing <= '0';
 
         wait;
 
 	end process p_stimuli_avs_out;
+
 	p_stimuli_fire: process
 	begin
         conduit_intern_col_fire <= '0';
@@ -291,35 +313,41 @@ begin
         -- test case 0: Check if pixels are correctly written and read
         wait until falling_edge(transfer_out_ongoing);
 
-        wait for 10 ns;
+        wait for 1 us;
         pulse_out(conduit_intern_col_fire, clock_clk);
         wait until rising_edge(asi_in1_endofpacket);
-        wait for 20 ns;
+        wait for 40 ns;
         conduit_intern_col_nr(3 downto 0) <= X"1";
         pulse_out(conduit_intern_col_fire, clock_clk);
 
         wait until rising_edge(asi_in1_endofpacket);
-        wait for 20 ns;
+        wait for 50 ns;
         conduit_intern_col_nr(3 downto 0) <= X"6";
         pulse_out(conduit_intern_col_fire, clock_clk);
 
         wait until falling_edge(asi_in1_endofpacket);
 
         test_ongoing <= '0';
-        wait for 10 ns;
+        wait for 1 us;
 
         -- test case 1: check if write works with delayed ready->valid, correct memory-space swap
         test_case_nr <= 1;
         wait for 10 ns;
         test_ongoing <= '1';
-        wait until rising_edge(aso_out0_endofpacket);
+        -- wait until rising_edge(aso_out0_endofpacket);
+        wait until falling_edge(transfer_out_ongoing);
         wait for 10 ns;
         conduit_intern_col_nr(3 downto 0) <= X"2";
         pulse_out(conduit_intern_col_fire, clock_clk);
         wait until falling_edge(asi_in1_endofpacket);
         test_ongoing <= '0';
-        wait for 10 ns;
+        wait for 1 us;
 
+        test_case_nr <= 2;
+        wait for 100 us;
+        -- wait until falling_edge(transfer_out_ongoing);
+
+        -- enable <= false;
         wait;
 
 	end process p_stimuli_fire;

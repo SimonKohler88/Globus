@@ -30,6 +30,8 @@ entity ram_master is
 		avm_m0_readdatavalid     : in  std_logic                     := '0';             --                     .readdatavalid
 		avm_m0_write_n           : out std_logic;                                        --                     .write
 		avm_m0_writedata         : out std_logic_vector(15 downto 0);                    --                     .writedata
+		avm_m0_byteenable        : out std_logic_vector(1 downto 0);                     --                     .byteenable
+		avm_m0_chipselect        : out std_logic;                                        --                     .chipselect
 
 		asi_in0_data             : in  std_logic_vector(23 downto 0) := (others => '0'); --              asi_in0.data
 		asi_in0_ready            : out std_logic;                                        --                     .ready
@@ -109,9 +111,13 @@ architecture rtl of ram_master is
 	signal addr_adder                : unsigned(23 downto 0) := (others => '0');
 
 	signal end_packet_ff             : std_logic_vector(1 downto 0);
+	signal start_packet_ff           : std_logic_vector(1 downto 0);
+	signal addr_switch_pending       : std_logic;
 
 	signal current_address_write     : unsigned(23 downto 0) := (others => '0');
 	signal current_address_read      : unsigned(23 downto 0) := (others => '0');
+	signal current_chipselect_read   : std_logic;
+	signal current_chipselect_write  : std_logic;
 
 	signal active_aso_startofpacket  : std_logic;
 	signal active_aso_endofpacket    : std_logic;
@@ -119,15 +125,34 @@ architecture rtl of ram_master is
 	signal active_aso_ready          : std_logic;
 	signal active_aso_valid          : std_logic;
 	signal pix_count                 : unsigned(7 downto 0);
+	signal read_access_count         : unsigned(8 downto 0);
 
 	signal col_fire_ff               : std_logic_vector(1 downto 0);
 	signal fire_pending              : std_logic;
 
-	signal ram_read_1_buffer : std_logic_vector(15 downto 0);
+	signal ram_read_1_buffer         : std_logic_vector(15 downto 0);
 
+	signal incoming_pix_count     : unsigned(15 downto 0);
+	constant c_accept_eop		: integer:= image_rows*image_cols-100;
+	signal incoming_transfer_ongoing :std_logic;
 
-	type state_test is (none, t1, t_data_in, t_col_nr, t_read_0);
+	type t_asi_in0_data is array (0 to 1) of std_logic_vector(23 downto 0);
+	signal asi_in0_data_ff             : t_asi_in0_data:= (others=>(others=>'0'));
+	signal asi_in0_valid_ff            : std_logic_vector(1 downto 0);
+	signal asi_in0_endofpacket_ff      : std_logic_vector(1 downto 0);
+	signal asi_in0_startofpacket_ff    : std_logic_vector(1 downto 0);
+	signal asi_in0_data_sync           : std_logic_vector(23 downto 0);
+	signal asi_in0_valid_sync          : std_logic;
+	signal asi_in0_endofpacket_sync    : std_logic;
+	signal asi_in0_startofpacket_sync  : std_logic;
+
+	type state_test is (none, t1,t2, t_data_in, t_col_nr, t_read_0);
 	signal test_state         : state_test;
+
+	signal test_pack_sig_stretch   :std_logic_vector(2 downto 0);
+	signal test_pack_sig_stretch_2 :std_logic_vector(2 downto 0);
+	signal test_pack_sig           :std_logic;
+	signal test_pack_sig_2         :std_logic;
 
 
 begin
@@ -141,7 +166,7 @@ begin
 				conduit_debug_ram_out_2(31 downto 0) <= (others => '0');
 
 			when t1 =>
-				if main_state=main_write and avm_m0_address=X"000000" and avm_m0_write_n='0' then
+				if main_state=main_write and (avm_m0_address=X"000000" or avm_m0_address=std_logic_vector(BASE_ADDR_2)) and avm_m0_write_n='0' then
 					conduit_debug_ram_out_2(0) <= '1';
 				else
 					conduit_debug_ram_out_2(0) <= '0';
@@ -149,31 +174,62 @@ begin
 
 				conduit_debug_ram_out(15 downto 0) <= avm_m0_writedata;
 				conduit_debug_ram_out(31 downto 16) <= (others => '0');
+				conduit_debug_ram_out_2 <= (
+					1 => avm_m0_read_n,
+
+					26 => avm_m0_waitrequest,
+					27 => avm_m0_write_n,
+					28 => active_base_addr,
+					others => '0'
+				);
+				conduit_debug_ram_out_2(25 downto 2) <= avm_m0_address;
+
+			when t2 =>
+				conduit_debug_ram_out_2(0) <= test_pack_sig;
+
+				conduit_debug_ram_out(15 downto 0) <= avm_m0_writedata;
+				conduit_debug_ram_out(31 downto 16) <= (others => '0');
 				conduit_debug_ram_out_2(1) <= avm_m0_read_n;
 				conduit_debug_ram_out_2(25 downto 2) <= avm_m0_address;
 				conduit_debug_ram_out_2(26) <= avm_m0_waitrequest;
 				conduit_debug_ram_out_2(27) <= avm_m0_write_n;
-				conduit_debug_ram_out_2(31 downto 28) <= (others => '0');
+				conduit_debug_ram_out_2(28) <= active_base_addr;
+				conduit_debug_ram_out_2(29) <= test_pack_sig_2;
+				conduit_debug_ram_out_2(31 downto 30) <= (others => '0');
+
+
 
 			when t_data_in =>
 				conduit_debug_ram_out(23 downto 0) <= asi_in0_data;
 				conduit_debug_ram_out(31 downto 24) <= (others => '0');
 
-				conduit_debug_ram_out_2(0) <= asi_in0_startofpacket;
-				conduit_debug_ram_out_2(1) <= asi_in0_valid;
-				conduit_debug_ram_out_2(2) <= asi_in0_endofpacket;
-				conduit_debug_ram_out_2(31 downto 3) <= (others => '0');
+				conduit_debug_ram_out_2(0) <= test_pack_sig;
+				conduit_debug_ram_out_2(1) <= asi_in0_startofpacket_sync;
+				conduit_debug_ram_out_2(2) <= asi_in0_valid;
+				conduit_debug_ram_out_2(3) <= asi_in0_valid_sync;
+				conduit_debug_ram_out_2(4) <= test_pack_sig_2;
+				conduit_debug_ram_out_2(5) <= asi_in0_endofpacket_sync;
+				conduit_debug_ram_out_2(6) <= asi_in0_ready;
+				conduit_debug_ram_out_2(30 downto 7) <= asi_in0_data_sync;
+
+				conduit_debug_ram_out_2(31) <= '0'; --(others => '0');
+
+
 			when t_col_nr =>
 				conduit_debug_ram_out(31 downto 9) <= (others => '0');
 				conduit_debug_ram_out(8 downto 0) <= conduit_col_info_col_nr;
 				conduit_debug_ram_out_2(31 downto 1) <= (others => '0');
 				conduit_debug_ram_out_2(0) <= conduit_col_info_fire;
+
 			when t_read_0 =>
 				if main_state=main_read_A and (avm_m0_address=X"000000" or avm_m0_address=std_logic_vector(BASE_ADDR_2)) and avm_m0_read_n='0' then
 					conduit_debug_ram_out_2(0) <= '1';
 				else
 					conduit_debug_ram_out_2(0) <= '0';
 				end if;
+
+				-- conduit_debug_ram_out_2(0) <= fire_pending;
+
 
 				conduit_debug_ram_out(15 downto 0) <= avm_m0_readdata;
 				conduit_debug_ram_out(31 downto 16) <= (others => '0');
@@ -182,7 +238,8 @@ begin
 				conduit_debug_ram_out_2(26) <= avm_m0_waitrequest;
 				conduit_debug_ram_out_2(27) <= avm_m0_write_n;
 				conduit_debug_ram_out_2(28) <= avm_m0_readdatavalid;
-				conduit_debug_ram_out_2(31 downto 29) <= (others => '0');
+				conduit_debug_ram_out_2(29) <= avm_m0_chipselect;
+				conduit_debug_ram_out_2(31 downto 30) <= (others => '0');
 
 			when others =>
 				conduit_debug_ram_out(31 downto 0) <= (others => '0');
@@ -191,6 +248,23 @@ begin
 		end case;
 	end process;
 
+	--debug process
+	p_debug: process(all)
+	begin
+	 if reset_reset = '1' then
+            test_pack_sig_stretch     <= (others => '0');
+            test_pack_sig_stretch_2   <= (others => '0');
+        elsif rising_edge(clock_clk) then
+           test_pack_sig_stretch   <= test_pack_sig_stretch(1 downto 0)   & asi_in0_startofpacket;
+           test_pack_sig_stretch_2 <= test_pack_sig_stretch_2(1 downto 0) & asi_in0_endofpacket;
+        end if;
+	end process;
+
+	test_pack_sig <=   test_pack_sig_stretch(2) or test_pack_sig_stretch(1) or test_pack_sig_stretch(0);
+	test_pack_sig_2 <= test_pack_sig_stretch_2(2) or test_pack_sig_stretch_2(1) or test_pack_sig_stretch_2(0);
+
+
+
 	avs_s1_waitrequest <= '1'; -- not implemented
 	avs_s1_readdata <= (others => '0');
 
@@ -198,12 +272,47 @@ begin
 					  std_logic_vector(read_address)  when main_state = main_read_A or main_state=main_read_B else
 					  (others=>'0');
 
+	avm_m0_chipselect <= current_chipselect_write when main_state = main_write  else
+						 current_chipselect_read when main_state = main_read_A or main_state=main_read_B else
+					     '0';
+
+	avm_m0_byteenable <= "00";
 
 
 
+	-- signal asi_in0_data_ff             : std_logic_vector(23 * 2 downto 0);
+	-- signal asi_in0_valid_ff            : std_logic_vector(1 downto 0);
+	-- signal asi_in0_endofpacket_ff      : std_logic_vector(1 downto 0);
+	-- signal asi_in0_startofpacket_ff    : std_logic_vector(1 downto 0);
+	-- signal asi_in0_data_sync           : std_logic_vector(23 downto 0);
+	-- signal asi_in0_valid_sync          : std_logic;
+	-- signal asi_in0_endofpacket_sync    : std_logic;
+	-- signal asi_in0_startofpacket_sync  : std_logic;
+	-- Sync in stream from fifo
+    p_in_stream_sync : process(all) is
+        variable delayCount : unsigned(9 downto 0);
+    begin
+        if reset_reset = '1' then
+            asi_in0_data_ff                <= (others=>(others=>'0'));
+            asi_in0_valid_ff               <= (others => '1');
+            asi_in0_endofpacket_ff         <= (others => '1');
+            asi_in0_startofpacket_ff       <= (others => '1');
+        elsif rising_edge(clock_clk) then
+            asi_in0_data_ff(0)  <= asi_in0_data;
+            asi_in0_data_ff(1)  <= asi_in0_data_ff(0);
 
-	--TODO: uncomment startup delay
-	-- SystemEnable <= '1';
+            asi_in0_valid_ff               <= asi_in0_valid_ff        (0) & asi_in0_valid;
+            asi_in0_endofpacket_ff         <= asi_in0_endofpacket_ff  (0) & asi_in0_endofpacket;
+            asi_in0_startofpacket_ff       <= asi_in0_startofpacket_ff(0) & asi_in0_startofpacket;
+
+        end if;
+    end process;
+
+	asi_in0_data_sync            <=  asi_in0_data_ff         (1);
+	asi_in0_valid_sync           <=  asi_in0_valid_ff        (1);
+	asi_in0_endofpacket_sync     <=  asi_in0_endofpacket_ff  (1);
+	asi_in0_startofpacket_sync   <=  asi_in0_startofpacket_ff(1);
+
  --Startup Delay for the RAM Controller
     InitialDelay : process(all) is
         variable delayCount : unsigned(9 downto 0);
@@ -306,7 +415,6 @@ begin
 
 		end if;
 	end process p_main_state_clocked;
-
 
 	p_main_state_statemachine: process(all)
 	begin
@@ -415,14 +523,15 @@ begin
 
 				when wait_read_1 =>
 
-				if active_aso_ready='1' and avm_m0_waitrequest='0' then
+				if active_aso_ready='1' and avm_m0_waitrequest='0' and avm_m0_readdatavalid='1' then
 						next_read_state <= read_1;
 					else
 						next_read_state <= wait_read_1;
 					end if;
 
 				when read_1 =>
-					if avm_m0_waitrequest='0' and avm_m0_readdatavalid='1' then
+					-- if avm_m0_waitrequest='0' and avm_m0_readdatavalid='1' then
+					if avm_m0_readdatavalid='1' then
 						next_read_state <= read_2;
 					else
 						next_read_state <= wait_read_2;
@@ -437,7 +546,8 @@ begin
 
 				when read_2 =>
 					if pix_count < PIX_PER_ASO-1 then
-						if avm_m0_waitrequest='1' then
+						-- if avm_m0_waitrequest='1' or avm_m0_readdatavalid='0' then
+						if avm_m0_readdatavalid='0' then
 							next_read_state <= wait_read_1;
 						else
 							next_read_state <= read_1;
@@ -524,10 +634,13 @@ begin
 
 	end process p_AVM_Read_statemachine;
 
+	current_chipselect_read <= not avm_m0_read_n ;
+
 	p_pix_count: process(all)
 	begin
 		if reset_reset = '1' then
 			pix_count <= (others=>'0');
+			read_access_count <= (others=>'0');
 
 		elsif rising_edge(clock_clk) then
 			if (main_state = main_read_A or main_state = main_read_B) then
@@ -537,8 +650,15 @@ begin
 					when read_2 => pix_count <= pix_count +1;
 					when others => pix_count <= pix_count;
 				end case;
+
+				if avm_m0_readdatavalid then
+					read_access_count <= read_access_count + 1;
+				elsif read_state = end_read or read_state = idle then
+					read_access_count <= (others=>'0');
+				end if;
 			else
 				pix_count <= (others=>'0');
+				read_access_count <= (others=>'0');
 			end if;
 		end if;
 	end process p_pix_count;
@@ -558,7 +678,7 @@ begin
 			elsif next_read_state=read_1 then
 				current_address_read <= current_address_read + 1;
 
-			elsif next_read_state= read_2 then -- TODO: change for hot version
+			elsif next_read_state= read_2 then
 			    -- always jump 2 rows
 				current_address_read <= current_address_read + addr_row_to_row_offset + addr_row_to_row_offset + 1;
 			end if;
@@ -569,19 +689,24 @@ begin
 	begin
 	if reset_reset = '1' then
 		ram_read_1_buffer <= (others=> '0');
+		active_aso_data <= (others=> '0');
 
 	elsif rising_edge(clock_clk) then
-		if read_state=read_1 then
-			ram_read_1_buffer <= avm_m0_readdata;
+		if avm_m0_readdatavalid then
+			if read_access_count(0) = '0' then
+				ram_read_1_buffer <= avm_m0_readdata;
+			else
+				active_aso_data <=  ram_read_1_buffer & avm_m0_readdata(15 downto 8);
+			end if;
 		end if;
 	end if;
 
-	-- not clocked !!
-	if read_state = read_2 then
-		active_aso_data <=  ram_read_1_buffer & avm_m0_readdata(15 downto 8);
-	else
-		active_aso_data <= (others =>'0');
-	end if;
+	-- -- not clocked !!
+	-- if read_state = read_2 then
+	-- 	active_aso_data <=  ram_read_1_buffer & avm_m0_readdata(15 downto 8);
+	-- else
+	-- 	active_aso_data <= (others =>'0');
+	-- end if;
 	end process p_set_stream_out;
 
 	--*************************************** Write to ram processes ***************************************************************
@@ -590,15 +715,17 @@ begin
 
 	--control input (but not state) of "write to ram" statemachine
 	p_write_ram_clocked : PROCESS(all)
-	variable addr_switch_pending: std_ulogic;
 	BEGIN
 		IF reset_reset = '1' THEN
 			write_state <= idle; -- Zustand nach reset
 			end_packet_ff <= (others=>'0');
+			start_packet_ff <= (others=>'0');
 			active_base_addr <= '0';
 			data_in_buffer <= (others =>'0');
-			addr_switch_pending := '0';
+			addr_switch_pending <= '0';
 			current_address_write <= BASE_ADDR_1;
+			incoming_pix_count <= (others=>'0');
+			incoming_transfer_ongoing <= '0';
 
 		ELSIF rising_edge(clock_clk)THEN
 			write_state <= next_write_state;
@@ -606,13 +733,23 @@ begin
 			-- buffering data in. we dont know if we can write it already.
 			if asi_in0_valid = '1' then
 				data_in_buffer <= asi_in0_data;
+				incoming_pix_count <= incoming_pix_count + 1;
+			end if;
+
+			-- check start->reset counter
+			start_packet_ff <= start_packet_ff(0) & asi_in0_startofpacket;
+			if start_packet_ff = "01" and incoming_transfer_ongoing='0' then
+				incoming_pix_count <= (0 => '1', others =>'0'); -- set to 1
+				incoming_transfer_ongoing <= '1';
 			end if;
 
 			-- remember end of packet -> switch to other buffer
 			end_packet_ff <= end_packet_ff(0) & asi_in0_endofpacket;
-			if end_packet_ff = "01" then
+			if end_packet_ff = "01" and incoming_transfer_ongoing='1' and incoming_pix_count > c_accept_eop then
+				--c_accept_eop: lock against unwanted eop and sop--> fifo generates them for some reason
 				active_base_addr <= not active_base_addr;
-				addr_switch_pending := '1';
+				addr_switch_pending <= '1';
+				incoming_transfer_ongoing <= '0';
 			end if;
 
 			-- switch to other buffer: set base address and increments of addr
@@ -622,9 +759,10 @@ begin
 				else
 					current_address_write <= BASE_ADDR_2;
 				end if;
-				addr_switch_pending := '0';
+				addr_switch_pending <= '0';
 
-			elsif next_write_state=write_2 or next_write_state=end_write then
+			elsif (write_state=write_1 and next_write_state=write_2) or next_write_state=end_write then
+			-- elsif next_write_state=write_2 or next_write_state=end_write then
 				current_address_write <= current_address_write + 1;
 			end if;
 
@@ -634,7 +772,6 @@ begin
 	  --Interface that communicates with RAM controller over Avalon-MM
     p_AVM_Write_statemachine : process(all) is
     begin
---set_base_addr, idle, wait_write_1, write_1, wait_write_2, write_2, end_write
 
 		if main_state = main_write then
 			case write_state is
@@ -660,7 +797,13 @@ begin
 					end if;
 
 				when write_2 =>
-					next_write_state <= end_write;
+					-- next_write_state <= end_write;
+
+					if avm_m0_waitrequest='0' then
+						next_write_state <= end_write;
+					else
+						next_write_state <= write_2;
+					end if;
 
 				when end_write =>
 					next_write_state <= idle;
@@ -710,6 +853,7 @@ begin
 
     end process p_AVM_Write_statemachine;
 
+	current_chipselect_write <= not avm_m0_write_n ;
 
 
 

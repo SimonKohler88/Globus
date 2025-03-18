@@ -27,6 +27,8 @@ component ram_master is
 		avm_m0_readdatavalid     : in  std_logic                     := '0';             --                     .readdatavalid
 		avm_m0_write_n           : out std_logic;                                        --                     .write
 		avm_m0_writedata         : out std_logic_vector(15 downto 0);                    --                     .writedata
+		avm_m0_byteenable        : out std_logic_vector(1 downto 0);                     --                     .byteenable
+		avm_m0_chipselect        : out std_logic;                                        --                     .chipselect
 		asi_in0_data             : in  std_logic_vector(23 downto 0)  := (others => '0'); --              asi_in0.data
 		asi_in0_ready            : out std_logic;                                        --                     .ready
 		asi_in0_valid            : in  std_logic                     := '0';             --                     .valid
@@ -82,6 +84,7 @@ component ram_master is
 		avm_m0_write             : in std_logic;                                        --                     .write
 		avm_m0_writedata         : in std_logic_vector(15 downto 0);                    --                     .writedata
 
+
         asi_in1_data                : in  std_logic_vector(23 downto 0) := (others => '0'); --            asi_in1_B.data
 		asi_in1_ready               : out std_logic;                                        --                     .ready
 		asi_in1_valid               : in  std_logic                     := '0';             --                     .valid
@@ -108,6 +111,8 @@ end component;
 	signal s_avm_m0_readdatavalid     : std_ulogic;
 	signal s_avm_m0_write             : std_ulogic;
 	signal s_avm_m0_writedata         : std_logic_vector(15 downto 0);
+	signal s_avm_m0_byteenable        : std_logic_vector(1 downto 0);                     --                     .byteenable
+	signal s_avm_m0_chipselect        : std_logic;                                        --                     .chipselect
 	signal s_asi_in0_data             : std_logic_vector(23 downto 0);
 	signal s_asi_in0_ready            : std_ulogic;
 	signal s_asi_in0_valid            : std_ulogic;
@@ -144,7 +149,7 @@ begin
     generic map(
         image_cols_bits => 3,
 		image_rows => 120,
-		BASE_ADDR_2_OFFSET =>  X"000010"
+		BASE_ADDR_2_OFFSET =>  X"001000"
     )
     port map (
 		clock_clk                => s_clock_clk                ,
@@ -154,9 +159,11 @@ begin
 		avm_m0_read_n            => s_avm_m0_read              ,
 		avm_m0_waitrequest       => s_avm_m0_waitrequest       ,
 		avm_m0_readdata          => s_avm_m0_readdata          ,
-		avm_m0_readdatavalid     => s_avm_m0_readdatavalid_late     ,
+		avm_m0_readdatavalid     => s_avm_m0_readdatavalid     ,
 		avm_m0_write_n           => s_avm_m0_write             ,
 		avm_m0_writedata         => s_avm_m0_writedata         ,
+		avm_m0_byteenable        => s_avm_m0_byteenable        ,           --                     .byteenable
+		avm_m0_chipselect        => s_avm_m0_chipselect        ,                                --                     .chipselect
 		asi_in0_data             => s_asi_in0_data             ,
 		asi_in0_ready            => s_asi_in0_ready            ,
 		asi_in0_valid            => s_asi_in0_valid            ,

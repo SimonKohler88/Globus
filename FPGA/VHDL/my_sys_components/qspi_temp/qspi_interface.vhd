@@ -66,6 +66,11 @@ architecture rtl of qspi_interface is
 	type state_test is (none, t1, t_data2ram);
 	signal test_state         : state_test;
 
+	signal test_pack_sig_stretch   :std_logic_vector(2 downto 0);
+	signal test_pack_sig_stretch_2 :std_logic_vector(2 downto 0);
+	signal test_pack_sig           :std_logic;
+	signal test_pack_sig_2         :std_logic;
+
 
 begin
 	test_state <= t_data2ram;
@@ -91,11 +96,8 @@ begin
 
 			when t_data2ram =>
 				conduit_debug_qspi_out(23 downto 0) <= aso_out0_data;
-				conduit_debug_qspi_out(31) <= aso_out0_valid;
-				conduit_debug_qspi_out(30) <= aso_out0_ready;
-				conduit_debug_qspi_out(29) <= aso_out0_startofpacket;
-				conduit_debug_qspi_out(28) <= aso_out0_endofpacket;
-				conduit_debug_qspi_out(27 downto 24) <= (others => '0');
+				conduit_debug_qspi_out(31 downto 24) <= (others => '0');
+
 
 				if pixel_count=1 then
 					conduit_debug_qspi_out_2(0) <= '1';
@@ -103,13 +105,33 @@ begin
 					conduit_debug_qspi_out_2(0) <= '0';
 				end if;
 
-				conduit_debug_qspi_out_2(31 downto 1) <= (others => '0');
+				conduit_debug_qspi_out_2(1) <= aso_out0_valid;
+				conduit_debug_qspi_out_2(2) <= aso_out0_ready;
+				conduit_debug_qspi_out_2(3) <= test_pack_sig; -- startofpacket
+				conduit_debug_qspi_out_2(4) <= test_pack_sig_2; --endofpacket
+				conduit_debug_qspi_out_2(31 downto 5) <= (others => '0');
 
 			when others =>
 				conduit_debug_qspi_out(31 downto 0) <= (others => '0');
 				conduit_debug_qspi_out_2(31 downto 0) <= (others => '0');
 		end case;
 	end process;
+	--debug process
+	p_debug: process(all)
+	begin
+	 if reset_reset = '1' then
+            test_pack_sig_stretch     <= (others => '0');
+            test_pack_sig_stretch_2   <= (others => '0');
+        elsif rising_edge(clock_clk) then
+           test_pack_sig_stretch   <= test_pack_sig_stretch(1 downto 0)   & aso_out0_startofpacket;
+           test_pack_sig_stretch_2 <= test_pack_sig_stretch_2(1 downto 0) & aso_out0_endofpacket;
+        end if;
+	end process;
+
+	test_pack_sig <=   test_pack_sig_stretch(2) or test_pack_sig_stretch(1) or test_pack_sig_stretch(0);
+	test_pack_sig_2 <= test_pack_sig_stretch_2(2) or test_pack_sig_stretch_2(1) or test_pack_sig_stretch_2(0);
+
+
 
 
 

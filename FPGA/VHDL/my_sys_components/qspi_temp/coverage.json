@@ -2,7 +2,7 @@
  'app': 'GHDL coverage output file',
  'version': '1.0.0',
  'testcase': 'unknown',
- 'timestamp': '20250310063444.727',
+ 'timestamp': '20250316161620.884',
  [
   {
    'file': 'qspi_interface_tb.vhd',
@@ -72,7 +72,7 @@
   {
    'file': 'qspi_interface.vhd',
    'dir': '.',
-   'sha1': '3e329e71fe66c7b25a4200e83721ceee5b31a84c',
+   'sha1': '6e89557c32e0320abbb7eb9aa428b99c006c9aa0',
    'mode': 'stmt',
    'max-line': 284,
    'result': [
@@ -119,13 +119,10 @@
     '148': 1,
     '149': 1,
     '150': 1,
-    '151': 1,
     '154': 1,
     '157': 1,
     '158': 1,
-    '160': 1,
     '162': 1,
-    '163': 1,
     '171': 1,
     '172': 1,
     '173': 1,
