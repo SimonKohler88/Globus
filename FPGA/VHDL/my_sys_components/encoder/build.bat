@@ -17,7 +17,7 @@ if %ERRORLEVEL%==1 (
 
 echo ---------------------------------------------
 
-ghdl -r --std=08 --coverage --time-resolution=ns %MODULE%_tb --wave=func.ghw --stop-time=600us --psl-report=PSL_REP.json --psl-report-uncovered
+ghdl -r --std=08 --coverage --time-resolution=ns %MODULE%_tb --wave=func.ghw --stop-time=800us --psl-report=PSL_REP.json --psl-report-uncovered
 
 
 if %ERRORLEVEL%==1 (

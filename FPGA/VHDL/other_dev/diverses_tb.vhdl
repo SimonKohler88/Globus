@@ -1,0 +1,95 @@
+
+
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+library std;
+use std.textio.all;
+
+entity diverses_tb is
+end entity diverses_tb;
+
+architecture rtl of diverses_tb is
+    component diverses is
+        generic (
+            counter_bits  : integer := 22;
+            on_clocks : integer := 2000;
+            dbg_enc_after_req0_clocks : integer := 1024-- default 1024 clock-cycles
+        );
+        port (
+            		clock_clk                   : in  std_logic                     := '0';             --                clock.clk
+		reset_reset                 : in  std_logic                     := '0';
+		enable_pin_input            : in  std_logic                     := '0';
+		pin_input                   : in  std_logic                     := '0';
+        pulse_out                   : out std_logic;
+        enable_dbg_enc              : in std_logic;
+		dbg_enc_out                 : out std_logic
+        );
+    end component;
+
+    signal s_clock:std_logic;
+    signal s_reset:std_logic;
+    signal s_pulse:std_logic;
+    signal s_pin_enable:std_logic;
+    signal s_pin:std_logic;
+    signal s_enable_dbg_enc:std_logic;
+    signal s_dbg_enc_out:std_logic;
+
+    constant c_cycle_time_12M : time := 83 ns;
+     signal enable :boolean:=true;
+
+begin
+
+    dut :diverses
+    generic map (
+            counter_bits  => 8,
+            on_clocks => 20
+        )
+    port map(
+        clock_clk => s_clock,
+        reset_reset => s_reset,
+        pulse_out => s_pulse,
+        pin_input => s_pin,
+        enable_pin_input => s_pin_enable,
+        enable_dbg_enc => s_enable_dbg_enc,
+        dbg_enc_out => s_dbg_enc_out
+
+    );
+
+    s_reset <= transport '1', '0' after 50 ns;
+
+    p_system_clk : process
+	begin
+		while enable loop
+            s_clock <= '0';
+            wait for c_cycle_time_12M/2;
+            s_clock <= '1';
+            wait for c_cycle_time_12M/2;
+		end loop;
+		wait;  -- don't do it again
+	end process p_system_clk;
+
+    p_stim : process
+	begin
+        s_pin <= '0';
+        wait for 1 us;
+
+        s_pin <= '1';
+        wait for 1 us;
+        s_pin <= '0';
+
+        wait for 100 us;
+
+        s_pin_enable <= '1';
+        wait for 10 us;
+        s_pin <= '1';
+        wait for 10 us;
+        s_pin <= '0';
+        wait for 50 us;
+
+        enable <= false;
+		wait;  -- don't do it again
+	end process;
+
+end architecture;

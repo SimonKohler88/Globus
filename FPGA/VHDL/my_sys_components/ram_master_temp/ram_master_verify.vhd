@@ -36,6 +36,7 @@ generic (
 		asi_in1_valid               : in  std_logic                     := '0';             --                     .valid
 		asi_in1_startofpacket       : in  std_logic                     := '0';             --                     .startofpacket
 		asi_in1_endofpacket         : in  std_logic                     := '0';             --                     .endofpacket
+
 		asi_in0_data                : in  std_logic_vector(23 downto 0) := (others => '0'); --            asi_in0_A.data
 		asi_in0_ready               : out std_logic;                                        --                     .ready
 		asi_in0_valid               : in  std_logic                     := '0';             --                     .valid
@@ -276,7 +277,7 @@ begin
         avalon_stream_out_write_many_pixel(960, 20, clock_clk, aso_out0_data, aso_out0_valid,
                 aso_out0_ready, aso_out0_startofpacket, aso_out0_endofpacket, 0, input_file );
         transfer_out_ongoing <= '0';
-        -- pulse_out(s_dump_ram, clock_clk);
+        pulse_out(s_dump_ram, clock_clk);
 
         wait on test_case_nr;
 
@@ -315,7 +316,8 @@ begin
 
         wait for 1 us;
         pulse_out(conduit_intern_col_fire, clock_clk);
-        wait until rising_edge(asi_in1_endofpacket);
+        wait for 3 us;
+        wait on asi_in1_endofpacket;
         wait for 40 ns;
         conduit_intern_col_nr(3 downto 0) <= X"1";
         pulse_out(conduit_intern_col_fire, clock_clk);
@@ -357,16 +359,17 @@ begin
 	-- --------------------------- STREAM IN AB ---------------------------------------------
 
     assert always asi_in0_startofpacket -> eventually! asi_in0_endofpacket;
-    assert always conduit_intern_col_fire -> next_e[ 0 to 20 ] (asi_in0_startofpacket and asi_in0_valid);
+    assert always conduit_intern_col_fire -> next_e[ 0 to 40 ] (asi_in0_startofpacket and asi_in0_valid);
     assert always asi_in0_startofpacket -> asi_in0_valid;
     assert always never not asi_in0_ready and (asi_in0_valid or asi_in0_startofpacket or asi_in0_endofpacket );
 
 	p_stimuli_avs_in_AB: process
 	begin
         asi_in0_ready <= '1';
-        wait for 10 ns;
+        wait for 20 ns;
 
-        wait until rising_edge(asi_in0_startofpacket);
+        -- wait until rising_edge(asi_in0_startofpacket);
+        wait on asi_in0_startofpacket;
         save_stream('0', test_case_nr, 60, conduit_intern_col_nr, asi_in0_valid, asi_in0_data, asi_in0_endofpacket, clock_clk, asi_in0_ready, asi_in0_startofpacket);
         wait until rising_edge(asi_in0_startofpacket);
         save_stream('0', test_case_nr, 60, conduit_intern_col_nr, asi_in0_valid, asi_in0_data, asi_in0_endofpacket, clock_clk, asi_in0_ready, asi_in0_startofpacket );
@@ -391,9 +394,10 @@ begin
 	p_stimuli_avs_in_CD: process
 	begin
         asi_in1_ready <= '1';
-        wait for 10 ns;
+        wait for 20 ns;
 
-        wait until rising_edge(asi_in1_startofpacket);
+        -- wait until rising_edge(asi_in1_startofpacket);
+        wait on asi_in1_startofpacket;
         save_stream('1', test_case_nr, 60, conduit_intern_col_nr, asi_in1_valid, asi_in1_data, asi_in1_endofpacket, clock_clk, asi_in1_ready, asi_in1_startofpacket );
         wait until rising_edge(asi_in1_startofpacket);
         save_stream('1', test_case_nr, 60, conduit_intern_col_nr, asi_in1_valid, asi_in1_data, asi_in1_endofpacket, clock_clk, asi_in1_ready, asi_in1_startofpacket );

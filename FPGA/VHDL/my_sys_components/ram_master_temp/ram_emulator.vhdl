@@ -58,6 +58,16 @@ architecture rtl of avalon_slave_ram_emulator is
   file output_file : text open write_mode is "./ram_dumps/ram_content.txt";
 
 
+    signal access_counter: integer:= 0;
+    signal read_ff :std_ulogic_vector(1 downto 0);
+    signal read_waitrequest :std_ulogic;
+    signal wait_req_r_w :std_ulogic;
+
+  signal addr_A: std_ulogic_vector(address'length-1 downto 0);
+  signal addr_B: std_ulogic_vector(address'length-1 downto 0);
+--   signal
+
+
   type state_delay is (idle, delay, access_ok);
   signal delay_state : state_delay:=idle;
   signal next_delay_state : state_delay:=idle;
@@ -107,7 +117,7 @@ begin
 
     case delay_state is
       when idle =>
-        if ((write_en_int or read_n) and not(access_d)) = '1' then
+        if ((write_en_int) and not(access_d)) = '1' then
           next_delay_state <= delay;
         end if;
       when delay =>
@@ -115,7 +125,7 @@ begin
           next_delay_state <= access_ok;
         end if;
       when access_ok =>
-        if write_en_int='0' and read_n ='0' then
+        if write_en_int='0' then
           next_delay_state <= idle;
         end if;
     end case;
@@ -130,7 +140,10 @@ begin
     end case;
   end process p_access_delay;
 
-  waitrequest <= wait_req_intern or refresh_ram;
+  wait_req_r_w <= wait_req_intern when read_n='0' else read_waitrequest;
+  waitrequest <= wait_req_r_w ;--or refresh_ram;
+
+
 
 
   p_dump_ram:process(all)
@@ -185,6 +198,48 @@ begin
     end if;
   end process p_store;
 
+
+  p_read_delay : process(rst, clk)
+  begin
+    if rst = '1' then
+      access_counter <= 0;
+      read_ff <= (others=>'0');
+      addr_A <= (others=>'0');
+      addr_B <= (others=>'0');
+
+
+    elsif rising_edge(clk) then
+      read_ff <= read_ff(0) & read_n;
+      if read_n='0' or access_counter >= 11 then
+        access_counter <= 0;
+      elsif read_n = '1' then
+        access_counter <= access_counter + 1;
+      end if;
+
+      readdatavalid <= '0';
+      read_waitrequest <= '1';
+      if read_n = '1' then
+        read_waitrequest <= '1';
+
+        if access_counter = 0 then
+          read_waitrequest <= '0';
+          addr_A <= address;
+        elsif access_counter = 4 then
+          read_waitrequest <= '0';
+          addr_B <= address;
+        elsif access_counter = 8 then
+          readdatavalid <= '1';
+          readdata <= mem(to_integer(unsigned(addr_A(RAM_ADDR_BITS-1 downto 0))));
+        elsif access_counter = 9 then
+          readdatavalid <= '1';
+          readdata <= mem(to_integer(unsigned(addr_B(RAM_ADDR_BITS-1 downto 0))));
+        end if;
+      end if;
+    end if;
+
+
+  end process ;
+
   -- -- read:
   -- p_read : process(rst, clk)
   -- begin
@@ -202,34 +257,9 @@ begin
   --     end if;
   --   end if;
   -- end process p_read;
-
-
-  -- signal readvalid_counter: integer;
-  -- signal readdatavalid_intern: std_logic;
-  -- constant C_VALID_1 : integer:= 10;
-  -- constant C_VALID_1_OFF : integer:=  17;
-  -- constant C_VALID_2 : integer:= 26;
-  -- constant C_VALID_2_OFF : integer:= 28;
-  --read:
-  p_read : process(rst, clk)
-  begin
-    if rst = '1' then
-      readvalid_counter <= 0;
-
-    elsif rising_edge(clk) then
-      if read_n = '1' and readvalid_counter < C_VALID_2_OFF then
-        readvalid_counter <= readvalid_counter +1;
-      else
-        readvalid_counter <= 0;
-      end if;
-
-    end if;
-  end process;
-
- readdatavalid <= '1' when read_n='1' and waitrequest = '0' and ( (readvalid_counter >= C_VALID_1 and readvalid_counter < C_VALID_1_OFF) or( readvalid_counter >= C_VALID_2 and readvalid_counter < C_VALID_2_OFF  )) else '0';
-
-
+  --
+  --
   -- read_data_buf <= mem(to_integer(unsigned(address(RAM_ADDR_BITS-1 downto 0))));
-  readdata <= mem(to_integer(unsigned(address(RAM_ADDR_BITS-1 downto 0))));
+  --
 
 end architecture rtl;

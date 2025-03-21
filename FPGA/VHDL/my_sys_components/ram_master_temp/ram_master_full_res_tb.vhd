@@ -27,6 +27,8 @@ component ram_master is
 		avm_m0_readdatavalid     : in  std_logic                     := '0';             --                     .readdatavalid
 		avm_m0_write_n           : out std_logic;                                        --                     .write
 		avm_m0_writedata         : out std_logic_vector(15 downto 0);                    --                     .writedata
+		avm_m0_byteenable        : out std_logic_vector(1 downto 0);                     --                     .byteenable
+		avm_m0_chipselect        : out std_logic;                                        --                     .chipselect
 		asi_in0_data             : in  std_logic_vector(23 downto 0)  := (others => '0'); --              asi_in0.data
 		asi_in0_ready            : out std_logic;                                        --                     .ready
 		asi_in0_valid            : in  std_logic                     := '0';             --                     .valid
@@ -61,7 +63,7 @@ component ram_master is
 	generic (
 		image_rows : integer := 120;
 		image_cols_bits : integer := 8;
-		ram_address_bits :integer := 10
+		ram_address_bits :integer := 8 --10
 	);
 	port (
         clock_clk              : out  std_ulogic                   ;
@@ -107,6 +109,8 @@ end component;
 	signal s_avm_m0_readdatavalid     : std_ulogic;
 	signal s_avm_m0_write             : std_ulogic;
 	signal s_avm_m0_writedata         : std_logic_vector(15 downto 0);
+	signal s_avm_m0_byteenable        : std_logic_vector(1 downto 0);                     --                     .byteenable
+	signal s_avm_m0_chipselect        : std_logic;                                        --                     .chipselect
 	signal s_asi_in0_data             : std_logic_vector(23 downto 0);
 	signal s_asi_in0_ready            : std_ulogic;
 	signal s_asi_in0_valid            : std_ulogic;

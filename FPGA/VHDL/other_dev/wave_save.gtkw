@@ -1,0 +1,28 @@
+[*]
+[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
+[*] Fri Mar 21 21:26:23 2025
+[*]
+[dumpfile] "D:\GitHub\Globus\FPGA\VHDL\other_dev\func.vcd"
+[dumpfile_mtime] "Fri Mar 21 21:26:07 2025"
+[dumpfile_size] 69960
+[savefile] "D:\GitHub\Globus\FPGA\VHDL\other_dev\wave_save.gtkw"
+[timestart] 0
+[size] 1792 941
+[pos] -1 -1
+*-16.000000 388600 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] diverses_tb.
+[sst_width] 323
+[signals_width] 415
+[sst_expanded] 1
+[sst_vpaned_height] 374
+@28
+diverses_tb.dut.clock_clk
+@22
+diverses_tb.dut.addr_a_preload[23:0]
+diverses_tb.dut.addr_ab_converter[7:0]
+diverses_tb.dut.addr_b_preload[23:0]
+diverses_tb.dut.addr_adder[23:0]
+@29
+diverses_tb.dut.pin_input
+[pattern_trace] 1
+[pattern_trace] 0

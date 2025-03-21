@@ -71,7 +71,7 @@ architecture rtl of ram_master is
 
 	signal SystemEnable                  : std_logic;
 
-	type state_main is (main_write, main_read_A, main_read_B);
+	type state_main is (main_write, main_read);
 	signal main_state         : state_main;
 	signal next_main_state    : state_main;
 
@@ -79,7 +79,7 @@ architecture rtl of ram_master is
 	signal write_state        : state_AVM_write := idle;
 	signal next_write_state   : state_AVM_write := idle;
 
-	type state_AVM_read is (idle, wait_read_1, read_1, wait_read_2, read_2, end_read);
+	type state_AVM_read is (idle, wait_addr_calculated, read, end_read);
 	signal read_state         : state_AVM_read := idle;
 	signal next_read_state    : state_AVM_read := idle;
 
@@ -97,15 +97,14 @@ architecture rtl of ram_master is
 	-- constant BASE_ADDR_2      : unsigned(23 downto 0):=  X"001000"; -- only for testing
 	signal active_base_addr   : std_logic;
 
-	constant addr_row_to_row_offset  : integer := 2* 2**image_cols_bits -1;
+	constant addr_row_to_row_offset  : integer := 4* 2**image_cols_bits;
 	constant addr_b_col_shift_offset : integer := 2**image_cols_bits/2;
 	constant image_cols :integer := 2**image_cols_bits;
 
-	-- signal addr_ab_converter         : unsigned (7 downto 0); -- TODO: only valid for 256 cols
-	signal addr_ab_converter         : unsigned (image_cols_bits-1 downto 0); -- TODO: only valid for 256 cols
-
-	signal addr_ready                : std_logic;
+	signal addr_ab_converter         : unsigned (image_cols_bits-1 downto 0);
+	signal addr_ack                  : std_logic;
 	signal addr_valid                : std_logic;
+	signal addr_ready 				 : std_logic;
 	signal addr_a_preload            : unsigned(23 downto 0) := (others => '0');
 	signal addr_b_preload            : unsigned(23 downto 0) := (others => '0');
 	signal addr_adder                : unsigned(23 downto 0) := (others => '0');
@@ -115,36 +114,33 @@ architecture rtl of ram_master is
 	signal addr_switch_pending       : std_logic;
 
 	signal current_address_write     : unsigned(23 downto 0) := (others => '0');
-	signal current_address_read      : unsigned(23 downto 0) := (others => '0');
+	signal current_byteenable_write     : std_logic_vector(1 downto 0) := (others => '0');
+	signal current_byteenable_read      : std_logic_vector(1 downto 0) := (others => '0');
+	signal current_byteenable_read_b       : std_logic;
+	signal current_byteenable_write_b      : std_logic;
 	signal current_chipselect_read   : std_logic;
 	signal current_chipselect_write  : std_logic;
+
 
 	signal active_aso_startofpacket  : std_logic;
 	signal active_aso_endofpacket    : std_logic;
 	signal active_aso_data           : std_logic_vector(23 downto 0);
 	signal active_aso_ready          : std_logic;
 	signal active_aso_valid          : std_logic;
-	signal pix_count                 : unsigned(7 downto 0);
-	signal read_access_count         : unsigned(8 downto 0);
+
+	signal read_data_count           : unsigned(8 downto 0):= (others=>'0');
+	signal read_addr_count           : unsigned(8 downto 0):= (others=>'0');
+	signal read_n_delay           : std_logic_vector(2 downto 0);
 
 	signal col_fire_ff               : std_logic_vector(1 downto 0);
 	signal fire_pending              : std_logic;
+	signal read_in_progress			 : std_logic;
 
 	signal ram_read_1_buffer         : std_logic_vector(15 downto 0);
 
 	signal incoming_pix_count     : unsigned(15 downto 0);
 	constant c_accept_eop		: integer:= image_rows*image_cols-100;
 	signal incoming_transfer_ongoing :std_logic;
-
-	type t_asi_in0_data is array (0 to 1) of std_logic_vector(23 downto 0);
-	signal asi_in0_data_ff             : t_asi_in0_data:= (others=>(others=>'0'));
-	signal asi_in0_valid_ff            : std_logic_vector(1 downto 0);
-	signal asi_in0_endofpacket_ff      : std_logic_vector(1 downto 0);
-	signal asi_in0_startofpacket_ff    : std_logic_vector(1 downto 0);
-	signal asi_in0_data_sync           : std_logic_vector(23 downto 0);
-	signal asi_in0_valid_sync          : std_logic;
-	signal asi_in0_endofpacket_sync    : std_logic;
-	signal asi_in0_startofpacket_sync  : std_logic;
 
 	type state_test is (none, t1,t2, t_data_in, t_col_nr, t_read_0);
 	signal test_state         : state_test;
@@ -204,15 +200,11 @@ begin
 				conduit_debug_ram_out(31 downto 24) <= (others => '0');
 
 				conduit_debug_ram_out_2(0) <= test_pack_sig;
-				conduit_debug_ram_out_2(1) <= asi_in0_startofpacket_sync;
-				conduit_debug_ram_out_2(2) <= asi_in0_valid;
-				conduit_debug_ram_out_2(3) <= asi_in0_valid_sync;
-				conduit_debug_ram_out_2(4) <= test_pack_sig_2;
-				conduit_debug_ram_out_2(5) <= asi_in0_endofpacket_sync;
-				conduit_debug_ram_out_2(6) <= asi_in0_ready;
-				conduit_debug_ram_out_2(30 downto 7) <= asi_in0_data_sync;
+				conduit_debug_ram_out_2(1) <= asi_in0_valid;
+				conduit_debug_ram_out_2(2) <= test_pack_sig_2;
+				conduit_debug_ram_out_2(3) <= asi_in0_ready;
 
-				conduit_debug_ram_out_2(31) <= '0'; --(others => '0');
+				conduit_debug_ram_out_2(31 downto 4) <= (others => '0');
 
 
 			when t_col_nr =>
@@ -222,24 +214,23 @@ begin
 				conduit_debug_ram_out_2(0) <= conduit_col_info_fire;
 
 			when t_read_0 =>
-				if main_state=main_read_A and (avm_m0_address=X"000000" or avm_m0_address=std_logic_vector(BASE_ADDR_2)) and avm_m0_read_n='0' then
-					conduit_debug_ram_out_2(0) <= '1';
-				else
-					conduit_debug_ram_out_2(0) <= '0';
-				end if;
+				-- if main_state=main_read_A and (avm_m0_address=X"000000" or avm_m0_address=std_logic_vector(BASE_ADDR_2)) and avm_m0_read_n='0' then
+				-- 	conduit_debug_ram_out_2(0) <= '1';
+				-- else
+				-- 	conduit_debug_ram_out_2(0) <= '0';
+				-- end if;
 
-				-- conduit_debug_ram_out_2(0) <= fire_pending;
+				conduit_debug_ram_out_2(0) <= fire_pending;
 
 
 				conduit_debug_ram_out(15 downto 0) <= avm_m0_readdata;
 				conduit_debug_ram_out(31 downto 16) <= (others => '0');
+
 				conduit_debug_ram_out_2(1) <= avm_m0_read_n;
 				conduit_debug_ram_out_2(25 downto 2) <= avm_m0_address;
 				conduit_debug_ram_out_2(26) <= avm_m0_waitrequest;
-				conduit_debug_ram_out_2(27) <= avm_m0_write_n;
-				conduit_debug_ram_out_2(28) <= avm_m0_readdatavalid;
-				conduit_debug_ram_out_2(29) <= avm_m0_chipselect;
-				conduit_debug_ram_out_2(31 downto 30) <= (others => '0');
+				conduit_debug_ram_out_2(27) <= avm_m0_readdatavalid;
+				conduit_debug_ram_out_2(31 downto 28) <= conduit_col_info_col_nr(3 downto 0);
 
 			when others =>
 				conduit_debug_ram_out(31 downto 0) <= (others => '0');
@@ -269,49 +260,20 @@ begin
 	avs_s1_readdata <= (others => '0');
 
 	avm_m0_address <= std_logic_vector(write_address)  when main_state = main_write  else
-					  std_logic_vector(read_address)  when main_state = main_read_A or main_state=main_read_B else
+					  std_logic_vector(read_address)  when main_state = main_read else
 					  (others=>'0');
 
 	avm_m0_chipselect <= current_chipselect_write when main_state = main_write  else
-						 current_chipselect_read when main_state = main_read_A or main_state=main_read_B else
+						 current_chipselect_read when main_state = main_read else
 					     '0';
 
-	avm_m0_byteenable <= "00";
+	-- avm_m0_byteenable <= current_byteenable_write when main_state = main_write else
+	-- 					current_byteenable_read when main_state = main_read else "00";
 
+	-- avm_m0_byteenable <= "11" when ((current_byteenable_write_b='1' and main_state=main_write) or(current_byteenable_read_b='1' and main_state=main_read))
+	-- 					 else "00";
 
-
-	-- signal asi_in0_data_ff             : std_logic_vector(23 * 2 downto 0);
-	-- signal asi_in0_valid_ff            : std_logic_vector(1 downto 0);
-	-- signal asi_in0_endofpacket_ff      : std_logic_vector(1 downto 0);
-	-- signal asi_in0_startofpacket_ff    : std_logic_vector(1 downto 0);
-	-- signal asi_in0_data_sync           : std_logic_vector(23 downto 0);
-	-- signal asi_in0_valid_sync          : std_logic;
-	-- signal asi_in0_endofpacket_sync    : std_logic;
-	-- signal asi_in0_startofpacket_sync  : std_logic;
-	-- Sync in stream from fifo
-    p_in_stream_sync : process(all) is
-        variable delayCount : unsigned(9 downto 0);
-    begin
-        if reset_reset = '1' then
-            asi_in0_data_ff                <= (others=>(others=>'0'));
-            asi_in0_valid_ff               <= (others => '1');
-            asi_in0_endofpacket_ff         <= (others => '1');
-            asi_in0_startofpacket_ff       <= (others => '1');
-        elsif rising_edge(clock_clk) then
-            asi_in0_data_ff(0)  <= asi_in0_data;
-            asi_in0_data_ff(1)  <= asi_in0_data_ff(0);
-
-            asi_in0_valid_ff               <= asi_in0_valid_ff        (0) & asi_in0_valid;
-            asi_in0_endofpacket_ff         <= asi_in0_endofpacket_ff  (0) & asi_in0_endofpacket;
-            asi_in0_startofpacket_ff       <= asi_in0_startofpacket_ff(0) & asi_in0_startofpacket;
-
-        end if;
-    end process;
-
-	asi_in0_data_sync            <=  asi_in0_data_ff         (1);
-	asi_in0_valid_sync           <=  asi_in0_valid_ff        (1);
-	asi_in0_endofpacket_sync     <=  asi_in0_endofpacket_ff  (1);
-	asi_in0_startofpacket_sync   <=  asi_in0_startofpacket_ff(1);
+	avm_m0_byteenable <= "11" ;
 
  --Startup Delay for the RAM Controller
     InitialDelay : process(all) is
@@ -330,66 +292,6 @@ begin
         end if;
     end process InitialDelay;
 
-    -- process prototype, no functionality
-	-- p_end_packet_switch :process(all)
-	-- begin
-	-- 	if reset_reset = '1' then
-	-- 	elsif rising_edge(clock_clk) then
-	-- 	end if;
-	-- end process p_end_packet_switch;
-
-	addr_adder <= BASE_ADDR_1 when active_base_addr='1' else BASE_ADDR_2;
-
-	p_calculate_new_read_addr: process(all)
-	variable stage : natural range 0 to 5;
-	begin
-	-- constant addr_row_to_row_offset: integer := 2* image_cols;
-	-- constant addr_b_col_shift_offset : integer := image_cols/2;
-	-- signal addr_ab_converter : unsigned (7 downto 0); -- TODO: only valid for 256 cols
-
-		if reset_reset = '1' then
-			addr_ab_converter <= (others=>'0');
-			addr_a_preload <= (others => '0');
-			addr_b_preload <= (others => '0');
-			stage := 0;
-			addr_ready <= '0';
-			addr_valid <= '0';
-
-		elsif rising_edge(clock_clk) then
-			if conduit_col_info_fire='1' and stage=0 then
-				addr_a_preload <= (others => '0');
-				addr_b_preload <= (others => '0');
-				addr_ab_converter <= (others => '0');
-
-				addr_valid <= '0';
-				stage := 1;
-
-			elsif stage=1 then
-
-				addr_a_preload(9 downto 1) <= unsigned(conduit_col_info_col_nr); -- factor 2 because every pix need 2 addresses
-				addr_ab_converter <= unsigned(conduit_col_info_col_nr( image_cols_bits-1 downto 0 ));
-
-				addr_valid <= '0';
-				stage:=2;
-			elsif stage=2 then
-				addr_a_preload <= addr_a_preload + addr_adder;
-				addr_b_preload(image_cols_bits downto 0) <= (addr_ab_converter + addr_b_col_shift_offset) & "0"; -- let wrap around and shift for *2
-				-- addr_b_preload(image_cols_bits-1 downto 0) <= (addr_ab_converter - addr_b_col_shift_offset);
-
-				addr_valid <= '0';
-				stage:=3;
-
-			elsif stage=3 then
-				addr_b_preload <= addr_b_preload + addr_adder + image_cols + image_cols; -- TODO:does that work when addr is doubled?
-				addr_ready <= '1';
-				addr_valid <= '0';
-				stage := 0;
-			else
-				addr_ready <= '0';
-				addr_valid <= '1';
-			end if;
-		end if;
-	end process p_calculate_new_read_addr;
 
 	--*************************************** Main State Machine ***************************************************************
 
@@ -409,7 +311,7 @@ begin
 				fire_pending <= '1';
 			end if;
 
-			if main_state = main_read_A then
+			if main_state = main_read then
 				fire_pending <= '0';
 			end if;
 
@@ -418,142 +320,245 @@ begin
 
 	p_main_state_statemachine: process(all)
 	begin
-	--(write, read_A, write_2, read_B);
 
 		case main_state is
 			when main_write =>
 				if fire_pending='1' and (write_state=idle or write_state=wait_valid) and addr_valid='1' then
-					next_main_state <= main_read_A;
+					next_main_state <= main_read;
 				else
 					next_main_state <= main_write;
 				end if;
 
-			when main_read_A =>
-				if read_state = end_read then
-					next_main_state <= main_read_B;
-				else
-					next_main_state <= main_read_A;
-				end if;
-
-			when main_read_B =>
+			when main_read =>
 				if read_state = end_read then
 					next_main_state <= main_write;
 				else
-					next_main_state <= main_read_B;
+					next_main_state <= main_read;
 				end if;
-
+			when others =>
+				next_main_state <= main_write;
 		end case;
-
-		case main_state is
-			when main_write =>
-				aso_out0_startofpacket_1 <=  active_aso_startofpacket  ;
-				aso_out0_endofpacket_1   <=  active_aso_endofpacket    ;
-				aso_out0_A_data          <=  active_aso_data           ;
-				aso_out0_A_valid         <=  active_aso_valid          ;
-
-				active_aso_ready <= aso_out0_A_ready;
-
-				aso_out1_B_startofpacket <= '0'           ;
-				aso_out1_B_endofpacket   <= '0'           ;
-				aso_out1_B_data          <= (others =>'0');
-				aso_out1_B_valid         <= '0'           ;
-
-			when main_read_A =>
-				aso_out0_startofpacket_1 <=  active_aso_startofpacket  ;
-				aso_out0_endofpacket_1   <=  active_aso_endofpacket    ;
-				aso_out0_A_data          <=  active_aso_data           ;
-				aso_out0_A_valid         <=  active_aso_valid          ;
-
-
-				active_aso_ready <= aso_out0_A_ready;
-
-				aso_out1_B_startofpacket <= '0'           ;
-				aso_out1_B_endofpacket   <= '0'           ;
-				aso_out1_B_data          <= (others =>'0');
-				aso_out1_B_valid         <= '0'           ;
-
-			when main_read_B =>
-				aso_out1_B_startofpacket <=  active_aso_startofpacket  ;
-				aso_out1_B_endofpacket   <=  active_aso_endofpacket    ;
-				aso_out1_B_data          <=  active_aso_data           ;
-				aso_out1_B_valid         <=  active_aso_valid          ;
-
-				active_aso_ready <= aso_out1_B_ready;
-
-				aso_out0_startofpacket_1 <= '0'           ;
-				aso_out0_endofpacket_1   <= '0'           ;
-				aso_out0_A_data          <= (others =>'0');
-				aso_out0_A_valid         <= '0'           ;
-
-		end case;
-
-
 	end process p_main_state_statemachine;
 
 	--*************************************** Read from ram processes ***************************************************************
+	-- general procedure:
+	-- 1. on firepulse, calculate new address for stream a and stream b.
+	--     (stream A: LEDs AB, first pixel at current column first row, then every second row in same column --> uneven rows)
+	--     (stream B: LEDs CD, first pixel at current col + columns/2 (wraparound!) second row, then every second in this column -->even rows)
+	--     read_state is in wait_addr_calculated
+	-- 2. in read:
+	--      -when not waitrequest, increase address. count every increase. if an even increase, adddr+1, else addr + 2 rows.
+	--      -when data valid, count every data read.
+	--                    on even access: put on outstream(23 to 8), no valid out.
+	--                    on uneven access: put data(15 to 8) on outstream(7 to 0), give valid to current_aso
+	--                    when count(len to 1) == 0 -> startpacket aso A, data to stream A
+	--                    when count(len to 1) == 59 -> endpacket aso A
+	--                    when count(len to 1) == 60 -> startpacket aso B, data to stream B
+	--                    when count(len to 1) == 119 -> endpacket aso B, readstate to idle
+	--
 
-	-- main_state_b_active <= '1' when main_state=main_read_B else '0';
-	--type state_AVM_read is (idle, wait_read_1, read_1, wait_read_2, read_2, end_read);
-	p_read_ram_clocked :process(all)
+	addr_adder <= BASE_ADDR_1 when active_base_addr='1' else BASE_ADDR_2;
+
+	read_in_progress <= '1' when main_state=main_read and read_state=read else '0';
+
+	p_calculate_new_read_addr: process(all)
+	variable stage : natural range 0 to 5;
+	begin
+		if reset_reset = '1' then
+			addr_ab_converter <= (others=>'0');
+			addr_a_preload <= (others => '0');
+			addr_b_preload <= (others => '0');
+			stage := 0;
+
+			addr_valid <= '0';
+			addr_ready <= '0';
+
+		elsif rising_edge(clock_clk) then
+			addr_ready <= '0';
+			if conduit_col_info_fire='1' and stage=0 and read_in_progress='0' then
+				addr_a_preload <= (others => '0');
+				addr_b_preload <= (others => '0');
+				addr_ab_converter <= (others => '0');
+
+				addr_valid <= '0';
+				stage := 1;
+
+			elsif stage=1 then
+
+				addr_a_preload(9 downto 1) <= unsigned(conduit_col_info_col_nr); -- factor 2 because every pix need 2 addresses
+				addr_ab_converter <= unsigned(conduit_col_info_col_nr( image_cols_bits-1 downto 0 ));-- convert to unsigned
+
+				addr_valid <= '0';
+				stage:=2;
+			elsif stage=2 then
+				addr_a_preload <= addr_a_preload + addr_adder;
+				addr_b_preload(image_cols_bits downto 0) <= (addr_ab_converter + addr_b_col_shift_offset) & "0"; -- let wrap around and shift for *2
+
+				addr_valid <= '0';
+				stage:=3;
+
+			elsif stage=3 then
+				addr_b_preload <= addr_b_preload + addr_adder + image_cols + image_cols;
+
+				addr_ready <= '1';
+				addr_valid <= '0';
+				stage := 0;
+			else
+				addr_ready <= '0';
+				addr_valid <= '1';
+			end if;
+
+			if addr_ack='1' then
+				addr_valid <= '0';
+			end if;
+		end if;
+	end process p_calculate_new_read_addr;
+
+
+	p_count_address_access: process(all)
+	begin
+		if reset_reset = '1' then
+			read_addr_count <= (others=>'0');
+
+		elsif rising_edge(clock_clk) then
+			if conduit_col_info_fire='1' and read_in_progress='0' then
+				read_addr_count <= (others=>'0');
+
+			elsif main_state=main_read and read_state=read then
+				if avm_m0_waitrequest= '0'  then
+					read_addr_count <= read_addr_count + 1;
+				end if;
+			end if;
+		end if;
+	end process ;
+
+	p_update_addr: process(all)
+
+	begin
+		if reset_reset = '1' then
+		read_address <= (others=>'0');
+
+		elsif rising_edge(clock_clk) then
+
+			if addr_ready='1' then
+				read_address <= addr_a_preload;
+			end if;
+
+			if main_state=main_read and avm_m0_read_n='0' then
+				if avm_m0_waitrequest = '0' then
+					if read_addr_count(0) = '0' then
+						read_address <= read_address + 1;
+					else
+						if read_addr_count = image_rows-1 then
+							read_address <= addr_b_preload;
+						else
+							read_address <= read_address + addr_row_to_row_offset - 1;
+						end if;
+					end if;
+				end if;
+			end if;
+		end if;
+	end process p_update_addr;
+
+
+	p_count_data_access: process(all)
+	begin
+		if reset_reset = '1' then
+			read_data_count <= (others=>'0');
+
+		elsif rising_edge(clock_clk) then
+			if read_state=read then
+				if avm_m0_readdatavalid then
+					read_data_count <= read_data_count + 1;
+				end if;
+			else
+				read_data_count <= (others=>'0');
+			end if;
+		end if;
+	end process;
+
+	avm_m0_read_n <= '0' when main_state=main_read and read_state=read else '1';
+	current_chipselect_read <= not avm_m0_read_n;
+
+	-- p_read_signal: process(all)
+	-- begin
+	-- if reset_reset = '1' then
+	-- 	read_n_delay <= (others=> '0');
+	-- elsif rising_edge(clock_clk) then
+	-- 	read_n_delay <= read_n_delay(1 downto 0) & avm_m0_readdatavalid;
+ --
+	-- 	avm_m0_read_n <= '1';
+	-- 	if main_state=main_read and read_state=read then
+	-- 		if read_n_delay="001" and avm_m0_readdatavalid='1' then
+	-- 			avm_m0_read_n <= '1';
+	-- 		else
+	-- 			avm_m0_read_n <= '0';
+	-- 		end if;
+	-- 	end if;
+	-- 	current_chipselect_read <= not avm_m0_read_n;
+	-- end if;
+	-- end process;
+
+
+	p_data_access: process(all)
+	begin
+	if reset_reset = '1' then
+		active_aso_data <= (others=>'0');
+	elsif rising_edge(clock_clk) then
+		if read_state=read then
+			-- due to clocked its one late --> read first part of pixel on '1'
+			if read_data_count(0)='1' then
+				active_aso_data(7 downto 0) <= avm_m0_readdata(15 downto 8);
+			else
+				active_aso_data(23 downto 8) <= avm_m0_readdata;
+			end if;
+		else
+			active_aso_data <= (others=>'0');
+		end if;
+	end if;
+	end process;
+
+	p_valid_out_signal :process(all)
+	begin
+		if reset_reset = '1' then
+			active_aso_valid <= '0';
+		elsif rising_edge(clock_clk) then
+			if read_state=read and read_data_count(0)='1' and avm_m0_readdatavalid='1' then
+				active_aso_valid <= '1';
+			else
+				active_aso_valid <= '0';
+			end if;
+		end if;
+	end process ;
+
+	p_AVM_Read_statemachine_clocked :process(all)
 	begin
 		if reset_reset = '1' then
 			read_state <= idle;
 		elsif rising_edge(clock_clk) then
 			read_state <= next_read_state;
-		end if;
-	end process p_read_ram_clocked;
 
--- 	avm_m0_address
--- avm_m0_read
--- avm_m0_waitrequest
--- avm_m0_readdata
--- avm_m0_readdatavalid
-
-	p_AVM_Read_statemachine: process(all)
-	constant PIX_PER_ASO: integer:= image_rows/2;
-    begin
-		if (main_state = main_read_A or main_state = main_read_B) then
+			if main_state = main_read then
 			case read_state is
 				when idle =>
-					if main_state = main_read_A or main_state = main_read_B then
-						next_read_state <= wait_read_1;
+					if main_state = main_read then
+						next_read_state <= wait_addr_calculated;
 					else
 						next_read_state <= idle;
 					end if;
 
-				when wait_read_1 =>
-
-				if active_aso_ready='1' and avm_m0_waitrequest='0' and avm_m0_readdatavalid='1' then
-						next_read_state <= read_1;
+				when wait_addr_calculated =>
+					if addr_valid = '1' then
+						next_read_state <= read;
 					else
-						next_read_state <= wait_read_1;
+						next_read_state <= wait_addr_calculated;
 					end if;
 
-				when read_1 =>
-					-- if avm_m0_waitrequest='0' and avm_m0_readdatavalid='1' then
-					if avm_m0_readdatavalid='1' then
-						next_read_state <= read_2;
-					else
-						next_read_state <= wait_read_2;
-					end if;
-
-				when wait_read_2 =>
-					if avm_m0_waitrequest='0' and avm_m0_readdatavalid='1' then
-						next_read_state <= read_2;
-					else
-						next_read_state <= wait_read_2;
-					end if;
-
-				when read_2 =>
-					if pix_count < PIX_PER_ASO-1 then
-						-- if avm_m0_waitrequest='1' or avm_m0_readdatavalid='0' then
-						if avm_m0_readdatavalid='0' then
-							next_read_state <= wait_read_1;
-						else
-							next_read_state <= read_1;
-						end if;
-					else
+				when read =>
+					if read_data_count(read_data_count'length-1 downto 1) = image_rows then
 						next_read_state <= end_read;
+					else
+						next_read_state <= read;
 					end if;
 
 				when end_read =>
@@ -562,152 +567,131 @@ begin
 				when others =>
 					next_read_state <= idle;
 			end case;
+			end if;
+		end if;
+	end process ;
 
+	p_AVM_Read_output_mux: process(all)
+    begin
+
+
+		if main_state=main_read then
 			case read_state is
 				when idle =>
-					read_address <= (others =>'0');
-					avm_m0_read_n <= '1';
-					active_aso_valid <= '0';
-					active_aso_startofpacket <= '0';
-					active_aso_endofpacket <= '0';
+					active_aso_ready <= aso_out0_A_ready;
 
-				when wait_read_1 =>
-					read_address <= current_address_read;
-					avm_m0_read_n <= '0';
-					active_aso_valid <= '0';
-					active_aso_startofpacket <= '0';
-					active_aso_endofpacket <= '0';
+					aso_out0_A_data          <= (others =>'0');
+					aso_out1_B_data          <= (others =>'0');
+					aso_out0_A_valid         <= '0';
+					aso_out1_B_valid         <= '0';
 
-				when read_1 =>
-					read_address <= current_address_read;
-					avm_m0_read_n <= '0';
-					active_aso_valid <= '0';
-					active_aso_endofpacket <= '0';
-					active_aso_startofpacket <= '0';
+					aso_out0_startofpacket_1 <= '0';
+					aso_out1_B_startofpacket <= '0';
+					aso_out0_endofpacket_1   <= '0';
+					aso_out1_B_endofpacket   <= '0';
+					addr_ack <= '0';
 
-				when wait_read_2 =>
-					read_address <= current_address_read;
-					avm_m0_read_n <= '0';
-					active_aso_valid <= '0';
-					active_aso_endofpacket <= '0';
-					active_aso_startofpacket <= '0';
+				when wait_addr_calculated =>
+					active_aso_ready <= aso_out0_A_ready;
 
-				when read_2 =>
-					read_address <= current_address_read;
-					avm_m0_read_n <= '0';
-					active_aso_valid <= '1';
+					aso_out0_A_data          <= (others =>'0');
+					aso_out1_B_data          <= (others =>'0');
+					aso_out0_A_valid         <= '0';
+					aso_out1_B_valid         <= '0';
 
-					if pix_count=0 and (next_read_state=read_1 or next_read_state=wait_read_1) then
-						active_aso_startofpacket <= '1';
-						active_aso_endofpacket <= '0';
-					elsif pix_count >= PIX_PER_ASO-2 and next_read_state=end_read then
-						active_aso_endofpacket <= '1';
-						active_aso_startofpacket <= '0';
+					aso_out0_startofpacket_1 <= '0';
+					aso_out1_B_startofpacket <= '0';
+					aso_out0_endofpacket_1   <= '0';
+					aso_out1_B_endofpacket   <= '0';
+					addr_ack <= '0';
+
+				when read =>
+					if main_state=main_read and read_data_count(read_data_count'length-1 downto 1) < image_rows/2 + 1 then
+						aso_out0_A_data   <= active_aso_data;
+						aso_out0_A_valid  <=  active_aso_valid;
+						active_aso_ready  <= aso_out0_A_ready;
+						aso_out1_B_data   <= (others =>'0');
+						aso_out1_B_valid         <= '0';
 					else
-						active_aso_endofpacket <= '0';
-						active_aso_startofpacket <= '0';
+						aso_out1_B_data   <= active_aso_data;
+						aso_out1_B_valid  <=  active_aso_valid;
+						active_aso_ready  <= aso_out1_B_ready;
+						aso_out0_A_data   <= (others =>'0');
+						aso_out0_A_valid  <= '0';
 					end if;
 
+					if active_aso_valid='1' and read_data_count(read_data_count'length-1 downto 1)=1 then
+						aso_out0_startofpacket_1 <= '1';
+					else
+						aso_out0_startofpacket_1 <= '0';
+					end if;
+
+					if active_aso_valid='1' and read_data_count(read_data_count'length-1 downto 1)=image_rows/2 then
+						aso_out0_endofpacket_1   <= '1';
+					else
+						aso_out0_endofpacket_1   <= '0';
+					end if;
+
+					if active_aso_valid='1' and read_data_count(read_data_count'length-1 downto 1)=image_rows/2+1 then
+						aso_out1_B_startofpacket <= '1';
+					else
+						aso_out1_B_startofpacket <= '0';
+					end if;
+
+					if active_aso_valid='1' and read_data_count(read_data_count'length-1 downto 1)=image_rows then
+						aso_out1_B_endofpacket   <= '1';
+						addr_ack <= '1';
+					else
+						addr_ack <= '0';
+						aso_out1_B_endofpacket   <= '0';
+					end if;
+
+
+
 				when end_read =>
-					read_address <= (others =>'0');
-					avm_m0_read_n <= '1';
-					active_aso_valid <= '0';
-					active_aso_startofpacket <= '0';
-					active_aso_endofpacket <= '0';
+					active_aso_ready <= aso_out0_A_ready;
+
+					aso_out0_A_data          <= (others =>'0');
+					aso_out1_B_data          <= (others =>'0');
+					aso_out0_A_valid         <= '0';
+					aso_out1_B_valid         <= '0';
+
+					aso_out0_startofpacket_1 <= '0';
+					aso_out1_B_startofpacket <= '0';
+					aso_out0_endofpacket_1   <= '0';
+					aso_out1_B_endofpacket   <= '0';
+					addr_ack <= '0';
 
 				when others =>
-					read_address <= (others =>'0');
-					avm_m0_read_n <= '1';
-					active_aso_valid <= '0';
-					active_aso_startofpacket <= '0';
-					active_aso_endofpacket <= '0';
+					active_aso_ready <= aso_out0_A_ready;
+
+					aso_out0_A_data          <= (others =>'0');
+					aso_out1_B_data          <= (others =>'0');
+					aso_out0_A_valid         <= '0';
+					aso_out1_B_valid         <= '0';
+					aso_out0_startofpacket_1 <= '0';
+					aso_out1_B_startofpacket <= '0';
+					aso_out0_endofpacket_1   <= '0';
+					aso_out1_B_endofpacket   <= '0';
+					addr_ack <= '0';
+
 			end case;
 		else
-			next_read_state <= idle;
-			avm_m0_read_n <= '1';
-			active_aso_valid <= '0';
-			active_aso_startofpacket <= '0';
-			active_aso_endofpacket <= '0';
-			read_address <= (others =>'0');
+			active_aso_ready <= aso_out0_A_ready;
 
+			aso_out0_A_data          <= (others =>'0');
+			aso_out1_B_data          <= (others =>'0');
+			aso_out0_A_valid         <= '0';
+			aso_out1_B_valid         <= '0';
+
+			aso_out0_startofpacket_1 <= '0';
+			aso_out1_B_startofpacket <= '0';
+			aso_out0_endofpacket_1   <= '0';
+			aso_out1_B_endofpacket   <= '0';
+			addr_ack <= '0';
 		end if;
-
-	end process p_AVM_Read_statemachine;
-
-	current_chipselect_read <= not avm_m0_read_n ;
-
-	p_pix_count: process(all)
-	begin
-		if reset_reset = '1' then
-			pix_count <= (others=>'0');
-			read_access_count <= (others=>'0');
-
-		elsif rising_edge(clock_clk) then
-			if (main_state = main_read_A or main_state = main_read_B) then
-				-- case next_read_state is
-				case read_state is
-					when end_read | idle => pix_count <= (others=>'0');
-					when read_2 => pix_count <= pix_count +1;
-					when others => pix_count <= pix_count;
-				end case;
-
-				if avm_m0_readdatavalid then
-					read_access_count <= read_access_count + 1;
-				elsif read_state = end_read or read_state = idle then
-					read_access_count <= (others=>'0');
-				end if;
-			else
-				pix_count <= (others=>'0');
-				read_access_count <= (others=>'0');
-			end if;
-		end if;
-	end process p_pix_count;
-
-	p_update_addr: process(all)
-	begin
-		if reset_reset = '1' then
-		current_address_read <= (others=>'0');
-
-		elsif rising_edge(clock_clk) then
-			if addr_ready='1' then
-				current_address_read <= addr_a_preload;
-
-			elsif main_state=main_read_A and read_state=end_read then
-				current_address_read <= addr_b_preload;
-
-			elsif next_read_state=read_1 then
-				current_address_read <= current_address_read + 1;
-
-			elsif next_read_state= read_2 then
-			    -- always jump 2 rows
-				current_address_read <= current_address_read + addr_row_to_row_offset + addr_row_to_row_offset + 1;
-			end if;
-		end if;
-	end process p_update_addr;
-
-	p_set_stream_out:process(all)
-	begin
-	if reset_reset = '1' then
-		ram_read_1_buffer <= (others=> '0');
-		active_aso_data <= (others=> '0');
-
-	elsif rising_edge(clock_clk) then
-		if avm_m0_readdatavalid then
-			if read_access_count(0) = '0' then
-				ram_read_1_buffer <= avm_m0_readdata;
-			else
-				active_aso_data <=  ram_read_1_buffer & avm_m0_readdata(15 downto 8);
-			end if;
-		end if;
-	end if;
-
-	-- -- not clocked !!
-	-- if read_state = read_2 then
-	-- 	active_aso_data <=  ram_read_1_buffer & avm_m0_readdata(15 downto 8);
-	-- else
-	-- 	active_aso_data <= (others =>'0');
-	-- end if;
-	end process p_set_stream_out;
+	end process;
+	current_byteenable_read_b <=  '1' when (avm_m0_waitrequest='0' or avm_m0_readdatavalid='1' ) and read_state=read else '0';
 
 	--*************************************** Write to ram processes ***************************************************************
 
@@ -852,8 +836,8 @@ begin
 		end if;
 
     end process p_AVM_Write_statemachine;
-
-	current_chipselect_write <= not avm_m0_write_n ;
+	current_chipselect_write <= not avm_m0_write_n;
+	current_byteenable_write_b <= '1' when (write_state=write_1 or write_state=write_2) and avm_m0_waitrequest='0' else '0';
 
 
 

@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Mon Mar 17 07:37:07 2025
+[*] Fri Mar 21 15:36:56 2025
 [*]
 [dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\ram_master_temp\func.vcd"
-[dumpfile_mtime] "Mon Mar 17 07:20:13 2025"
-[dumpfile_size] 8262370
+[dumpfile_mtime] "Fri Mar 21 15:32:52 2025"
+[dumpfile_size] 8174790
 [savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\ram_master_temp\wave_save_vcd.gtkw"
-[timestart] 117802
+[timestart] 87983
 [size] 1920 1017
 [pos] -1 -1
-*-8.000000 118557 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-6.000000 85571 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] ram_master_tb.
 [treeopen] ram_master_tb.verify_ram_master.
 [sst_width] 247
@@ -42,18 +42,16 @@ ram_master_tb.s_avm_m0_byteenable[1:0]
 -QSPI
 @28
 ram_master_tb.s_asi_in0_startofpacket
-ram_master_tb.dut_ram_master.asi_in0_startofpacket_sync
 ram_master_tb.s_asi_in0_endofpacket
-ram_master_tb.dut_ram_master.asi_in0_endofpacket_sync
 ram_master_tb.s_asi_in0_valid
-ram_master_tb.dut_ram_master.asi_in0_valid_sync
 @22
 ram_master_tb.s_asi_in0_data[23:0]
-ram_master_tb.dut_ram_master.asi_in0_data_sync[23:0]
 @28
 ram_master_tb.s_asi_in0_ready
-@25
+@24
 ram_master_tb.dut_ram_master.incoming_pix_count[15:0]
+@28
+ram_master_tb.dut_ram_master.read_in_progress
 @200
 -
 -Fire
@@ -81,13 +79,12 @@ ram_master_tb.s_aso_out1_b_ready
 ram_master_tb.s_aso_out1_b_data[23:0]
 @28
 ram_master_tb.s_aso_out1_b_valid
+ram_master_tb.verify_ram_master.asi_in1_startofpacket
 ram_master_tb.s_aso_out1_b_endofpacket
 ram_master_tb.s_aso_out1_b_startofpacket
 @200
 -
 -DUT
-@24
-ram_master_tb.dut_ram_master.pix_count[7:0]
 @28
 ram_master_tb.dut_ram_master.active_base_addr
 @22

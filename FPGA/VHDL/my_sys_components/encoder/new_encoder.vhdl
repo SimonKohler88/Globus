@@ -19,7 +19,8 @@ use IEEE.numeric_std.all;
 entity new_encoder is
 	generic (
 		input_pulse_per_rev : integer := 512;
-		output_pulse_div    : integer := 2
+		output_pulse_div    : integer := 2;
+		debounce_cycles     : integer := 1000
 	);
 	port (
 		avs_s0_address             : in  std_logic_vector(7 downto 0)  := (others => '0'); --                  avs_s0.address
@@ -68,6 +69,9 @@ architecture rtl of new_encoder is
 
 	signal rising_edge_fire_reg : std_logic_vector(1 downto 0);
 	signal column_counter :unsigned(8 downto 0);
+	signal debounce_counter :integer range 0 to debounce_cycles;
+	signal debounce_counter_index :integer range 0 to debounce_cycles;
+
 
 	type state_test is (none, t1);
 	signal test_state         : state_test;
@@ -128,10 +132,20 @@ begin
 			enc_direction <= '0';
 			enc_clk <= '0';
 		elsif rising_edge(clock_clk) then
-			rising_edge_a_reg <= rising_edge_a_reg(0) & sync_a;
+			if debounce_counter = 0 then
+				rising_edge_a_reg <= rising_edge_a_reg(0) & sync_a;
+			else
+				debounce_counter <= debounce_counter + 1;
+				if debounce_counter = debounce_cycles-1 then
+					debounce_counter <= 0;
+				end if;
+			end if;
+
 			rising_edge_i_reg <= rising_edge_i_reg(0) & sync_i;
 
 			if rising_edge_a_reg="01" then
+				debounce_counter <= 1;
+				rising_edge_a_reg <= "11";
 				enc_clk <= '1';
 				if sync_a='1' and sync_b ='0' then
 					enc_direction <= '1';
