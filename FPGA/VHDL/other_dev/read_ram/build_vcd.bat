@@ -16,7 +16,7 @@ ghdl -r --std=08 --time-resolution=ns %MODULE%_tb --vcd=func.vcd --stop-time=400
 if %ERRORLEVEL%==1 (
 	PAUSE
 ) else (
-	gtkwave func.vcd wave_save.gtkw
+	gtkwave func.vcd wave_save.gtkw ../../gtkrcfile.gtkwaverc
 	REM gtkwave func.vcd wave_save.gtkw
 )
 
