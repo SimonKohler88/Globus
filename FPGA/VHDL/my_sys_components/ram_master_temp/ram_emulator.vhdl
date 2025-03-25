@@ -224,13 +224,13 @@ begin
         if access_counter = 0 then
           read_waitrequest <= '0';
           addr_A <= address;
-        elsif access_counter = 4 then
+        elsif access_counter = 5 then
           read_waitrequest <= '0';
           addr_B <= address;
-        elsif access_counter = 8 then
+        elsif access_counter = 3 then
           readdatavalid <= '1';
           readdata <= mem(to_integer(unsigned(addr_A(RAM_ADDR_BITS-1 downto 0))));
-        elsif access_counter = 9 then
+        elsif access_counter = 8 then
           readdatavalid <= '1';
           readdata <= mem(to_integer(unsigned(addr_B(RAM_ADDR_BITS-1 downto 0))));
         end if;

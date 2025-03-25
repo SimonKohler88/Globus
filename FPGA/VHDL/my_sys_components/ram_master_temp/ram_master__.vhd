@@ -75,7 +75,7 @@ architecture rtl of ram_master is
 	signal main_state         : state_main;
 	signal next_main_state    : state_main;
 
-	type state_AVM_write is (idle, wait_valid, write_1, write_2, end_write);
+	type state_AVM_write is (idle, wait_valid, write_1, write_2, write_3, end_write);
 	signal write_state        : state_AVM_write := idle;
 	signal next_write_state   : state_AVM_write := idle;
 
@@ -114,6 +114,7 @@ architecture rtl of ram_master is
 	signal addr_switch_pending       : std_logic;
 
 	signal current_address_write     : unsigned(23 downto 0) := (others => '0');
+	signal last_address_write     : unsigned(23 downto 0) := (others => '0');
 	signal current_byteenable_write     : std_logic_vector(1 downto 0) := (others => '0');
 	signal current_byteenable_read      : std_logic_vector(1 downto 0) := (others => '0');
 	signal current_byteenable_read_b       : std_logic;
@@ -149,6 +150,10 @@ architecture rtl of ram_master is
 	signal test_pack_sig_stretch_2 :std_logic_vector(2 downto 0);
 	signal test_pack_sig           :std_logic;
 	signal test_pack_sig_2         :std_logic;
+
+	signal write_1_ff :std_logic_vector(1 downto 0);
+	signal write_2_ff :std_logic_vector(1 downto 0);
+	signal write_3_ff :std_logic_vector(1 downto 0);
 
 
 begin
@@ -698,7 +703,6 @@ begin
 	current_byteenable_read_b <=  '1' when (avm_m0_waitrequest='0' or avm_m0_readdatavalid='1' ) and read_state=read else '0';
 
 	--*************************************** Write to ram processes ***************************************************************
-
 	asi_in0_ready <= '1' when main_state=main_write and ( write_state = wait_valid ) and SystemEnable='1' else '0';
 
 	--control input (but not state) of "write to ram" statemachine
@@ -714,6 +718,9 @@ begin
 			current_address_write <= BASE_ADDR_1;
 			incoming_pix_count <= (others=>'0');
 			incoming_transfer_ongoing <= '0';
+			write_1_ff <= (others=>'0');
+			write_2_ff <= (others=>'0');
+			write_3_ff <= (others=>'0');
 
 		ELSIF rising_edge(clock_clk)THEN
 			write_state <= next_write_state;
@@ -740,25 +747,46 @@ begin
 				incoming_transfer_ongoing <= '0';
 			end if;
 
+			if write_state=write_1 then
+				write_1_ff <= write_1_ff(0) & '1';
+			else
+				write_1_ff <= (others=>'0');
+			end if;
+
+			if write_state=write_2 then
+				write_2_ff <= write_2_ff(0) & '1';
+			else
+				write_2_ff <= (others=>'0');
+			end if;
+
+			if write_state=write_3 then
+				write_3_ff <= write_3_ff(0) & '1';
+			else
+				write_3_ff <= (others=>'0');
+			end if;
+
 			-- switch to other buffer: set base address and increments of addr
 			if addr_switch_pending='1' and (write_state=idle or write_state=wait_valid) then
 				if active_base_addr='0' then
 					current_address_write <= BASE_ADDR_1;
+					last_address_write <= BASE_ADDR_1;
 				else
 					current_address_write <= BASE_ADDR_2;
+					last_address_write <= BASE_ADDR_2;
 				end if;
 				addr_switch_pending <= '0';
 
 			elsif (write_state=write_1 and next_write_state=write_2) or next_write_state=end_write then
 			-- elsif next_write_state=write_2 or next_write_state=end_write then
 				current_address_write <= current_address_write + 1;
+				last_address_write <= current_address_write;
 			end if;
 
 		END IF;
 	END PROCESS p_write_ram_clocked;
 
 	  --Interface that communicates with RAM controller over Avalon-MM
-    p_AVM_Write_statemachine : process(all) is
+p_AVM_Write_statemachine : process(all) is
     begin
 
 		if main_state = main_write then
@@ -778,19 +806,33 @@ begin
 					end if;
 
 				when write_1 =>
-					if avm_m0_waitrequest='0' then
+					-- leave data for 2 clock cycles on bus
+					if avm_m0_waitrequest='0' then --and write_1_ff(0)='1' then
 						next_write_state <= write_2;
 					else
 						next_write_state <= write_1;
 					end if;
 
 				when write_2 =>
-					-- next_write_state <= end_write;
-
-					if avm_m0_waitrequest='0' then
-						next_write_state <= end_write;
+					-- leave data for 2 clock cycles on bus
+					if avm_m0_waitrequest='0' then --and write_2_ff(0)='1' then
+						if last_address_write(1 downto 0)="00" then
+							next_write_state <= write_3;
+						else
+							next_write_state <= end_write;
+						end if;
 					else
 						next_write_state <= write_2;
+					end if;
+
+				when write_3 =>
+					-- had problems with addresses 0, 4, 8, ...
+					-- if one occurs, write it again
+					-- altough it was most likely a clock-timing issue, leave it in
+					if avm_m0_waitrequest='0' and write_3_ff(1)='1' then
+						next_write_state <= end_write;
+					else
+						next_write_state <= write_3;
 					end if;
 
 				when end_write =>
@@ -821,6 +863,15 @@ begin
 					avm_m0_write_n <= '0';
 					avm_m0_writedata(15 downto 0) <= data_in_buffer(7 downto 0) & X"00";
 
+				when write_3 =>
+					if write_3_ff(0)= '0' then
+						avm_m0_write_n <= '1';
+					else
+						avm_m0_write_n <= '0';
+					end if;
+					write_address <=  last_address_write;
+					avm_m0_writedata <= data_in_buffer(23 downto 8);
+
 				when end_write =>
 					write_address <= (others => '0');
 					avm_m0_write_n <= '1';
@@ -842,6 +893,13 @@ begin
     end process p_AVM_Write_statemachine;
 	current_chipselect_write <= not avm_m0_write_n;
 	current_byteenable_write_b <= '1' when (write_state=write_1 or write_state=write_2) and avm_m0_waitrequest='0' else '0';
+
+
+
+
+
+
+
 
 
 
