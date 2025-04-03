@@ -217,7 +217,6 @@ begin
 			when t_fifo_check =>
 				conduit_debug_ram_out_2(31 downto 0) <= (others => '0');
 
-				conduit_debug_ram_out(23 downto 0) <= asi_in0_data;
 				conduit_debug_ram_out <= (
 					24 => test_pack_sig, -- sop
 					25 => test_pack_sig_2, -- eop
@@ -225,16 +224,7 @@ begin
 					27 => asi_in0_ready,
 					others => '0'
 				);
-
-				-- conduit_debug_ram_out_2(0) <= test_pack_sig;
-				-- conduit_debug_ram_out_2(1) <= asi_in0_valid;
-				-- conduit_debug_ram_out_2(2) <= test_pack_sig_2;
-				-- conduit_debug_ram_out_2(3) <= asi_in0_ready;
-
-
-
-				-- conduit_debug_ram_out_2(31 downto 4) <= (others => '0');
-
+ 				conduit_debug_ram_out(23 downto 0) <= asi_in0_data;
 
 			when t_col_nr =>
 				conduit_debug_ram_out(31 downto 9) <= (others => '0');
