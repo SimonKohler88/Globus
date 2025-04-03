@@ -148,7 +148,7 @@ architecture rtl of ram_master is
 	constant C_ACCEPT_EOP_CNT		: integer:= G_IMAGE_ROWS*C_IMAGE_COLS-100;
 	signal incoming_transfer_ongoing :std_logic;
 
-	type state_test_t is (none, t1,t2, t_data_in, t_col_nr, t_read_0);
+	type state_test_t is (none, t1,t2, t_fifo_check, t_col_nr, t_read_0);
 	signal test_state         : state_test_t;
 
 	signal test_pack_sig_stretch   :std_logic_vector(2 downto 0);
@@ -171,7 +171,7 @@ architecture rtl of ram_master is
 
 
 begin
-	test_state <= t_read_0;
+	test_state <= t_fifo_check;
 	p_test: process(all)
 	begin
 		case test_state is
@@ -214,16 +214,26 @@ begin
 
 
 
-			when t_data_in =>
+			when t_fifo_check =>
+				conduit_debug_ram_out_2(31 downto 0) <= (others => '0');
+
 				conduit_debug_ram_out(23 downto 0) <= asi_in0_data;
-				conduit_debug_ram_out(31 downto 24) <= (others => '0');
+				conduit_debug_ram_out <= (
+					24 => test_pack_sig, -- sop
+					25 => test_pack_sig_2, -- eop
+					26 => asi_in0_valid,
+					27 => asi_in0_ready,
+					others => '0'
+				);
 
-				conduit_debug_ram_out_2(0) <= test_pack_sig;
-				conduit_debug_ram_out_2(1) <= asi_in0_valid;
-				conduit_debug_ram_out_2(2) <= test_pack_sig_2;
-				conduit_debug_ram_out_2(3) <= asi_in0_ready;
+				-- conduit_debug_ram_out_2(0) <= test_pack_sig;
+				-- conduit_debug_ram_out_2(1) <= asi_in0_valid;
+				-- conduit_debug_ram_out_2(2) <= test_pack_sig_2;
+				-- conduit_debug_ram_out_2(3) <= asi_in0_ready;
 
-				conduit_debug_ram_out_2(31 downto 4) <= (others => '0');
+
+
+				-- conduit_debug_ram_out_2(31 downto 4) <= (others => '0');
 
 
 			when t_col_nr =>

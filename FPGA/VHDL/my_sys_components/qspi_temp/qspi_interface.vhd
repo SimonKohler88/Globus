@@ -63,7 +63,7 @@ architecture rtl of qspi_interface is
 	signal transfer_ongoing        : std_logic;
 	signal transfer_ongoing_ff     : std_logic_vector(1 downto 0);
 
-	type state_test is (none, t1, t_data2ram);
+	type state_test is (none, t1, t_data2ram, t_fifo_check);
 	signal test_state         : state_test;
 
 	signal test_pack_sig_stretch   :std_logic_vector(2 downto 0);
@@ -73,7 +73,7 @@ architecture rtl of qspi_interface is
 
 
 begin
-	test_state <= t_data2ram;
+	test_state <= t_fifo_check;
 	p_test: process(all)
 	begin
 		case test_state is
@@ -110,6 +110,34 @@ begin
 				conduit_debug_qspi_out_2(3) <= test_pack_sig; -- startofpacket
 				conduit_debug_qspi_out_2(4) <= test_pack_sig_2; --endofpacket
 				conduit_debug_qspi_out_2(31 downto 5) <= (others => '0');
+
+			when t_fifo_check =>
+				conduit_debug_qspi_out(23 downto 0) <= aso_out0_data;
+				conduit_debug_qspi_out(31 downto 24) <= (others => '0');
+
+
+				if pixel_count=1 then
+					conduit_debug_qspi_out_2(0) <= '1';
+				else
+					conduit_debug_qspi_out_2(0) <= '0';
+				end if;
+
+				conduit_debug_qspi_out_2(24 downto 1) <= aso_out0_data;
+				conduit_debug_qspi_out_2 <=(
+					25 => test_pack_sig,
+					26 => test_pack_sig_2,
+					27 => aso_out0_valid,
+					28 => aso_out0_ready,
+					others => '0'
+				);
+
+				-- conduit_debug_qspi_out_2(1) <= aso_out0_valid;
+				-- conduit_debug_qspi_out_2(2) <= aso_out0_ready;
+				-- conduit_debug_qspi_out_2(3) <= test_pack_sig; -- startofpacket
+				-- conduit_debug_qspi_out_2(4) <= test_pack_sig_2; --endofpacket
+
+				-- conduit_debug_qspi_out_2(31 downto 5) <= (others => '0');
+
 
 			when others =>
 				conduit_debug_qspi_out(31 downto 0) <= (others => '0');
