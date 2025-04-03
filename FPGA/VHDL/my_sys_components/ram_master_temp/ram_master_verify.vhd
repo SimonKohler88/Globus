@@ -120,7 +120,6 @@ procedure avalon_stream_out_write_many_pixel(
             packet_end <= '0';
 
             wait for 10 ns;
-            --qspi_write_pixel(v_input_data, clk, qspi_clk, data );
         end loop;
         write(output, "Pixel Sent: " & to_string(pix_count) & lf);
     end procedure avalon_stream_out_write_many_pixel;
@@ -254,9 +253,9 @@ begin
     -- check : must be a endofpacket after startofpacket
     assert always aso_out0_startofpacket -> eventually! aso_out0_endofpacket;
 	p_stimuli_avs_out: process
-        alias dut_const_row2row_offset is <<constant .ram_master_tb.dut_ram_master.addr_row_to_row_offset:integer>>;
-        alias addr_b_col_shift_offset is <<constant .ram_master_tb.dut_ram_master.addr_b_col_shift_offset:integer>>;
-        alias image_cols is <<constant .ram_master_tb.dut_ram_master.image_cols:integer>>;
+        alias dut_const_row2row_offset is <<constant .ram_master_tb.dut_ram_master.C_ADDR_ROW_TO_ROW_OFFSET:integer>>;
+        alias addr_b_col_shift_offset is <<constant .ram_master_tb.dut_ram_master.C_ADDR_B_COL_SHIFT_OFFSET:integer>>;
+        alias image_cols is <<constant .ram_master_tb.dut_ram_master.C_IMAGE_COLS:integer>>;
 
 	begin
         aso_out0_data <= (others => '0');
@@ -396,8 +395,8 @@ begin
         asi_in1_ready <= '1';
         wait for 20 ns;
 
-        -- wait until rising_edge(asi_in1_startofpacket);
-        wait on asi_in1_startofpacket;
+        wait until rising_edge(asi_in1_startofpacket);
+        -- wait on asi_in1_startofpacket;
         save_stream('1', test_case_nr, 60, conduit_intern_col_nr, asi_in1_valid, asi_in1_data, asi_in1_endofpacket, clock_clk, asi_in1_ready, asi_in1_startofpacket );
         wait until rising_edge(asi_in1_startofpacket);
         save_stream('1', test_case_nr, 60, conduit_intern_col_nr, asi_in1_valid, asi_in1_data, asi_in1_endofpacket, clock_clk, asi_in1_ready, asi_in1_startofpacket );

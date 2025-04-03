@@ -1,22 +1,22 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Mon Mar 24 19:35:50 2025
+[*] Mon Mar 31 15:17:55 2025
 [*]
 [dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\ram_master_temp\func.ghw"
-[dumpfile_mtime] "Mon Mar 24 19:35:10 2025"
-[dumpfile_size] 2411032
+[dumpfile_mtime] "Mon Mar 31 15:17:18 2025"
+[dumpfile_size] 2411171
 [savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\ram_master_temp\wave_save_2.gtkw"
-[timestart] 111246
+[timestart] 0
 [size] 1920 1017
 [pos] -1 -1
-*-8.000000 111681 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-15.000000 286298 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.ram_master_tb.
-[treeopen] top.ram_master_tb.dut_ram_master.
+[treeopen] top.ram_master_tb.verify_ram_master.
 [sst_width] 369
 [signals_width] 298
 [sst_expanded] 1
-[sst_vpaned_height] 621
+[sst_vpaned_height] 359
 @28
 top.ram_master_tb.s_clock_clk
 top.ram_master_tb.dut_ram_master.fire_pending
@@ -35,7 +35,6 @@ top.ram_master_tb.dut_ram_master.conduit_col_info_fire
 #{top.ram_master_tb.dut_ram_master.read_address[23:0]} top.ram_master_tb.dut_ram_master.read_address[23] top.ram_master_tb.dut_ram_master.read_address[22] top.ram_master_tb.dut_ram_master.read_address[21] top.ram_master_tb.dut_ram_master.read_address[20] top.ram_master_tb.dut_ram_master.read_address[19] top.ram_master_tb.dut_ram_master.read_address[18] top.ram_master_tb.dut_ram_master.read_address[17] top.ram_master_tb.dut_ram_master.read_address[16] top.ram_master_tb.dut_ram_master.read_address[15] top.ram_master_tb.dut_ram_master.read_address[14] top.ram_master_tb.dut_ram_master.read_address[13] top.ram_master_tb.dut_ram_master.read_address[12] top.ram_master_tb.dut_ram_master.read_address[11] top.ram_master_tb.dut_ram_master.read_address[10] top.ram_master_tb.dut_ram_master.read_address[9] top.ram_master_tb.dut_ram_master.read_address[8] top.ram_master_tb.dut_ram_master.read_address[7] top.ram_master_tb.dut_ram_master.read_address[6] top.ram_master_tb.dut_ram_master.read_address[5] top.ram_master_tb.dut_ram_master.read_address[4] top.ram_master_tb.dut_ram_master.read_address[3] top.ram_master_tb.dut_ram_master.read_address[2] top.ram_master_tb.dut_ram_master.read_address[1] top.ram_master_tb.dut_ram_master.read_address[0]
 @24
 #{top.ram_master_tb.dut_ram_master.aso_send_count[8:0]} top.ram_master_tb.dut_ram_master.aso_send_count[8] top.ram_master_tb.dut_ram_master.aso_send_count[7] top.ram_master_tb.dut_ram_master.aso_send_count[6] top.ram_master_tb.dut_ram_master.aso_send_count[5] top.ram_master_tb.dut_ram_master.aso_send_count[4] top.ram_master_tb.dut_ram_master.aso_send_count[3] top.ram_master_tb.dut_ram_master.aso_send_count[2] top.ram_master_tb.dut_ram_master.aso_send_count[1] top.ram_master_tb.dut_ram_master.aso_send_count[0]
-@25
 #{top.ram_master_tb.dut_ram_master.aso_pix_send_count[7:0]} top.ram_master_tb.dut_ram_master.aso_pix_send_count[7] top.ram_master_tb.dut_ram_master.aso_pix_send_count[6] top.ram_master_tb.dut_ram_master.aso_pix_send_count[5] top.ram_master_tb.dut_ram_master.aso_pix_send_count[4] top.ram_master_tb.dut_ram_master.aso_pix_send_count[3] top.ram_master_tb.dut_ram_master.aso_pix_send_count[2] top.ram_master_tb.dut_ram_master.aso_pix_send_count[1] top.ram_master_tb.dut_ram_master.aso_pix_send_count[0]
 @28
 top.ram_master_tb.dut_ram_master.aso_out0_startofpacket_1
@@ -52,6 +51,10 @@ top.ram_master_tb.dut_ram_master.aso_out0_a_valid
 top.ram_master_tb.dut_ram_master.active_aso_valid
 top.ram_master_tb.dut_ram_master.aso_out1_b_valid
 top.ram_master_tb.dut_ram_master.aso_out1_b_startofpacket
+top.ram_master_tb.verify_ram_master.asi_in1_startofpacket
+@22
+#{top.ram_master_tb.verify_ram_master.asi_in1_data[23:0]} top.ram_master_tb.verify_ram_master.asi_in1_data[23] top.ram_master_tb.verify_ram_master.asi_in1_data[22] top.ram_master_tb.verify_ram_master.asi_in1_data[21] top.ram_master_tb.verify_ram_master.asi_in1_data[20] top.ram_master_tb.verify_ram_master.asi_in1_data[19] top.ram_master_tb.verify_ram_master.asi_in1_data[18] top.ram_master_tb.verify_ram_master.asi_in1_data[17] top.ram_master_tb.verify_ram_master.asi_in1_data[16] top.ram_master_tb.verify_ram_master.asi_in1_data[15] top.ram_master_tb.verify_ram_master.asi_in1_data[14] top.ram_master_tb.verify_ram_master.asi_in1_data[13] top.ram_master_tb.verify_ram_master.asi_in1_data[12] top.ram_master_tb.verify_ram_master.asi_in1_data[11] top.ram_master_tb.verify_ram_master.asi_in1_data[10] top.ram_master_tb.verify_ram_master.asi_in1_data[9] top.ram_master_tb.verify_ram_master.asi_in1_data[8] top.ram_master_tb.verify_ram_master.asi_in1_data[7] top.ram_master_tb.verify_ram_master.asi_in1_data[6] top.ram_master_tb.verify_ram_master.asi_in1_data[5] top.ram_master_tb.verify_ram_master.asi_in1_data[4] top.ram_master_tb.verify_ram_master.asi_in1_data[3] top.ram_master_tb.verify_ram_master.asi_in1_data[2] top.ram_master_tb.verify_ram_master.asi_in1_data[1] top.ram_master_tb.verify_ram_master.asi_in1_data[0]
+@28
 top.ram_master_tb.dut_ram_master.aso_out1_b_endofpacket
 @22
 #{top.ram_master_tb.dut_ram_master.addr_adder[23:0]} top.ram_master_tb.dut_ram_master.addr_adder[23] top.ram_master_tb.dut_ram_master.addr_adder[22] top.ram_master_tb.dut_ram_master.addr_adder[21] top.ram_master_tb.dut_ram_master.addr_adder[20] top.ram_master_tb.dut_ram_master.addr_adder[19] top.ram_master_tb.dut_ram_master.addr_adder[18] top.ram_master_tb.dut_ram_master.addr_adder[17] top.ram_master_tb.dut_ram_master.addr_adder[16] top.ram_master_tb.dut_ram_master.addr_adder[15] top.ram_master_tb.dut_ram_master.addr_adder[14] top.ram_master_tb.dut_ram_master.addr_adder[13] top.ram_master_tb.dut_ram_master.addr_adder[12] top.ram_master_tb.dut_ram_master.addr_adder[11] top.ram_master_tb.dut_ram_master.addr_adder[10] top.ram_master_tb.dut_ram_master.addr_adder[9] top.ram_master_tb.dut_ram_master.addr_adder[8] top.ram_master_tb.dut_ram_master.addr_adder[7] top.ram_master_tb.dut_ram_master.addr_adder[6] top.ram_master_tb.dut_ram_master.addr_adder[5] top.ram_master_tb.dut_ram_master.addr_adder[4] top.ram_master_tb.dut_ram_master.addr_adder[3] top.ram_master_tb.dut_ram_master.addr_adder[2] top.ram_master_tb.dut_ram_master.addr_adder[1] top.ram_master_tb.dut_ram_master.addr_adder[0]
@@ -74,10 +77,5 @@ top.ram_master_tb.dut_ram_master.avm_m0_waitrequest
 top.ram_master_tb.s_avm_m0_chipselect
 @200
 -
-@28
-top.ram_master_tb.s_asi_in0_startofpacket
-top.ram_master_tb.s_asi_in0_endofpacket
-top.ram_master_tb.s_asi_in0_valid
-top.ram_master_tb.s_asi_in0_ready
 [pattern_trace] 1
 [pattern_trace] 0

@@ -11,10 +11,9 @@ architecture rtl of ram_master_tb is
 
 component ram_master is
 	generic (
-		--image_cols : integer := 256;
-		image_rows : integer := 120;
-		image_cols_bits : integer := 8;
-		BASE_ADDR_2_OFFSET : unsigned  :=  X"0001000"
+		G_IMAGE_ROWS             : integer := 120;
+		G_IMAGE_COLS_BITS        : integer:= 8;
+		G_BASE_ADDR_2_OFFSET     : unsigned  :=  X"040000"
 	);
 	port (
 		clock_clk                : in  std_logic                     := '0';             --                clock.clk
@@ -147,9 +146,9 @@ begin
 
     dut_ram_master: ram_master
     generic map(
-        image_cols_bits => 3,
-		image_rows => 120,
-		BASE_ADDR_2_OFFSET =>  X"001000"
+        G_IMAGE_ROWS             => 120,
+		G_IMAGE_COLS_BITS        => 3,
+		G_BASE_ADDR_2_OFFSET     => X"001000"
     )
     port map (
 		clock_clk                => s_clock_clk                ,
