@@ -71,7 +71,7 @@ architecture rtl of led_interface is
 	-- 00001000 == 0x08
 	-- from protocol: 1110 1000 = 0xE8
 
-	constant C_USE_BGR : std_logic:= '1';
+	signal use_bgr: std_logic:= '1';
 
 	type t_pixel_buffer_in_array is array (0 to PIX_PER_STREAM_IN-1) of std_logic_vector(23 downto 0);
 	type t_pixel_buffer_out_array is array (0 to PIX_OUT_PER_SPI-1) of std_logic_vector(31 downto 0);
@@ -124,11 +124,14 @@ begin
 				
             when t_data_in =>
 				conduit_debug_led_led_dbg_out <= (others => '0');
-				conduit_debug_led_led_dbg_out(8 downto 0) <= conduit_col_info;
+				conduit_debug_led_led_dbg_out(7 downto 0) <= conduit_col_info(7 downto 0);
+				conduit_debug_led_led_dbg_out(31 downto 8) <= pix_out_A(spi_pix_count_A)(23 downto 0);
+				
 				
 				conduit_debug_led_led_dbg_out_2 <= (
                     0 => conduit_fire,
                     1 => spi_in_progress,
+                    27 => asi_in0_valid,
                     others=>'0'
                 );
                 conduit_debug_led_led_dbg_out_2(26 downto 3) <= asi_in0_data;
@@ -143,7 +146,9 @@ begin
 
 	avs_s0_readdata <= "00000000000000000000000000000000";
 	avs_s0_waitrequest <= '0';
-
+    
+    use_bgr <= '1';
+    
 	conduit_col_info_out_fire <= fire_out;
 
 	p_fire_delay : process(all)
@@ -219,7 +224,7 @@ begin
 			if conduit_fire = '1' then -- todo: BGR, gamma
 
 				for a in 0 to (pix_out_A'length -1) loop
-					if C_USE_BGR='1' then
+					if use_bgr='1' then
 						--BGR
 						pix_out_A(a)(7 downto 0)   <= in_buffer_stream_A(a)(23 downto 16);
 						pix_out_A(a)(15 downto 8)  <= in_buffer_stream_A(a)(15 downto 8) ;
@@ -234,7 +239,7 @@ begin
 				end loop;
 
 				for b in 0 to (pix_out_B'length -1) loop -- change direction
-					if C_USE_BGR='1' then
+					if use_bgr='1' then
 						--BGR
 						pix_out_B(b)(7 downto 0)   <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b)(23 downto 16);
 						pix_out_B(b)(15 downto 8)  <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b)(15 downto 8) ;
@@ -249,7 +254,7 @@ begin
 				end loop;
 
 				for c in 0 to (pix_out_C'length -1) loop
-					if C_USE_BGR='1' then
+					if use_bgr='1' then
 						--BGR
 						pix_out_C(c)(7 downto 0)   <= in_buffer_stream_B(c)(23 downto 16);
 						pix_out_C(c)(15 downto 8)  <= in_buffer_stream_B(c)(15 downto 8) ;
@@ -264,7 +269,7 @@ begin
 				end loop;
 
 				for d in 0 to (pix_out_D'length -1) loop -- change direction
-					if C_USE_BGR='1' then
+					if use_bgr='1' then
 						--BGR
 						pix_out_D(d)(7 downto 0)   <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d)(23 downto 16);
 						pix_out_D(d)(15 downto 8)  <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d)(15 downto 8) ;
