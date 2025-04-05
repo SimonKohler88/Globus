@@ -409,7 +409,7 @@ begin
 
 	elsif rising_edge(clock_clk) then
 		addr_ready <= '0';
-		if conduit_col_info_fire='1' and stage=0 and read_state=idle then --TODO
+		if conduit_col_info_fire='1' and stage=0 and read_state=idle then
 			addr_a_preload <= (others => '0');
 			addr_b_preload <= (others => '0');
 			addr_ab_converter <= (others => '0');
@@ -483,7 +483,7 @@ begin
 
 	elsif rising_edge(clock_clk) then
 
-		if wait_request = '0' and read_state /=idle then
+		if wait_request = '0' and read_state /=idle and read_data_count < 2*G_IMAGE_ROWS then
 			if read_data_count(0) = '0' then
 				read_address <= read_address + 1;
 			else
