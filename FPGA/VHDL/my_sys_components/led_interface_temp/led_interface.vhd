@@ -103,12 +103,12 @@ architecture rtl of led_interface is
 	signal next_spi_state : t_spi_state;
 	signal spi_in_progress: std_logic;
 
-	type state_test is (none, t1);
+	type state_test is (none, t1, t_data_in);
 	signal test_state         : state_test;
 
 
 begin
-	test_state <= t1;
+	test_state <= t_data_in;
 	p_test: process(all)
 	begin
 		case test_state is
@@ -120,7 +120,18 @@ begin
 				conduit_debug_led_led_dbg_out(0) <= spi_in_progress;
 				conduit_debug_led_led_dbg_out(31 downto 1) <= (others=>'0');
 				conduit_debug_led_led_dbg_out_2 <= (others=>'0');
-
+				
+            when t_data_in =>
+				conduit_debug_led_led_dbg_out <= (others => '0');
+				conduit_debug_led_led_dbg_out(8 downto 0) <= conduit_col_info;
+				
+				conduit_debug_led_led_dbg_out_2 <= (
+                    0 => conduit_fire,
+                    1 => spi_in_progress,
+                    others=>'0'
+                );
+                conduit_debug_led_led_dbg_out_2(26 downto 3) <= asi_in0_data;
+                
 			when others =>
 				conduit_debug_led_led_dbg_out <= (others=>'0');
 				conduit_debug_led_led_dbg_out_2 <= (others=>'0');
