@@ -8,7 +8,7 @@ import numpy as np
 if __name__=='__main__':
     original_data_file = 'Earth_relief_120x256_raw2.txt'
 
-    sigtap_csv = os.path.expanduser('~/Downloads/fifo_check.csv')
+    sigtap_csv = os.path.expanduser('~/Downloads/stp_t_fifo_check_2.csv')
 
     with open(sigtap_csv, 'r') as f:
         sigtap_temp = f.readlines()
@@ -38,6 +38,6 @@ if __name__=='__main__':
         print(f'{or_data}  {sig_data}')
         if or_data.lower() != sig_data.lower():
             print(f'ERROR---------------------------   {i}  {int(t) -2048}')
-
+    print(f'Checked {i} pixels')
 
     print()
