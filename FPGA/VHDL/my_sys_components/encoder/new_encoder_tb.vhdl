@@ -70,7 +70,7 @@ architecture rtl of new_encoder_tb is
 	constant c_enc_t_per_u :time := 100 us;
 	constant c_enc_index_time : time := 195 ns; --c_enc_t_per_u/512;
 	constant c_enc_S_time : time := 49 ns; --c_enc_index_time/4;
-	constant c_enc_sim_17kHz_pulse_half : time := 29400 ns; --2.94e-5
+	constant c_enc_sim_17kHz_pulse_half : time := 25000 ns; --2.94e-5
 
 	-- real encoder:29,29 us pulse width
 	-- calc: 1/33 = 0.03 s/u --> T = 0.03/512 = 0.00005859 s period
@@ -163,31 +163,31 @@ begin
 		--indexCount  <= indexCount + 1;
 		while enable_ext_enc loop
 			if enable_a_b='1' then
-				wait for c_enc_S_time;
+				wait for c_enc_S_2;
 				A <= A(2 downto 0) & A(3);
 				B <= B(2 downto 0) & B(3);
-				wait for c_enc_S_time;
+				wait for c_enc_S_2;
 				A <= A(2 downto 0) & A(3);
 				B <= B(2 downto 0) & B(3);
-				wait for c_enc_S_time;
+				wait for c_enc_S_2;
 				A <= A(2 downto 0) & A(3);
 				B <= B(2 downto 0) & B(3);
-				wait for c_enc_S_time;
+				wait for c_enc_S_2;
 				A <= A(2 downto 0) & A(3);
 				B <= B(2 downto 0) & B(3);
 				indexCount   <= indexCount + 1;
 
 			else
-				wait for c_enc_S_time;
+				wait for c_enc_S_2;
 				A <= A(0) & A(3 downto 1);
 				B <= B(0) & B(3 downto 1);
-				wait for c_enc_S_time;
+				wait for c_enc_S_2;
 				A <= A(0) & A(3 downto 1);
 				B <= B(0) & B(3 downto 1);
-				wait for c_enc_S_time;
+				wait for c_enc_S_2;
 				A <= A(0) & A(3 downto 1);
 				B <= B(0) & B(3 downto 1);
-				wait for c_enc_S_time;
+				wait for c_enc_S_2;
 				A <= A(0) & A(3 downto 1);
 				B <= B(0) & B(3 downto 1);
 				indexCount   <= indexCount - 1;
@@ -228,7 +228,7 @@ begin
         wait;
     end process stim_proc_encoder;
 
-	s_conduit_encoder_index <= '0' when indexCount = 15 else '1';
+	s_conduit_encoder_index <= '0' when indexCount = 1 else '1';
 
 	s_conduit_encoder_sim_pulse <= s_conduit_encoder_sim_pulse_A when test_case = 2 else
 									s_conduit_encoder_sim_pulse_17k when test_case = 3 else
@@ -252,7 +252,7 @@ begin
 		test_case <= 1;
 		enable_a_b <= '0';
 
-		wait for 50 us;
+		wait for 250 us;
 		test_case <= 2;
 		--setup for sim
 		s_conduit_encoder_sim_switch <= '1';

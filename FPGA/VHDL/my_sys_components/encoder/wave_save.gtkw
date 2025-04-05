@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Thu Mar 20 15:52:31 2025
+[*] Sat Apr 05 20:35:19 2025
 [*]
 [dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\encoder\func.ghw"
-[dumpfile_mtime] "Thu Mar 20 15:50:57 2025"
-[dumpfile_size] 920160
+[dumpfile_mtime] "Sat Apr 05 20:22:52 2025"
+[dumpfile_size] 726395
 [savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\encoder\wave_save.gtkw"
-[timestart] 0
+[timestart] 205200
 [size] 1920 1017
 [pos] -1 -1
-*-11.000000 1211 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-16.000000 351600 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.new_encoder_tb.
 [treeopen] top.new_encoder_tb.dut.
@@ -21,11 +21,11 @@
 top.new_encoder_tb.dut.reset_reset
 top.new_encoder_tb.dut.clock_clk
 top.new_encoder_tb.dut.conduit_encoder_a
-@29
 top.new_encoder_tb.dut.conduit_encoder_b
-@28
-top.new_encoder_tb.dut.sync_b
 top.new_encoder_tb.dut.sync_a
+@29
+top.new_encoder_tb.dut.sync_b
+@28
 top.new_encoder_tb.dut.sync_i
 top.new_encoder_tb.dut.conduit_encoder_index
 top.new_encoder_tb.dut.i_valid

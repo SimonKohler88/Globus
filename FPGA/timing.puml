@@ -1,0 +1,29 @@
+@startuml
+concise "SPI" as SPI
+concise "QSPI" as QSPI
+concise "RAM read" as RAM_r
+concise "Encoder" as enc
+
+@SPI
+0 is T
+3.4 is {-}
+11.7 is T
+15.1 is {-}
+23.4 is T
+
+
+@QSPI
+0 is T
+
+@RAM_r
+0 is T
+1.55 is {-}
+
+@enc
+0 is T
+1 is {-}
+11.7 is T
+12.7 is {-}
+'@6826
+'QSPI is {-}
+@enduml
