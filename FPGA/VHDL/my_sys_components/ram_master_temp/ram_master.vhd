@@ -535,7 +535,7 @@ begin
 			end if;
 
 		when end_read =>
-			next_read_state <= idle;
+			next_read_state <= end_read;
 
 		end case;
 	else
@@ -856,11 +856,14 @@ begin
 			when write_2 =>
 				-- leave data for 2 clock cycles on bus
 				if avm_m0_waitrequest='0' and write_2_ff(0)='1' then
-					if last_address_write(1 downto 0)="00" then
-						next_write_state <= write_3;
-					else
-						next_write_state <= end_write;
-					end if;
+
+					next_write_state <= end_write;
+
+					-- if last_address_write(1 downto 0)="00" then
+					-- 	next_write_state <= write_3;
+					-- else
+					-- 	next_write_state <= end_write;
+					-- end if;
 				else
 					next_write_state <= write_2;
 				end if;
