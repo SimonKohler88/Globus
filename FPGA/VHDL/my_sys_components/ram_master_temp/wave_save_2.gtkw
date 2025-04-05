@@ -1,19 +1,19 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Mon Mar 31 15:17:55 2025
+[*] Sat Apr 05 15:22:04 2025
 [*]
 [dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\ram_master_temp\func.ghw"
-[dumpfile_mtime] "Mon Mar 31 15:17:18 2025"
-[dumpfile_size] 2411171
+[dumpfile_mtime] "Sat Apr 05 15:20:50 2025"
+[dumpfile_size] 2097744
 [savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\ram_master_temp\wave_save_2.gtkw"
-[timestart] 0
+[timestart] 150375
 [size] 1920 1017
 [pos] -1 -1
-*-15.000000 286298 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-6.000000 150636 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.ram_master_tb.
-[treeopen] top.ram_master_tb.verify_ram_master.
-[sst_width] 369
+[treeopen] top.ram_master_tb.dut_ram_master.
+[sst_width] 308
 [signals_width] 298
 [sst_expanded] 1
 [sst_vpaned_height] 359
@@ -22,7 +22,6 @@ top.ram_master_tb.s_clock_clk
 top.ram_master_tb.dut_ram_master.fire_pending
 @420
 top.ram_master_tb.dut_ram_master.main_state
-top.ram_master_tb.dut_ram_master.read_state
 @22
 #{top.ram_master_tb.dut_ram_master.data_in_buffer[23:0]} top.ram_master_tb.dut_ram_master.data_in_buffer[23] top.ram_master_tb.dut_ram_master.data_in_buffer[22] top.ram_master_tb.dut_ram_master.data_in_buffer[21] top.ram_master_tb.dut_ram_master.data_in_buffer[20] top.ram_master_tb.dut_ram_master.data_in_buffer[19] top.ram_master_tb.dut_ram_master.data_in_buffer[18] top.ram_master_tb.dut_ram_master.data_in_buffer[17] top.ram_master_tb.dut_ram_master.data_in_buffer[16] top.ram_master_tb.dut_ram_master.data_in_buffer[15] top.ram_master_tb.dut_ram_master.data_in_buffer[14] top.ram_master_tb.dut_ram_master.data_in_buffer[13] top.ram_master_tb.dut_ram_master.data_in_buffer[12] top.ram_master_tb.dut_ram_master.data_in_buffer[11] top.ram_master_tb.dut_ram_master.data_in_buffer[10] top.ram_master_tb.dut_ram_master.data_in_buffer[9] top.ram_master_tb.dut_ram_master.data_in_buffer[8] top.ram_master_tb.dut_ram_master.data_in_buffer[7] top.ram_master_tb.dut_ram_master.data_in_buffer[6] top.ram_master_tb.dut_ram_master.data_in_buffer[5] top.ram_master_tb.dut_ram_master.data_in_buffer[4] top.ram_master_tb.dut_ram_master.data_in_buffer[3] top.ram_master_tb.dut_ram_master.data_in_buffer[2] top.ram_master_tb.dut_ram_master.data_in_buffer[1] top.ram_master_tb.dut_ram_master.data_in_buffer[0]
 @420
@@ -63,6 +62,12 @@ top.ram_master_tb.dut_ram_master.aso_out1_b_endofpacket
 #{top.ram_master_tb.verify_ram_master.conduit_intern_col_nr[8:0]} top.ram_master_tb.verify_ram_master.conduit_intern_col_nr[8] top.ram_master_tb.verify_ram_master.conduit_intern_col_nr[7] top.ram_master_tb.verify_ram_master.conduit_intern_col_nr[6] top.ram_master_tb.verify_ram_master.conduit_intern_col_nr[5] top.ram_master_tb.verify_ram_master.conduit_intern_col_nr[4] top.ram_master_tb.verify_ram_master.conduit_intern_col_nr[3] top.ram_master_tb.verify_ram_master.conduit_intern_col_nr[2] top.ram_master_tb.verify_ram_master.conduit_intern_col_nr[1] top.ram_master_tb.verify_ram_master.conduit_intern_col_nr[0]
 @200
 -
+@28
+top.ram_master_tb.dut_ram_master.addr_ready
+@24
+#{top.ram_master_tb.dut_ram_master.read_data_count[8:0]} top.ram_master_tb.dut_ram_master.read_data_count[8] top.ram_master_tb.dut_ram_master.read_data_count[7] top.ram_master_tb.dut_ram_master.read_data_count[6] top.ram_master_tb.dut_ram_master.read_data_count[5] top.ram_master_tb.dut_ram_master.read_data_count[4] top.ram_master_tb.dut_ram_master.read_data_count[3] top.ram_master_tb.dut_ram_master.read_data_count[2] top.ram_master_tb.dut_ram_master.read_data_count[1] top.ram_master_tb.dut_ram_master.read_data_count[0]
+@420
+top.ram_master_tb.dut_ram_master.read_state
 @24
 #{top.ram_master_tb.dut_ram_master.read_addr_count[8:0]} top.ram_master_tb.dut_ram_master.read_addr_count[8] top.ram_master_tb.dut_ram_master.read_addr_count[7] top.ram_master_tb.dut_ram_master.read_addr_count[6] top.ram_master_tb.dut_ram_master.read_addr_count[5] top.ram_master_tb.dut_ram_master.read_addr_count[4] top.ram_master_tb.dut_ram_master.read_addr_count[3] top.ram_master_tb.dut_ram_master.read_addr_count[2] top.ram_master_tb.dut_ram_master.read_addr_count[1] top.ram_master_tb.dut_ram_master.read_addr_count[0]
 @22

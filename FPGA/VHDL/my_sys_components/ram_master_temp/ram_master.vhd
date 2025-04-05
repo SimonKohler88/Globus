@@ -462,18 +462,7 @@ begin
 	end if;
 end process;
 
-p_valid_ff: process(all)
-begin
-	if reset_reset = '1' then
-		valid_ff <= (others=>'0');
-	elsif rising_edge(clock_clk) then
-		if read_state /= idle then
-			valid_ff <= valid_ff(0) & valid;
-		else
-			valid_ff <= (others=>'0');
-		end if;
-	end if;
-end process;
+
 
 p_addr_inc: process(all)
 begin
@@ -520,11 +509,9 @@ begin
 	if main_state = main_read then
 		case read_state is
 		when idle =>
-			if addr_ready <= '1' then
-				next_read_state <= set_addr;
-			else
-				next_read_state <= idle;
-			end if;
+			-- we are ready. addresses already calculated
+			next_read_state <= set_addr;
+
 		when set_addr =>
 			if clock_counter_set_addr=1 then
 				next_read_state <= wait_waitrequest;
@@ -556,12 +543,34 @@ begin
 	end if;
 
 	case read_state is
-		when idle | end_read=>
-			if aso_state /= read_to_stream then
+		-- when idle | end_read=>
+		-- 	if aso_state /= read_to_stream then
+		-- 		read_n <= '1';
+		-- 	else
+		-- 		read_n <= '0';
+		-- 	end if;
+		-- when set_addr =>
+		-- 	read_n <= '0';
+		-- when wait_waitrequest  =>
+		-- 	read_n <= '0';
+		-- when wait_end =>
+		-- 	-- read_n <= '1';
+		-- 	read_n <= '0';
+		-- -- when end_read =>
+		-- -- 	-- read_n <= '1';
+		-- -- 	if aso_state /= read_to_stream then
+		-- -- 		read_n <= '1';
+		-- -- 	else
+		-- -- 		read_n <= '0';
+		-- -- 	end if;
+
+
+		when idle =>
+			-- if aso_state /= read_to_stream then
 				read_n <= '1';
-			else
-				read_n <= '0';
-			end if;
+			-- else
+				-- read_n <= '0';
+			-- end if;
 		when set_addr =>
 			read_n <= '0';
 		when wait_waitrequest  =>
@@ -569,14 +578,13 @@ begin
 		when wait_end =>
 			-- read_n <= '1';
 			read_n <= '0';
-		-- when end_read =>
-		-- 	-- read_n <= '1';
+		when end_read =>
+			read_n <= '1';
 		-- 	if aso_state /= read_to_stream then
 		-- 		read_n <= '1';
 		-- 	else
 		-- 		read_n <= '0';
 		-- 	end if;
-
 	end case;
 end process;
 
@@ -622,6 +630,19 @@ elsif rising_edge(clock_clk) then
 	end if;
 
 end if;
+end process;
+
+p_valid_ff: process(all)
+begin
+	if reset_reset = '1' then
+		valid_ff <= (others=>'0');
+	elsif rising_edge(clock_clk) then
+		if read_state /= idle then
+			valid_ff <= valid_ff(0) & valid;
+		else
+			valid_ff <= (others=>'0');
+		end if;
+	end if;
 end process;
 
 p_valid_out_signal :process(all)
