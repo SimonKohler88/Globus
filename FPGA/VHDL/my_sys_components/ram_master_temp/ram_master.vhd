@@ -171,7 +171,7 @@ architecture rtl of ram_master is
 
 
 begin
-	test_state <= t_fifo_check;
+	test_state <= t_read_0;
 	p_test: process(all)
 	begin
 		case test_state is
