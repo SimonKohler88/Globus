@@ -66,11 +66,14 @@ static INDUCTION_t induction = {
 
 static TRIPLE_ADC_t adc_triplet = {};
 
+static uint32_t test_register_value = 43;  // Neue Variable für das Register 4
+
 static I2C_DATA_MEM_t i2c_data_memory = {
     .data[ I2C_ADDR_LED_BLINK ]                  = {&gpio_blink_pin.interval_ticks,                 I2C_ENTRY_TYPE_READ_WRITE},
     .data[ I2C_ADDR_MOT_DUTY_CYCLE_SET ]         = {&motor_control.i2c_if.target_speed_duty_cycle,  I2C_ENTRY_TYPE_WRITE     },
     .data[ I2C_ADDR_MOT_DUTY_CYCLE_IS ]          = {&motor_control.i2c_if.current_speed_duty_cycle, I2C_ENTRY_TYPE_READ      },
     .data[ I2C_ADDR_MOT_DUTY_CYCLE_SLOPE_PER_S ] = {&motor_control.i2c_if.slope_duty_cycle_per_s,   I2C_ENTRY_TYPE_READ_WRITE},
+	.data[ I2C_ADDR_TEST_REGISTER_4 ]            = {&test_register_value,							I2C_ENTRY_TYPE_READ_WRITE},
 };
 /* USER CODE END PV */
 
