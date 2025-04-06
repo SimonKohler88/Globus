@@ -29,11 +29,11 @@ component ram_master is
 		avm_m0_writedata         : out std_logic_vector(15 downto 0);                    --                     .writedata
 		avm_m0_byteenable        : out std_logic_vector(1 downto 0);                     --                     .byteenable
 		avm_m0_chipselect        : out std_logic;                                        --                     .chipselect
-		asi_in0_data             : in  std_logic_vector(23 downto 0)  := (others => '0'); --              asi_in0.data
+		asi_in0_data             : in  std_logic_vector(25 downto 0)  := (others => '0'); --              asi_in0.data
 		asi_in0_ready            : out std_logic;                                        --                     .ready
 		asi_in0_valid            : in  std_logic                     := '0';             --                     .valid
-		asi_in0_endofpacket      : in  std_logic                     := '0';             --                     .endofpacket
-		asi_in0_startofpacket    : in  std_logic                     := '0';             --                     .startofpacket
+		--asi_in0_endofpacket      : in  std_logic                     := '0';             --                     .endofpacket
+		--asi_in0_startofpacket    : in  std_logic                     := '0';             --                     .startofpacket
 		conduit_col_info_col_nr  : in  std_logic_vector(8 downto 0)  := (others => '0'); --     conduit_col_info.col_nr
 		conduit_col_info_fire    : in  std_logic                     := '0';             --                     .fire
 		aso_out1_B_data          : out std_logic_vector(23 downto 0);                    --           aso_out1_B.data
@@ -111,7 +111,7 @@ end component;
 	signal s_avm_m0_writedata         : std_logic_vector(15 downto 0);
 	signal s_avm_m0_byteenable        : std_logic_vector(1 downto 0);                     --                     .byteenable
 	signal s_avm_m0_chipselect        : std_logic;                                        --                     .chipselect
-	signal s_asi_in0_data             : std_logic_vector(23 downto 0);
+	signal s_asi_in0_data             : std_logic_vector(25 downto 0);
 	signal s_asi_in0_ready            : std_ulogic;
 	signal s_asi_in0_valid            : std_ulogic;
 	signal s_asi_in0_endofpacket      : std_ulogic;
@@ -138,6 +138,7 @@ end component;
 	signal s_conduit_debug_ram_out_2    : std_logic_vector(31 downto 0);
 	signal s_conduit_debug_ram_in     : std_logic_vector(31 downto 0);
 
+	signal s_aso_out0_data             : std_logic_vector(23 downto 0);
 begin
 
     dut_ram_master: ram_master
@@ -161,8 +162,8 @@ begin
 		asi_in0_data             => s_asi_in0_data             ,
 		asi_in0_ready            => s_asi_in0_ready            ,
 		asi_in0_valid            => s_asi_in0_valid            ,
-		asi_in0_endofpacket      => s_asi_in0_endofpacket      ,
-		asi_in0_startofpacket    => s_asi_in0_startofpacket    ,
+		--asi_in0_endofpacket      => s_asi_in0_endofpacket      ,
+		--asi_in0_startofpacket    => s_asi_in0_startofpacket    ,
 
 		conduit_col_info_col_nr  => s_conduit_col_info_col_nr  ,
 		conduit_col_info_fire    => s_conduit_col_info_fire    ,
@@ -201,7 +202,7 @@ begin
         clock_clk                => s_clock_clk                ,
 		reset_reset              => s_reset_reset              ,
 
-        aso_out0_data            =>  s_asi_in0_data             ,      -- avs pixels from qspi to ram
+        aso_out0_data            =>  s_aso_out0_data             ,      -- avs pixels from qspi to ram
         aso_out0_endofpacket     =>  s_asi_in0_endofpacket      ,
         aso_out0_ready           =>  s_asi_in0_ready            ,
         aso_out0_startofpacket   =>  s_asi_in0_startofpacket    ,
@@ -233,6 +234,13 @@ begin
 
 
     );
+
+    s_asi_in0_data <= (
+    23 downto 0 => s_aso_out0_data,
+    24 => s_asi_in0_startofpacket,
+    25 => s_asi_in0_endofpacket
+    );
+
 end architecture rtl; -- of ram_master
 
 

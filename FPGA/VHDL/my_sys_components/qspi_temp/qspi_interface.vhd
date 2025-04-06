@@ -14,10 +14,10 @@ use IEEE.numeric_std.all;
 
 entity qspi_interface is
 	port (
-		aso_out0_data          : out std_logic_vector(23 downto 0);                    --          aso_out0.data
-		aso_out0_endofpacket   : out std_logic;                                       --                  .endofpacket
+		aso_out0_data          : out std_logic_vector(25 downto 0);                    --          aso_out0.data
+		--aso_out0_endofpacket   : out std_logic;                                       --                  .endofpacket
 		aso_out0_ready         : in  std_logic                    := '0';             --                  .ready
-		aso_out0_startofpacket : out std_logic;                                       --                  .startofpacket
+		--aso_out0_startofpacket : out std_logic;                                       --                  .startofpacket
 		aso_out0_valid         : out std_logic;                                       --                  .valid
 		clock_clk              : in  std_logic                    := '0';             --             clock.clk
 		reset_reset            : in  std_logic                    := '0';             --             reset.reset
@@ -71,6 +71,10 @@ architecture rtl of qspi_interface is
 	signal test_pack_sig           :std_logic;
 	signal test_pack_sig_2         :std_logic;
 
+	signal aso_out0_startofpacket :std_logic;
+	signal aso_out0_endofpacket :std_logic;
+	signal intern_aso_out0_data :std_logic_vector(23 downto 0);
+
 
 begin
 	test_state <= t_fifo_check;
@@ -83,7 +87,7 @@ begin
 
 			when t1 =>
 				-- Test 1: check first pixel after transfer initiated
-				conduit_debug_qspi_out(23 downto 0) <= aso_out0_data;
+				conduit_debug_qspi_out(23 downto 0) <= intern_aso_out0_data;
 				conduit_debug_qspi_out(31 downto 24) <= (others=>'0');
 
 				if pixel_count=1 then
@@ -95,7 +99,7 @@ begin
 				conduit_debug_qspi_out_2(31 downto 2) <= (others=>'0');
 
 			when t_data2ram =>
-				conduit_debug_qspi_out(23 downto 0) <= aso_out0_data;
+				conduit_debug_qspi_out(23 downto 0) <= intern_aso_out0_data;
 				conduit_debug_qspi_out(31 downto 24) <= (others => '0');
 
 
@@ -127,7 +131,7 @@ begin
 					conduit_debug_qspi_out_2(0) <= '0';
 				end if;
 				
-				conduit_debug_qspi_out_2(24 downto 1) <= aso_out0_data;
+				conduit_debug_qspi_out_2(24 downto 1) <= intern_aso_out0_data;
 
 			when others =>
 				conduit_debug_qspi_out(31 downto 0) <= (others => '0');
@@ -151,6 +155,9 @@ begin
 
 
 
+	aso_out0_data(24) <= aso_out0_startofpacket;
+	aso_out0_data(25) <= aso_out0_endofpacket;
+	aso_out0_data(23 downto 0) <= intern_aso_out0_data;
 
 
 	-- sync in signals
@@ -213,7 +220,7 @@ begin
 			nibble_count <= 0;
 			valid_intern <= '0';
 			pixel_count <= 0;
-			aso_out0_data <= (others => '0');
+			intern_aso_out0_data <= (others => '0');
 
 		elsif rising_edge(clock_clk) then
 
@@ -240,7 +247,7 @@ begin
 			end if;
 
 			if nibble_count=0 and pixel_count > 0 then
-				aso_out0_data <= data_in_buffer ;
+				intern_aso_out0_data <= data_in_buffer ;
 			end if;
 
 			if pixel_count > 0 and nibble_count >= 0 and nibble_count < 5 then
@@ -254,7 +261,7 @@ begin
 				data_in_buffer <= (others => '0');
 				valid_intern <= '0';
 				pixel_count <= 0;
-				aso_out0_data <= (others => '0');
+				intern_aso_out0_data <= (others => '0');
 
 			end if;
 		end if;
@@ -324,19 +331,6 @@ begin
 			transfer_ongoing_ff <= transfer_ongoing_ff(0) & aso_out0_endofpacket ;
 		end if;
 	end process p_transfer_end_edge;
-
-	-- p_end_of_transfer: process(all)
-	-- begin
-	-- 	if reset_reset = '1' then
-	-- 		transfer_ongoing_ff <= (others => '0');
-	-- 	elsif rising_edge(clock_clk) then
-	-- 		transfer_ongoing_ff <= transfer_ongoing_ff(0) & transfer_ongoing;
-	-- 	end if;
-	-- end process p_end_of_transfer;
-
-	-- if reset_reset = '1' then
-	-- elsif rising_edge(clock_clk) then
-	-- end if;
 
 
 

@@ -103,13 +103,16 @@ architecture rtl of led_interface is
 	signal spi_state : t_spi_state;
 	signal next_spi_state : t_spi_state;
 	signal spi_in_progress: std_logic;
+	signal spi_fake_cs: std_logic;
 
-	type state_test is (none, t1, t_data_in);
+	signal ram_to_buff_in_progress :std_logic;
+
+	type state_test is (none, t1, t_data_in, t_fp, t_fifo_check);
 	signal test_state         : state_test;
 
 
 begin
-	test_state <= t_data_in;
+	test_state <= t_fp;
 	p_test: process(all)
 	begin
 		case test_state is
@@ -135,7 +138,29 @@ begin
                     others=>'0'
                 );
                 conduit_debug_led_led_dbg_out_2(26 downto 3) <= asi_in0_data;
-                
+
+			when t_fp =>
+				conduit_debug_led_led_dbg_out <= (others => '0');
+
+				conduit_debug_led_led_dbg_out_2 <= (
+                    0 => conduit_fire,
+                    1 => spi_in_progress,
+                    2 => conduit_LED_A_CLK,
+                    3 => spi_fake_cs,
+                    others=>'0'
+                );
+
+			when t_fifo_check=>
+				conduit_debug_led_led_dbg_out <= (others => '0');
+
+				conduit_debug_led_led_dbg_out_2 <= (
+                    0 => conduit_fire,
+                    1 => ram_to_buff_in_progress,
+                    3 => spi_fake_cs,
+                    others=>'0'
+                );
+
+
 			when others =>
 				conduit_debug_led_led_dbg_out <= (others=>'0');
 				conduit_debug_led_led_dbg_out_2 <= (others=>'0');
@@ -150,6 +175,7 @@ begin
     use_bgr <= '1';
     
 	conduit_col_info_out_fire <= fire_out;
+	spi_fake_cs <= not spi_in_progress;
 
 	p_fire_delay : process(all)
 	begin
@@ -168,6 +194,21 @@ begin
 		end if;
 	end process p_fire_delay;
 
+	-- debug purpose
+	p_ram_to_buff_in_progress: process(all)
+	begin
+
+	if reset_reset='1' then
+		ram_to_buff_in_progress <= '0';
+	elsif rising_edge(clock_clk) then
+
+		if asi_in0_startofpacket = '1' then
+			ram_to_buff_in_progress <= '1';
+		elsif asi_in1_endofpacket = '1' then
+			ram_to_buff_in_progress<= '0';
+		end if;
+	end if;
+	end process;
 
 
 	--receiving streams to buffer

@@ -33,11 +33,11 @@ entity ram_master is
 		avm_m0_byteenable        : out std_logic_vector(1 downto 0);                     --                     .byteenable
 		avm_m0_chipselect        : out std_logic;                                        --                     .chipselect
 
-		asi_in0_data             : in  std_logic_vector(23 downto 0) := (others => '0'); --              asi_in0.data
+		asi_in0_data             : in  std_logic_vector(25 downto 0) := (others => '0'); --              asi_in0.data
 		asi_in0_ready            : out std_logic;                                        --                     .ready
 		asi_in0_valid            : in  std_logic                     := '0';             --                     .valid
-		asi_in0_endofpacket      : in  std_logic                     := '0';             --                     .endofpacket
-		asi_in0_startofpacket    : in  std_logic                     := '0';             --                     .startofpacket
+	--	asi_in0_endofpacket      : in  std_logic                     := '0';             --                     .endofpacket
+		--asi_in0_startofpacket    : in  std_logic                     := '0';             --                     .startofpacket
 
 		conduit_col_info_col_nr  : in  std_logic_vector(8 downto 0)  := (others => '0'); --     conduit_col_info.col_nr
 		conduit_col_info_fire    : in  std_logic                     := '0';             --                     .fire
@@ -75,7 +75,7 @@ architecture rtl of ram_master is
 	signal main_state         : state_main_t;
 	signal next_main_state    : state_main_t;
 
-	type state_AVM_write_t is (idle, wait_valid, write_1, write_2, write_3, end_write);
+	type state_AVM_write_t is (idle, wait_valid, write_1, write_2, end_write);
 	signal write_state        : state_AVM_write_t := idle;
 	signal next_write_state   : state_AVM_write_t := idle;
 
@@ -96,7 +96,6 @@ architecture rtl of ram_master is
 	constant C_BASE_ADDR_1      : unsigned(23 downto 0):= (others => '0');
 
 	-- 60'000 pixel need addr range of 120'000          (= 0x01E000)
-	--constant C_BASE_ADDR_2: unsigned(23 downto 0):=   X"020000"; --TODO: this in real design
 	constant C_BASE_ADDR_2: unsigned(23 downto 0):=   G_BASE_ADDR_2_OFFSET;
 	-- constant C_BASE_ADDR_2      : unsigned(23 downto 0):=  X"001000"; -- only for testing
 	signal active_base_addr   : std_logic;
@@ -165,13 +164,16 @@ architecture rtl of ram_master is
 
 	signal write_1_ff :std_logic_vector(1 downto 0);
 	signal write_2_ff :std_logic_vector(1 downto 0);
-	signal write_3_ff :std_logic_vector(1 downto 0);
 
 	signal aso_pix_send_count            : unsigned(7 downto 0):= (others=>'0');
 
+	signal asi_in0_startofpacket: std_logic;
+	signal asi_in0_endofpacket: std_logic;
+	signal intern_asi_in0_data: std_logic_vector(23 downto 0);
+
 
 begin
-	test_state <= t_read_0;
+	test_state <= t_fifo_check;
 	p_test: process(all)
 	begin
 		case test_state is
@@ -224,7 +226,7 @@ begin
 					27 => asi_in0_ready,
 					others => '0'
 				);
- 				conduit_debug_ram_out(23 downto 0) <= asi_in0_data;
+ 				conduit_debug_ram_out(23 downto 0) <= intern_asi_in0_data;
 
 			when t_col_nr =>
 				conduit_debug_ram_out(31 downto 9) <= (others => '0');
@@ -299,6 +301,10 @@ begin
 
 	avm_m0_byteenable <= "11" ;
 	read_in_progress <= '1' when read_state/=idle or aso_state/=idle else '0';
+
+	asi_in0_startofpacket <= asi_in0_data(24);
+	asi_in0_endofpacket <= asi_in0_data(25);
+	intern_asi_in0_data <= asi_in0_data(23 downto 0);
 
 
  --Startup Delay for the RAM Controller
@@ -433,8 +439,12 @@ begin
 			addr_b_preload <= addr_b_preload + addr_adder + C_IMAGE_COLS + C_IMAGE_COLS;
 
 			stage := 0;
+
 		else
-			addr_ready <= '0';
+			-- reset when signal has been read by statemachine
+			if addr_ready='1' and read_state /= idle then
+				addr_ready <= '0';
+			end if;
 		end if;
 
 	end if;
@@ -509,8 +519,11 @@ begin
 	if main_state = main_read then
 		case read_state is
 		when idle =>
-			-- we are ready. addresses already calculated
+		if addr_ready = '1' then
 			next_read_state <= set_addr;
+		else
+			next_read_state <= idle;
+		end if;
 
 		when set_addr =>
 			if clock_counter_set_addr=1 then
@@ -543,52 +556,19 @@ begin
 	end if;
 
 	case read_state is
-		-- when idle | end_read=>
-		-- 	if aso_state /= read_to_stream then
-		-- 		read_n <= '1';
-		-- 	else
-		-- 		read_n <= '0';
-		-- 	end if;
-		-- when set_addr =>
-		-- 	read_n <= '0';
-		-- when wait_waitrequest  =>
-		-- 	read_n <= '0';
-		-- when wait_end =>
-		-- 	-- read_n <= '1';
-		-- 	read_n <= '0';
-		-- -- when end_read =>
-		-- -- 	-- read_n <= '1';
-		-- -- 	if aso_state /= read_to_stream then
-		-- -- 		read_n <= '1';
-		-- -- 	else
-		-- -- 		read_n <= '0';
-		-- -- 	end if;
-
-
 		when idle =>
-			-- if aso_state /= read_to_stream then
 				read_n <= '1';
-			-- else
-				-- read_n <= '0';
-			-- end if;
 		when set_addr =>
 			read_n <= '0';
 		when wait_waitrequest  =>
 			read_n <= '0';
 		when wait_end =>
-			-- read_n <= '1';
 			read_n <= '0';
 		when end_read =>
 			read_n <= '1';
-		-- 	if aso_state /= read_to_stream then
-		-- 		read_n <= '1';
-		-- 	else
-		-- 		read_n <= '0';
-		-- 	end if;
 	end case;
 end process;
 
--- read_n <= '0';
 
 -- ****************************************************************************************
 --                            Read Data from Ram
@@ -760,14 +740,13 @@ BEGIN
 		incoming_transfer_ongoing <= '0';
 		write_1_ff <= (others=>'0');
 		write_2_ff <= (others=>'0');
-		write_3_ff <= (others=>'0');
 
 	ELSIF rising_edge(clock_clk)THEN
 		write_state <= next_write_state;
 
 		-- buffering data in. we dont know if we can write it already.
 		if asi_in0_valid = '1' then
-			data_in_buffer <= asi_in0_data;
+			data_in_buffer <= intern_asi_in0_data;
 			incoming_pix_count <= incoming_pix_count + 1;
 		end if;
 
@@ -797,12 +776,6 @@ BEGIN
 			write_2_ff <= write_2_ff(0) & '1';
 		else
 			write_2_ff <= (others=>'0');
-		end if;
-
-		if write_state=write_3 then
-			write_3_ff <= write_3_ff(0) & '1';
-		else
-			write_3_ff <= (others=>'0');
 		end if;
 
 		-- switch to other buffer: set base address and increments of addr
@@ -859,23 +832,8 @@ begin
 
 					next_write_state <= end_write;
 
-					-- if last_address_write(1 downto 0)="00" then
-					-- 	next_write_state <= write_3;
-					-- else
-					-- 	next_write_state <= end_write;
-					-- end if;
 				else
 					next_write_state <= write_2;
-				end if;
-
-			when write_3 =>
-				-- had problems with addresses 0, 4, 8, ...
-				-- if one occurs, write it again
-				-- altough it was most likely a clock-timing issue, leave it in
-				if avm_m0_waitrequest='0' and write_3_ff(0)='1' then
-					next_write_state <= end_write;
-				else
-					next_write_state <= write_3;
 				end if;
 
 			when end_write =>
@@ -905,15 +863,6 @@ begin
 				write_address <=  current_address_write;
 				avm_m0_write_n <= '0';
 				avm_m0_writedata(15 downto 0) <= data_in_buffer(7 downto 0) & X"00";
-
-			when write_3 =>
-				if write_3_ff(0)= '0' then
-					avm_m0_write_n <= '1';
-				else
-					avm_m0_write_n <= '0';
-				end if;
-				write_address <=  last_address_write;
-				avm_m0_writedata <= data_in_buffer(23 downto 8);
 
 			when end_write =>
 				write_address <= (others => '0');

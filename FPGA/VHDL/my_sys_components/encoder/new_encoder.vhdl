@@ -78,7 +78,7 @@ architecture rtl of new_encoder is
 
 
 begin
-	test_state <= none;
+	test_state <= t1;
 	p_test: process(all)
 	begin
 		case test_state is
@@ -89,8 +89,12 @@ begin
 				conduit_debug_enc_enc_dbg_out_2(31 downto 0) <= (others => '0');
 
 			when t1 =>
-				conduit_debug_enc_enc_dbg_out(31 downto 0) <= (others => '0');
-				conduit_debug_enc_enc_dbg_out_2(31 downto 0) <= (others => '0');
+				conduit_debug_enc_enc_dbg_out <= (others => '0');
+				conduit_debug_enc_enc_dbg_out_2 <= (
+					0 => conduit_intern_col_fire,
+					1 => sync_a,
+					others => '0');
+
 
 			when others =>
 				conduit_debug_enc_enc_dbg_out(31 downto 0) <= (others => '0');
