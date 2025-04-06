@@ -48,7 +48,7 @@ void MX_I2C1_Init(void)
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
   hi2c1.Init.Timing = 0x00201D2B;
-  hi2c1.Init.OwnAddress1 = 0x12; // **** Changed by Thomas ****
+  hi2c1.Init.OwnAddress1 = 0x24; //
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
   hi2c1.Init.OwnAddress2 = 0;
@@ -182,14 +182,6 @@ extern void HAL_I2C_AddrCallback( I2C_HandleTypeDef* hi2c, uint8_t TransferDirec
             conv_val.tx_val = *( data_storage->data[ addr ].val_ptr );
             HAL_I2C_Slave_Sequential_Transmit_IT( hi2c, ( uint8_t* ) conv_val.bytes, 4, I2C_LAST_FRAME );
         }
-/* USER CODE BEGIN - Added by Thomas */
-        else if (addr == 0xFF)  // Specific request for "I2C between Raspi and Nucleo is working"
-                {
-                    char message[] = "I2C between Raspi and Nucleo is working";
-                    HAL_I2C_Slave_Sequential_Transmit_IT(hi2c, (uint8_t *)message, sizeof(message), I2C_LAST_FRAME);
-                }
-/* USER CODE END - Added by Thomas */
-
     }
     else
     {
