@@ -148,7 +148,7 @@ int main(void)
             adc_update( &adc_triplet );
             ind_update( &induction, uwTick);
             mot_ctrl_update( &motor_control, uwTick );
-            i2c_update();
+
         }
     /* USER CODE END WHILE */
 
