@@ -26,7 +26,7 @@ static uint8_t RxData[ 5 ];
 union conv
 {
     uint32_t tx_val;
-    uint8_t bytes[ 4 ];
+    uint8_t bytes[ 2 ];
 };
 volatile union conv conv_val;
 volatile uint8_t next_frame_flag;
