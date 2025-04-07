@@ -180,7 +180,7 @@ extern void HAL_I2C_AddrCallback( I2C_HandleTypeDef* hi2c, uint8_t TransferDirec
         if ( addr < data_storage->num_entries )
         {
             conv_val.tx_val = *( data_storage->data[ addr ].val_ptr );
-            HAL_I2C_Slave_Sequential_Transmit_IT( hi2c, ( uint8_t* ) conv_val.bytes, 4, I2C_LAST_FRAME );
+            HAL_I2C_Slave_Sequential_Transmit_IT( hi2c, ( uint8_t* ) conv_val.bytes, 2, I2C_LAST_FRAME );
         }
     }
     else
@@ -214,9 +214,6 @@ extern void HAL_I2C_SlaveRxCpltCallback( I2C_HandleTypeDef* hi2c )
                         data_storage->has_update            = 1;
                     }
                 }
-    }
-    else
-    {
 
     }
     next_frame_flag = 0;
