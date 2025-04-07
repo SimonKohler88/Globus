@@ -199,21 +199,25 @@ extern void HAL_I2C_SlaveRxCpltCallback( I2C_HandleTypeDef* hi2c )
     if ( next_frame_flag )
     {
         /* Write Req: receive more data */
-        HAL_I2C_Slave_Sequential_Receive_IT( hi2c, &RxData[ 1 ], 4, I2C_FIRST_AND_LAST_FRAME );
+        HAL_I2C_Slave_Sequential_Receive_IT( hi2c, &RxData[ 1 ], 2, I2C_FIRST_AND_LAST_FRAME );
+
+        uint8_t addr = RxData[ 0 ];
+
+                if ( addr < data_storage->num_entries )
+                {
+                    if ( data_storage->data[ addr ].type == I2C_ENTRY_TYPE_WRITE || data_storage->data[ addr ].type == I2C_ENTRY_TYPE_READ_WRITE )
+                    {
+                    	uint32_t val                        = RxData[ 2 ] << 8 | RxData[ 1 ];
+
+                    	//uint32_t val                        = RxData[ 1 ] << 24 | RxData[ 2 ] << 16 | RxData[ 3 ] << 8 | RxData[ 4 ];
+                        *data_storage->data[ addr ].val_ptr = val;
+                        data_storage->has_update            = 1;
+                    }
+                }
     }
     else
     {
-        uint8_t addr = RxData[ 0 ];
 
-        if ( addr < data_storage->num_entries )
-        {
-            if ( data_storage->data[ addr ].type == I2C_ENTRY_TYPE_WRITE || data_storage->data[ addr ].type == I2C_ENTRY_TYPE_READ_WRITE )
-            {
-                uint32_t val                        = RxData[ 1 ] << 24 | RxData[ 2 ] << 16 | RxData[ 3 ] << 8 | RxData[ 4 ];
-                *data_storage->data[ addr ].val_ptr = val;
-                data_storage->has_update            = 1;
-            }
-        }
     }
     next_frame_flag = 0;
 }
