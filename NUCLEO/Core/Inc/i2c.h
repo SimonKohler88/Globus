@@ -59,7 +59,7 @@ void MX_I2C1_Init(void);
 
     typedef struct
     {
-        uint32_t *val_ptr;
+        uint16_t *val_ptr;
         ENTRY_TYPE_e type;
     } I2C_DATA_ENTRY_t;
 

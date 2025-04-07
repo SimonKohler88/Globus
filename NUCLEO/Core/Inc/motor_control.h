@@ -23,9 +23,9 @@ extern "C"
 
     typedef struct
     {
-        uint32_t current_speed_duty_cycle;  // pwm
-        uint32_t target_speed_duty_cycle;
-        uint32_t slope_duty_cycle_per_s;
+        uint16_t current_speed_duty_cycle;  // pwm
+        uint16_t target_speed_duty_cycle;
+        uint16_t slope_duty_cycle_per_s;
 
     } MOT_CTRL_I2C_IF_t;
 

@@ -66,7 +66,7 @@ static INDUCTION_t induction = {
 
 static TRIPLE_ADC_t adc_triplet = {};
 
-static uint32_t test_register_value = 43;  // Neue Variable für das Register 4
+static uint16_t test_register_value = 43;  // Neue Variable für das Register 4
 
 static I2C_DATA_MEM_t i2c_data_memory = {
     .data[ I2C_ADDR_LED_BLINK ]                  = {&gpio_blink_pin.interval_ticks,                 I2C_ENTRY_TYPE_READ_WRITE},
