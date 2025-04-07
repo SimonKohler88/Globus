@@ -1,0 +1,93 @@
+[*]
+[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
+[*] Fri Mar 21 15:36:56 2025
+[*]
+[dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\ram_master_temp\func.vcd"
+[dumpfile_mtime] "Fri Mar 21 15:32:52 2025"
+[dumpfile_size] 8174790
+[savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\ram_master_temp\wave_save_vcd.gtkw"
+[timestart] 87983
+[size] 1920 1017
+[pos] -1 -1
+*-6.000000 85571 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] ram_master_tb.
+[treeopen] ram_master_tb.verify_ram_master.
+[sst_width] 247
+[signals_width] 319
+[sst_expanded] 1
+[sst_vpaned_height] 171
+@28
+ram_master_tb.s_reset_reset
+ram_master_tb.s_clock_clk
+@200
+-
+-RAM
+@22
+ram_master_tb.s_avm_m0_address[23:0]
+@28
+ram_master_tb.s_avm_m0_read
+@22
+ram_master_tb.s_avm_m0_readdata[15:0]
+@28
+ram_master_tb.s_avm_m0_readdatavalid
+ram_master_tb.s_avm_m0_waitrequest
+ram_master_tb.s_avm_m0_write
+@22
+ram_master_tb.s_avm_m0_writedata[15:0]
+@28
+ram_master_tb.s_avm_m0_chipselect
+ram_master_tb.s_avm_m0_byteenable[1:0]
+@200
+-
+-QSPI
+@28
+ram_master_tb.s_asi_in0_startofpacket
+ram_master_tb.s_asi_in0_endofpacket
+ram_master_tb.s_asi_in0_valid
+@22
+ram_master_tb.s_asi_in0_data[23:0]
+@28
+ram_master_tb.s_asi_in0_ready
+@24
+ram_master_tb.dut_ram_master.incoming_pix_count[15:0]
+@28
+ram_master_tb.dut_ram_master.read_in_progress
+@200
+-
+-Fire
+@28
+ram_master_tb.s_conduit_col_info_fire
+@22
+ram_master_tb.s_conduit_col_info_col_nr[8:0]
+@200
+-
+-Stream AB
+@28
+ram_master_tb.s_aso_out0_a_ready
+@22
+ram_master_tb.s_aso_out0_a_data[23:0]
+@28
+ram_master_tb.s_aso_out0_a_valid
+ram_master_tb.s_aso_out0_endofpacket_1
+ram_master_tb.s_aso_out0_startofpacket_1
+@200
+-
+-Stream CD
+@28
+ram_master_tb.s_aso_out1_b_ready
+@22
+ram_master_tb.s_aso_out1_b_data[23:0]
+@28
+ram_master_tb.s_aso_out1_b_valid
+ram_master_tb.verify_ram_master.asi_in1_startofpacket
+ram_master_tb.s_aso_out1_b_endofpacket
+ram_master_tb.s_aso_out1_b_startofpacket
+@200
+-
+-DUT
+@28
+ram_master_tb.dut_ram_master.active_base_addr
+@22
+ram_master_tb.dut_ram_master.current_address_write[23:0]
+[pattern_trace] 1
+[pattern_trace] 0

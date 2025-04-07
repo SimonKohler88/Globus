@@ -2,7 +2,7 @@
 # for more information about component CMakeLists.txt files.
 
 idf_component_register(
-    SRCS main.c  misc_task.c PSRAM_FIFO.c wifi.c  rpi_interface.c  qspi.c rotor_encoding.c status_control_task.c fpga_ctrl_task.c status_control_task_helper.c# list the source files of this component
+    SRCS main.c  misc_task.c PSRAM_FIFO.c wifi.c  rpi_interface.c  qspi.c rotor_encoding.c status_control_task.c fpga_ctrl_task.c status_control_task_helper.c psram_fifo_static_pic.c# list the source files of this component
     INCLUDE_DIRS        # optional, add here public include directories
     PRIV_INCLUDE_DIRS   # optional, add here private include directories
     REQUIRES            # optional, list the public requirements (component names)

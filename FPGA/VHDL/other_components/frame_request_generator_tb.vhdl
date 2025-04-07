@@ -4,6 +4,9 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
+library std;
+use std.textio.all;
+
 entity frame_request_generator_tb is
 end entity frame_request_generator_tb;
 
@@ -11,14 +14,17 @@ architecture rtl of frame_request_generator_tb is
     component frame_request_generator is
         generic (
             counter_bits  : integer := 22;
-            on_clocks : integer := 2000
+            on_clocks : integer := 2000;
+            dbg_enc_after_req0_clocks : integer := 1024-- default 1024 clock-cycles
         );
         port (
             		clock_clk                   : in  std_logic                     := '0';             --                clock.clk
 		reset_reset                 : in  std_logic                     := '0';
 		enable_pin_input            : in  std_logic                     := '0';
 		pin_input                   : in  std_logic                     := '0';
-        pulse_out                   : out std_logic
+        pulse_out                   : out std_logic;
+        enable_dbg_enc              : in std_logic;
+		dbg_enc_out                 : out std_logic
         );
     end component;
 
@@ -27,6 +33,8 @@ architecture rtl of frame_request_generator_tb is
     signal s_pulse:std_logic;
     signal s_pin_enable:std_logic;
     signal s_pin:std_logic;
+    signal s_enable_dbg_enc:std_logic;
+    signal s_dbg_enc_out:std_logic;
 
     constant c_cycle_time_12M : time := 83 ns;
      signal enable :boolean:=true;
@@ -43,7 +51,10 @@ begin
         reset_reset => s_reset,
         pulse_out => s_pulse,
         pin_input => s_pin,
-        enable_pin_input => s_pin_enable
+        enable_pin_input => s_pin_enable,
+        enable_dbg_enc => s_enable_dbg_enc,
+        dbg_enc_out => s_dbg_enc_out
+
     );
 
     s_reset <= transport '0', '1' after 50 ns;

@@ -23,7 +23,7 @@ if %ERRORLEVEL%==1 (
 )
 
 echo ---------------------------------------------
-ghdl -r --std=08 --coverage --time-resolution=ns %MODULE%_full_res_tb --wave=func_full_res.ghw --stop-time=5ms --psl-report=PSL_REP.json --psl-report-uncovered
+ghdl -r --std=08 --coverage --time-resolution=ns %MODULE%_full_res_tb --wave=func_full_res.ghw --stop-time=1ms --psl-report=PSL_REP.json --psl-report-uncovered
 if %ERRORLEVEL%==1 (
 	PAUSE
 	goto end

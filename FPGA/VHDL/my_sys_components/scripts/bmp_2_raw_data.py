@@ -9,8 +9,8 @@ if __name__ == '__main__':
     img = np.asarray(im_temp)
     # print(repr(img))
 
-    print('*************INVERT PIC***************')
-    img = 255 - img
+    # print('*************INVERT PIC***************')
+    # img = 255 - img
 
     print('****************************')
     pix_per_row = img.transpose(2, 0, 1).reshape(3, -1)
