@@ -26,22 +26,12 @@ static command_control_task_t* status = NULL;
 
 #define STAT_CTRL_TAG "status_control_task"
 
-// void IRAM_ATTR frame_request_isr_cb( void *arg );
 
 StaticQueue_t xQueueBuffer_command_queue;
 uint8_t command_queue_storage[ STAT_CTRL_QUEUE_NUMBER_OF_COMMANDS * sizeof( status_control_command_t ) ];
 
-/* Its here because all IO's are initialized/handled here */
-// void IRAM_ATTR frame_request_isr_cb( void* arg )
-// {
-//
-// 	//gpio_set_level(STAT_CTRL_PIN_RESERVE_3    , 1);
-// 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-// 	xHigherPriorityTaskWoken = qspi_request_frame();
-// 	portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
-// }
-
 volatile uint8_t line_toggle = 0;
+
 
 static void IRAM_ATTR frame_request_isr_cb( void* arg )
 {
@@ -68,17 +58,11 @@ void status_control_init( status_control_status_t* status_ptr, command_control_t
     ESP_ERROR_CHECK( gpio_isr_handler_add( STAT_CTRL_PIN_FRAME_REQUEST, frame_request_isr_cb, ( void* ) STAT_CTRL_PIN_FRAME_REQUEST ) );
     /* FPGA Control Lanes */
 
-    /* Inbetriebsetzung */
-    //	ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_FRAME_REQUEST,
-    // GPIO_MODE_OUTPUT ) );
-    ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_ENABLE_OUTPUT, GPIO_MODE_INPUT ) );
+    /* GPIO Directions */
+    ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_RESERVE_1, GPIO_MODE_OUTPUT ) );
     ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_RESERVE_2, GPIO_MODE_INPUT ) );
     ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_RESERVE_3, GPIO_MODE_OUTPUT ) );
     ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_RESET_FPGA, GPIO_MODE_OUTPUT ) );
-    // ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_DEV_1        ,
-    // GPIO_MODE_OUTPUT ) );
-    // ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_DEV_2        ,
-    // GPIO_MODE_OUTPUT ) );
 
     ESP_ERROR_CHECK( gpio_set_direction( ENC_PIN_CONNECTED, GPIO_MODE_INPUT ) );
     ESP_ERROR_CHECK( gpio_set_direction( ENC_PIN_EXP_0, GPIO_MODE_INPUT ) );
@@ -97,7 +81,7 @@ void status_control_init( status_control_status_t* status_ptr, command_control_t
 void ibn_set_set_all_gpio_on( void )
 {
     //	gpio_set_level(STAT_CTRL_PIN_FRAME_REQUEST, 1);
-    gpio_set_level( STAT_CTRL_PIN_ENABLE_OUTPUT, 1 );
+    gpio_set_level( STAT_CTRL_PIN_RESERVE_1, 1 );
     gpio_set_level( STAT_CTRL_PIN_RESERVE_2, 1 );
     gpio_set_level( STAT_CTRL_PIN_RESERVE_3, 1 );
     gpio_set_level( STAT_CTRL_PIN_RESET_FPGA, 1 );
@@ -113,7 +97,7 @@ void ibn_set_set_all_gpio_on( void )
 void ibn_set_set_all_gpio_off( void )
 {
     //	gpio_set_level(STAT_CTRL_PIN_FRAME_REQUEST, 0);
-    gpio_set_level( STAT_CTRL_PIN_ENABLE_OUTPUT, 0 );
+    gpio_set_level( STAT_CTRL_PIN_RESERVE_1, 0 );
     gpio_set_level( STAT_CTRL_PIN_RESERVE_2, 0 );
     gpio_set_level( STAT_CTRL_PIN_RESERVE_3, 0 );
     gpio_set_level( STAT_CTRL_PIN_RESET_FPGA, 0 );
@@ -124,6 +108,11 @@ void ibn_set_set_all_gpio_off( void )
     gpio_set_level( ENC_PIN_EXP_1, 0 );
     gpio_set_level( ENC_PIN_EXP_2, 0 );
     gpio_set_level( ENC_PIN_EXP_3, 0 );
+}
+
+void set_gpio_reserve_1_async(uint8_t value)
+{
+    gpio_set_level( STAT_CTRL_PIN_RESERVE_1, !!value );
 }
 
 void status_control_task( void* pvParameter )
@@ -172,7 +161,7 @@ void status_control_task( void* pvParameter )
         // {
         //     ESP_LOGI( STAT_CTRL_TAG, "nfree: %d, nfpga: %d, pfree: %d, pfpga: %d", num_free, num_fpga, num_free_prog, num_fpga_prog);
         // }
-        // handle command handle
+        // handle commands
         uint8_t cmd_waiting = uxQueueMessagesWaiting( status->command_queue_handle );
         for ( uint8_t i = 0; i < cmd_waiting; i++ )
         {

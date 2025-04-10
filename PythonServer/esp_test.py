@@ -114,11 +114,12 @@ if __name__ == '__main__':
     s.settimeout(0.5)
     print('Start listening')
     while True:
-        if (time.time() - _time) >= 1:
+        if (time.time() - _time) >= 10:
             _time = time.time()
             s.sendto(f"CS".encode(), (ip, port))
+
         try:
-            received_data, addr = s.recvfrom(128)  # Timeout programmieren?
+            received_data, addr = s.recvfrom(256)  # Timeout programmieren?
         except TimeoutError:
             pass
 
@@ -173,3 +174,4 @@ if __name__ == '__main__':
 
         else:
             time.sleep(0.5)
+        received_data = None

@@ -19,7 +19,7 @@
 /* Status Control task */
 #define STAT_CTRL_QUEUE_NUMBER_OF_COMMANDS 5
 #define STAT_CTRL_PIN_FRAME_REQUEST        8
-#define STAT_CTRL_PIN_ENABLE_OUTPUT        6  // Was Reserve 1
+#define STAT_CTRL_PIN_RESERVE_1            6
 #define STAT_CTRL_PIN_RESERVE_2            5
 #define STAT_CTRL_PIN_RESERVE_3            4
 #define STAT_CTRL_PIN_RESET_FPGA           7

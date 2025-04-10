@@ -73,6 +73,11 @@ struct
  */
 void status_control_init( status_control_status_t* status_ptr, command_control_task_t* internal_status_ptr, fifo_status_t* fifo_status );
 
+
+
+void set_gpio_reserve_1_async(uint8_t value);
+
+
 /**
  * @brief Task function for controlling status operations. This task manages the
  *        LED states and processes command messages from a queue.

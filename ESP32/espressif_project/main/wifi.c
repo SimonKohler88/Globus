@@ -28,6 +28,9 @@
 #include "rpi_interface.h"
 #include "sdkconfig.h"
 
+// optimization purposes
+#include "status_control_task.h"
+
 #define WIFI_CONNECTED_BIT             BIT0
 #define WIFI_FAIL_BIT                  BIT1
 #define WIFI_ACK_MESSAGE               "OK"
@@ -221,7 +224,7 @@ void wifi_send_udp_task( void* pvParameters )  // todo
     wifi_stat.wifi_ctrl_state = WIFI_CTRL_IDLE;
     uint32_t proc_counter     = 0;
     uint32_t notify_value     = 0;
-    uint8_t num_free_frames   = 0;
+    // uint8_t num_free_frames   = 0;
 
     while ( 1 )
     {
@@ -232,7 +235,7 @@ void wifi_send_udp_task( void* pvParameters )  // todo
             {
                 if ( ( !wifi_stat.wifi_connected ) || ( wifi_stat.UDP_socket < 0 ) ) break;
 
-                num_free_frames = fifo_has_free_frame();
+                // num_free_frames = fifo_has_free_frame();
                 if ( xTaskNotifyWaitIndexed( 0, ULONG_MAX, ULONG_MAX, &notify_value, 0 ) )
                 {
                     /* Received first Block in between timeout and now... buffer is aquired and Transfer is in progress */
@@ -407,14 +410,11 @@ bool wifi_receive_packet()
     while ( 1 )
     {
 
-        //		int len = recv( wifi_stat.UDP_socket, rx_buffer, sizeof(
-        // rx_buffer ), 0 ); 		int len = recvfrom(wifi_stat.UDP_socket, rx_buffer,
-        // sizeof(rx_buffer), 0, (struct sockaddr *)&msg_source_addr, &socklen);
         int len         = recvmsg( wifi_stat.UDP_socket, &msg, 0 );
         uint8_t tftp_ok = 1;
         uint8_t is_ctrl = 0;
-        // Error occurred during receiving
 
+        // Error occurred during receiving
         if ( len < 0 )
         {
             if ( HW_SETTINGS_DEBUG )
@@ -442,7 +442,6 @@ bool wifi_receive_packet()
                     // ESP_LOGI( "WIFI", "Frame start" );
                     wifi_stat.tftp_block_number = 0;
 
-                    // vTaskDelay( 50 );
                     wifi_send_tftp_ack( 0, source_addr.sin_port );
                     wifi_stat.current_frame_download->size        = 0;
                     wifi_stat.current_frame_download->current_ptr = wifi_stat.current_frame_download->frame_start_ptr;
@@ -456,6 +455,7 @@ bool wifi_receive_packet()
             }
             else /* TFTP data transfer */
             {
+
                 // ESP_LOGI( "WIFI", "data opcode  %x %x %x %x",  rx_buffer[ 0 ], rx_buffer[ 1 ], rx_buffer[ 2 ], rx_buffer[ 3 ] );
                 if ( wifi_stat.current_frame_download == NULL )
                 {
@@ -482,6 +482,7 @@ bool wifi_receive_packet()
                         else
                         {
                             wifi_send_tftp_ack( wifi_stat.tftp_block_number, source_addr.sin_port );
+
                             // ESP_LOGI( "WIFI", "data  %d %d %d", op_code, block_nr, data_len );
                             memcpy( ( void* ) wifi_stat.current_frame_download->current_ptr, ( void* ) &rx_buffer + 4, data_len );
 
@@ -499,6 +500,7 @@ bool wifi_receive_packet()
                                 wifi_stat.current_frame_download              = NULL;
                                 xTaskNotifyIndexed( wifi_send_task_handle, 0, WIFI_DATA_TRANSFER_COMPLETED, eSetBits );
                             }
+
                         }
                     }
                     else
@@ -515,7 +517,10 @@ bool wifi_receive_packet()
                     wifi_stat.current_frame_download = NULL;
                     xTaskNotifyIndexed( wifi_send_task_handle, 0, WIFI_DATA_TRANSFER_ERROR, eSetBits );
                 }
+
+
             }
+
         }
     }
 
@@ -524,6 +529,7 @@ bool wifi_receive_packet()
 
 static bool wifi_send_tftp_ack( uint16_t block_nr, uint16_t port )
 {
+    set_gpio_reserve_1_async(1);
     struct sockaddr_in source_addr;
     source_addr.sin_family      = AF_INET;
     source_addr.sin_addr.s_addr = inet_addr( CONFIG_WIFI_IPV4_ADDR );
@@ -538,6 +544,8 @@ static bool wifi_send_tftp_ack( uint16_t block_nr, uint16_t port )
     tx_ack[ 3 ]  = ( uint8_t ) block_nr;
 
     int err = sendto( wifi_stat.UDP_socket, ( uint8_t* ) tx_ack, sizeof( tx_ack ), 0, ( struct sockaddr* ) &source_addr, sizeof( source_addr ) );
+
+    set_gpio_reserve_1_async(0);
     if ( err < 0 )
     {
         if ( HW_SETTINGS_DEBUG )

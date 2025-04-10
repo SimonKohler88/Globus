@@ -221,7 +221,7 @@ fifo_frame_t* fifo_get_static_frame( void ) { return &static_pic_frame; }
 
 void copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 {
-    /* Copy from code directly to PSRAM, So it does not use Stack */
+    /* Copy from code to PSRAM */
     ext_copy_static_pic_to_PSRAM( start_ptr );
 
     //ESP_LOGI( TAG, "Copied Data to ADDR %" PRIx32, ( uint32_t ) start_ptr );
