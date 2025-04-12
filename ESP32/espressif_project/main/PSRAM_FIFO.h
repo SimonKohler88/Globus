@@ -74,7 +74,7 @@ fifo_frame_t* fifo_get_frame_4_fpga( void );
  * - The current frame is reset and returned to the free frames queue.
  * - Internal statistics are updated.
  */
-void fifo_mark_frame_4_fpga_done( void );
+uint8_t fifo_mark_frame_4_fpga_done( void );
 
 /**
  * Checks if a frame transfer to the FPGA is currently in progress.
@@ -131,7 +131,7 @@ fifo_frame_t* fifo_get_current_free_frame( void );
  * called after receiving the last packet of a frame. It is typically used in the context of
  * processing frames received over a network.
  */
-void fifo_mark_free_frame_done( void );
+uint8_t fifo_mark_free_frame_done( void );
 
 /**
  * Checks if a frame transfer from Rpi to ESP is currently in progress.

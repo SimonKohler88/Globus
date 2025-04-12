@@ -224,7 +224,7 @@ void wifi_send_udp_task( void* pvParameters )  // todo
     wifi_stat.wifi_ctrl_state = WIFI_CTRL_IDLE;
     uint32_t proc_counter     = 0;
     uint32_t notify_value     = 0;
-    // uint8_t num_free_frames   = 0;
+    uint8_t num_free_frames   = 0;
 
     while ( 1 )
     {
@@ -235,7 +235,7 @@ void wifi_send_udp_task( void* pvParameters )  // todo
             {
                 if ( ( !wifi_stat.wifi_connected ) || ( wifi_stat.UDP_socket < 0 ) ) break;
 
-                // num_free_frames = fifo_has_free_frame();
+                num_free_frames = fifo_has_free_frame();
                 if ( xTaskNotifyWaitIndexed( 0, ULONG_MAX, ULONG_MAX, &notify_value, 0 ) )
                 {
                     /* Received first Block in between timeout and now... buffer is aquired and Transfer is in progress */
@@ -248,7 +248,7 @@ void wifi_send_udp_task( void* pvParameters )  // todo
                 else if ( fifo_has_free_frame() )
                 {
                     /* No Messages from UDP RX, free frames available -> send request */
-                    // ESP_LOGI( "WIFI", "nr fframes  %"  PRIu8, num_free_frames );
+                    ESP_LOGI( "WIFI", "nr fframes  %"  PRIu8, num_free_frames );
                     wifi_send_packet( WIFI_REQUEST_FRAME_MESSAGE );
                     wifi_stat.wifi_ctrl_state = WIFI_CTRL_WAIT_FIRST_PKT;
                     proc_counter              = 0;
@@ -261,6 +261,7 @@ void wifi_send_udp_task( void* pvParameters )  // todo
             {
                 if ( xTaskNotifyWaitIndexed( 0, ULONG_MAX, ULONG_MAX, &notify_value, 0 ) )
                 {
+                    ESP_LOGI( "WIFI", "udp send wait first");
                     /* RX Task received first Packet */
                     if ( notify_value == WIFI_FIRST_PACKET_RECEIVED )
                     {
@@ -276,7 +277,7 @@ void wifi_send_udp_task( void* pvParameters )  // todo
                 else proc_counter++;
 
                 /* Waited some time until 1. packet should have arrived... go back and resend request */
-                if ( proc_counter >= 10 ) wifi_stat.wifi_ctrl_state = WIFI_CTRL_IDLE;
+                if ( proc_counter >= 50 ) wifi_stat.wifi_ctrl_state = WIFI_CTRL_IDLE;
                 break;
             }
             case WIFI_CTRL_DATA_TRANSFER :

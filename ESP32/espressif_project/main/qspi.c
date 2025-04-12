@@ -283,7 +283,7 @@ void fpga_qspi_task( void* pvParameter )
             for ( uint8_t i = 0; i < ( uint8_t ) ( qspi_frame_info->total_size / QSPI_MAX_TRANSFER_SIZE + 1 ); i++ )
             {
                 // set_cs_gpio( 0 );
-                ESP_LOGI( "QSPI", "waiting for finishing transfer" );
+                //ESP_LOGI( "QSPI", "waiting for finishing transfer" );
                 //  wait for Post-DMA-ISR to notify us
                 xResult = xTaskNotifyWaitIndexed( TASK_NOTIFY_QSPI_FRAME_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifiedValue, 5 );
                 if ( xResult == pdTRUE )
@@ -297,7 +297,7 @@ void fpga_qspi_task( void* pvParameter )
 
                     spi_ret = copy_and_send_bulk();
                     uint32_t size = qspi_frame_info->total_size;
-                    ESP_LOGI( "QSPI", "next piece totalsize: %" PRIu32 "  size %" PRIu32, size, qspi_frame_info->size );
+                    //ESP_LOGI( "QSPI", "next piece totalsize:%"PRIu32" size %"PRIu32" ", size, qspi_frame_info->size );
                     if ( spi_ret != ESP_OK )
                     {
                         success = 0;

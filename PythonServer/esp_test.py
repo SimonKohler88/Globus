@@ -13,7 +13,8 @@ import struct
 from PIL import Image
 import numpy as np
 
-DATA_SIZE_PACKET = 1024
+# DATA_SIZE_PACKET = 1024
+DATA_SIZE_PACKET = 1400
 
 
 # S\x02\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00w\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00w\x03\x00\x00
@@ -54,9 +55,13 @@ class PicStream:
         self.current_byte_pos = 0
 
     def read(self, block_size):
+        # print(self.current_byte_pos, block_size)
         to_read = min(block_size, len(self.pic_raw[self.current_byte_pos:]))
         to_send = self.pic_raw[self.current_byte_pos: self.current_byte_pos + to_read]
-        self.current_byte_pos += to_read
+        if to_read != block_size:
+            self.current_byte_pos = 0
+        else:
+            self.current_byte_pos += to_read
         return to_send
 
     def close(self):
@@ -74,7 +79,7 @@ def packethook(*args):
     print(args)
 
 
-WHERE = 1
+WHERE = 2
 if __name__ == '__main__':
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     if WHERE == 1:
@@ -82,7 +87,8 @@ if __name__ == '__main__':
         ip = '192.168.0.72'
     elif WHERE == 2:
         my_ip = '192.168.137.1'
-        ip = '192.168.137.89'
+        ip = None
+        ip = '192.168.137.244'
 
     my_port = 1234
 
@@ -112,11 +118,12 @@ if __name__ == '__main__':
         except TimeoutError:
             break
     s.settimeout(0.5)
-    print('Start listening')
+    print('Start listening', my_ip, my_port)
     while True:
         if (time.time() - _time) >= 10:
             _time = time.time()
-            s.sendto(f"CS".encode(), (ip, port))
+            if ip is not None:
+                s.sendto(f"CS".encode(), (ip, port))
 
         try:
             received_data, addr = s.recvfrom(256)  # Timeout programmieren?
@@ -135,7 +142,7 @@ if __name__ == '__main__':
 
         elif received_data:
             ip, port = addr
-            client = tftpy.TftpClient(ip, my_port, options={'blksize': 1024})  # , localip=my_ip)
+            client = tftpy.TftpClient(ip, my_port, options={'blksize': DATA_SIZE_PACKET})  # , localip=my_ip)
             print('Receiving CMD')
             ans = received_data.decode()
             # print(ans)

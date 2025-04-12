@@ -103,7 +103,7 @@ void app_main( void )
                                                                 "stat_ctrl_task",                /* Text name for the task. */
                                                                 FREERTOS_STACK_SIZE_STATUS_CTRL, /* Number of indexes in the xStack array. */
                                                                 ( void * ) 1,                    /* Parameter passed into the task. */
-                                                                tskIDLE_PRIORITY + 6,            /* Priority at which the task is created. */
+                                                                tskIDLE_PRIORITY + 5,            /* Priority at which the task is created. */
                                                                 xStatusControlStack,             /* Array to use as the task's stack. */
                                                                 &xStatusControlTaskBuffer,       /* Variable to hold the task's data structure. */
                                                                 0 );                             /* Core which executes the task*/
@@ -121,7 +121,7 @@ void app_main( void )
                                                            "udp_tx_task",            /* Text name for the task. */
                                                            FREERTOS_STACK_SIZE_WIFI, /* Number of indexes in the xStack array. */
                                                            ( void * ) 1,             /* Parameter passed into the task. */
-                                                           tskIDLE_PRIORITY + 4,     /* Priority at which the task is created. */
+                                                           tskIDLE_PRIORITY + 7,     /* Priority at which the task is created. */
                                                            xWifiSendStack,           /* Array to use as the task's stack. */
                                                            &xWifiSendTaskBuffer,     /* Variable to hold the task's data structure. */
                                                            1 );                      /* Core which executes the task*/

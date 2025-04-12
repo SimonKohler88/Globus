@@ -37,9 +37,9 @@ static fifo_control_t fifo_control;
 
 /* static memory allocation for Queues */
 StaticQueue_t xQueueBuffer_free_frames;
-uint8_t free_frames[ FIFO_NUMBER_OF_FRAMES * sizeof( fifo_frame_t ) ];
+uint8_t free_frames[ FIFO_NUMBER_OF_FRAMES * sizeof( fifo_frame_t ) + 1 ];
 StaticQueue_t xQueueBuffer_frames_4_fpga;
-uint8_t frames_4_fpga[ FIFO_NUMBER_OF_FRAMES * sizeof( fifo_frame_t ) ];
+uint8_t frames_4_fpga[ FIFO_NUMBER_OF_FRAMES * sizeof( fifo_frame_t ) + 1 ];
 
 static const char* TAG = "fifo_ctrl";
 
@@ -80,6 +80,7 @@ void fifo_init( fifo_status_t* status )
             fifo_frame_t frame;
             frame.frame_start_ptr = frame_ptr;
             frame.current_ptr     = frame_ptr;
+            frame.total_size      = frame_size_bytes;
             xQueueSend( fifo_control.free_frames, &frame, 0 );
             fifo_control.status->free_frames++;
             ESP_LOGI( TAG, "Allocated Frame Buffer %" PRIu8 " , size %" PRIu32 " Bytes", i, frame_size_bytes );
@@ -123,7 +124,7 @@ fifo_frame_t* fifo_get_frame_4_fpga( void )
 
     if ( ret )
     {
-        uint8_t has_frame = xQueueReceive( fifo_control.ready_4_fpga_frames, &fifo_control.current_frame_4_fpga, 0 );
+        const uint8_t has_frame = xQueueReceive( fifo_control.ready_4_fpga_frames, &fifo_control.current_frame_4_fpga, 0 );
         if ( has_frame == pdFALSE ) ret = 0;
         else fifo_control.frame_2_fpga_in_progress = 1;
     }
@@ -132,24 +133,29 @@ fifo_frame_t* fifo_get_frame_4_fpga( void )
     return &fifo_control.current_frame_4_fpga;
 }
 
-void fifo_mark_frame_4_fpga_done( void )
+uint8_t fifo_mark_frame_4_fpga_done( void )
 {
     ESP_LOGI( "FIFO", "frame_for_fpga done" );
     /* from QSPI task */
+    uint8_t success = 0;
     if ( fifo_control.frame_2_fpga_in_progress )
     {
-        fifo_control.current_frame_4_fpga.current_ptr = fifo_control.current_frame_4_fpga.frame_start_ptr;
-        fifo_control.current_frame_4_fpga.size        = 0;
-        uint8_t ret                                   = xQueueSend( fifo_control.free_frames, &fifo_control.current_frame_4_fpga, 0 );
-        if ( ret == pdTRUE ) fifo_control.frame_2_fpga_in_progress = 0;
+        const uint8_t ret = xQueueSend( fifo_control.free_frames, &fifo_control.current_frame_4_fpga, 0 );
+        if ( ret == pdTRUE )
+        {
+            fifo_control.frame_2_fpga_in_progress = 0;
+            success                               = 1;
+            ESP_LOGI( "FIFO", "frame_for_fpga success" );
+        }
         else ESP_LOGE( "FIFO", "mark fpga frame done error" );
     }
+    return success;
 }
 
 uint8_t fifo_has_free_frame( void )
 {
     // ESP_LOGI( "FIFO", "has free" );
-    if (fifo_control.frame_rpi_2_fifo_in_progress) return 0;
+    if ( fifo_control.frame_rpi_2_fifo_in_progress ) return 0;
 
     uint8_t num = 0;
     num         = uxQueueMessagesWaiting( fifo_control.free_frames );
@@ -159,9 +165,7 @@ uint8_t fifo_has_free_frame( void )
 uint8_t fifo_is_free_frame_in_progress( void )
 {
     // ESP_LOGI( "FIFO", "free in prog" );
-    uint8_t in_prog = 0;
-    in_prog         = fifo_control.frame_rpi_2_fifo_in_progress;
-    return in_prog;
+    return fifo_control.frame_rpi_2_fifo_in_progress;
 }
 
 fifo_frame_t* fifo_get_current_free_frame( void )
@@ -191,22 +195,28 @@ void fifo_return_free_frame( void )
     ESP_LOGI( "FIFO", "fifo free frame return " );
     if ( fifo_control.frame_rpi_2_fifo_in_progress )
     {
-        uint8_t ret = xQueueSend( fifo_control.free_frames, &fifo_control.current_frame_from_rpi, 0 );
+        const uint8_t ret = xQueueSend( fifo_control.free_frames, &fifo_control.current_frame_from_rpi, 0 );
 
         if ( ret != pdTRUE ) ESP_LOGE( "FIFO", "return frame error" );
         fifo_control.frame_rpi_2_fifo_in_progress = 0;
     }
 }
 
-void fifo_mark_free_frame_done( void )
+uint8_t fifo_mark_free_frame_done( void )
 {
-    ESP_LOGI( "FIFO", "fifo_mark_free_frame_done" );
+    uint8_t success = 0;
     if ( fifo_control.frame_rpi_2_fifo_in_progress )
     {
-        uint8_t ret = xQueueSend( fifo_control.ready_4_fpga_frames, &fifo_control.current_frame_from_rpi, 0 );
-        if ( ret == pdTRUE ) fifo_control.frame_rpi_2_fifo_in_progress = 0;
+        const uint8_t ret = xQueueSend( fifo_control.ready_4_fpga_frames, &fifo_control.current_frame_from_rpi, 0 );
+        if ( ret == pdTRUE )
+        {
+            success                                   = 1;
+            fifo_control.frame_rpi_2_fifo_in_progress = 0;
+            ESP_LOGI( "FIFO", "fifo_mark_free_frame_done" );
+        }
         else ESP_LOGE( "FIFO", "frame done error" );
     }
+    return success;
 }
 
 void fifo_update_stats( void )
@@ -224,5 +234,5 @@ void copy_static_pic_to_PSRAM( uint8_t* start_ptr )
     /* Copy from code to PSRAM */
     ext_copy_static_pic_to_PSRAM( start_ptr );
 
-    //ESP_LOGI( TAG, "Copied Data to ADDR %" PRIx32, ( uint32_t ) start_ptr );
+    // ESP_LOGI( TAG, "Copied Data to ADDR %" PRIx32, ( uint32_t ) start_ptr );
 }
