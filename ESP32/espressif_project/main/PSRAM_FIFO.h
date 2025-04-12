@@ -25,6 +25,7 @@ struct
     volatile uint8_t* current_ptr;
     volatile uint32_t size;
     uint32_t total_size;
+    uint8_t frame_nr;
 } typedef fifo_frame_t;
 
 /**

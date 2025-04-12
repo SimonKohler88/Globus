@@ -23,15 +23,12 @@
 
 static command_control_task_t* status = NULL;
 
-
 #define STAT_CTRL_TAG "status_control_task"
-
 
 StaticQueue_t xQueueBuffer_command_queue;
 uint8_t command_queue_storage[ STAT_CTRL_QUEUE_NUMBER_OF_COMMANDS * sizeof( status_control_command_t ) ];
 
 volatile uint8_t line_toggle = 0;
-
 
 static void IRAM_ATTR frame_request_isr_cb( void* arg )
 {
@@ -110,10 +107,7 @@ void ibn_set_set_all_gpio_off( void )
     gpio_set_level( ENC_PIN_EXP_3, 0 );
 }
 
-void set_gpio_reserve_1_async(uint8_t value)
-{
-    gpio_set_level( STAT_CTRL_PIN_RESERVE_1, !!value );
-}
+void set_gpio_reserve_1_async( uint8_t value ) { gpio_set_level( STAT_CTRL_PIN_RESERVE_1, !!value ); }
 
 void status_control_task( void* pvParameter )
 {
@@ -132,6 +126,8 @@ void status_control_task( void* pvParameter )
     uint32_t led_color = 0x01000041;
 
     status_control_command_t cmd_buf;
+
+    uint8_t error_shown = 0;
 
     while ( 1 )
     {
@@ -155,7 +151,16 @@ void status_control_task( void* pvParameter )
         uint8_t num_frames    = num_free + num_fpga + num_free_prog + num_fpga_prog;
         if ( num_frames != 3 )
         {
-            ESP_LOGW( STAT_CTRL_TAG, "nfree: %d, nfpga: %d, pfree: %d, pfpga: %d", num_free, num_fpga, num_free_prog, num_fpga_prog );
+            if ( error_shown == 0 )
+            {
+                ESP_LOGE( STAT_CTRL_TAG, "nfree: %d, nfpga: %d, pfree: %d, pfpga: %d", num_free, num_fpga, num_free_prog, num_fpga_prog );
+                error_shown = 1;
+            }
+        }
+        else if ( num_frames == 3 && error_shown == 1 )
+        {
+            ESP_LOGI( STAT_CTRL_TAG, "Number of Frames OK again" );
+            error_shown = 0;
         }
         // else
         // {

@@ -296,7 +296,7 @@ void fpga_qspi_task( void* pvParameter )
                     }
 
                     spi_ret = copy_and_send_bulk();
-                    uint32_t size = qspi_frame_info->total_size;
+                    // uint32_t size = qspi_frame_info->total_size;
                     //ESP_LOGI( "QSPI", "next piece totalsize:%"PRIu32" size %"PRIu32" ", size, qspi_frame_info->size );
                     if ( spi_ret != ESP_OK )
                     {

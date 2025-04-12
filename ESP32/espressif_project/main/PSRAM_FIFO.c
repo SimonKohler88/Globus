@@ -81,6 +81,7 @@ void fifo_init( fifo_status_t* status )
             frame.frame_start_ptr = frame_ptr;
             frame.current_ptr     = frame_ptr;
             frame.total_size      = frame_size_bytes;
+            frame.frame_nr        = i;
             xQueueSend( fifo_control.free_frames, &frame, 0 );
             fifo_control.status->free_frames++;
             ESP_LOGI( TAG, "Allocated Frame Buffer %" PRIu8 " , size %" PRIu32 " Bytes", i, frame_size_bytes );
@@ -183,7 +184,11 @@ fifo_frame_t* fifo_get_free_frame( void )
     {
         ESP_LOGI( "FIFO", "fifo_get_free_frame " );
         fifo_control.frame_rpi_2_fifo_in_progress = 1;
-        xQueueReceive( fifo_control.free_frames, &fifo_control.current_frame_from_rpi, 0 );
+        const uint8_t rec = xQueueReceive( fifo_control.free_frames, &fifo_control.current_frame_from_rpi, 0 );
+        if (!rec)
+        {
+            ESP_LOGE( "FIFO", "fifo_get_free_frame failed" );
+        }
     }
 
     if ( ret == 0 ) return NULL;
