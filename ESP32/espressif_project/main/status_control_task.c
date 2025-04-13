@@ -15,7 +15,6 @@
 #include "rotor_encoding.h"
 #include "status_control_task_helper.h"
 
-#include "PSRAM_FIFO.h"
 #include "wifi.h"
 
 // TODO: make all
@@ -40,7 +39,7 @@ static void IRAM_ATTR frame_request_isr_cb( void* arg )
     portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
 
-void status_control_init( status_control_status_t* status_ptr, command_control_task_t* internal_status_ptr, fifo_status_t* fifo_status )
+void status_control_init( status_control_status_t* status_ptr, command_control_task_t* internal_status_ptr, buff_status_t* fifo_status )
 {
     ESP_LOGI( STAT_CTRL_TAG, "Initializing status control..." );
     internal_status_ptr->status = status_ptr;
@@ -132,40 +131,7 @@ void status_control_task( void* pvParameter )
     while ( 1 )
     {
         // if not enough frames -> trigger one
-        fifo_update_stats();
-        // uint8_t num_free_prog = status->fifo_status->current_frame_2_esp;
-        // // if not enough frames -> trigger one
-        // if( wifi_is_connected() )
-        // {
-        //     /* fifo gets us only one. this will be released by wifitask */
-        //     if( fifo_has_free_frame() )
-        //     {
-        //         ESP_LOGI( STAT_CTRL_TAG, "got frame" );
-        //         wifi_request_frame( );
-        //     }
-        // }
-        uint8_t num_free_prog = status->fifo_status->current_frame_2_esp;
-        uint8_t num_free      = status->fifo_status->free_frames;
-        uint8_t num_fpga      = status->fifo_status->ready_4_fpga_frames;
-        uint8_t num_fpga_prog = status->fifo_status->current_frame_2_fpga;
-        uint8_t num_frames    = num_free + num_fpga + num_free_prog + num_fpga_prog;
-        if ( num_frames != 3 )
-        {
-            if ( error_shown == 0 )
-            {
-                ESP_LOGE( STAT_CTRL_TAG, "nfree: %d, nfpga: %d, pfree: %d, pfpga: %d", num_free, num_fpga, num_free_prog, num_fpga_prog );
-                error_shown = 1;
-            }
-        }
-        else if ( num_frames == 3 && error_shown == 1 )
-        {
-            ESP_LOGI( STAT_CTRL_TAG, "Number of Frames OK again" );
-            error_shown = 0;
-        }
-        // else
-        // {
-        //     ESP_LOGI( STAT_CTRL_TAG, "nfree: %d, nfpga: %d, pfree: %d, pfpga: %d", num_free, num_fpga, num_free_prog, num_fpga_prog);
-        // }
+
         // handle commands
         uint8_t cmd_waiting = uxQueueMessagesWaiting( status->command_queue_handle );
         for ( uint8_t i = 0; i < cmd_waiting; i++ )

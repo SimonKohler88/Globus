@@ -8,7 +8,7 @@
 #ifndef MAIN_STATUS_CONTROL_TASK_H_
 #define MAIN_STATUS_CONTROL_TASK_H_
 
-#include "PSRAM_FIFO.h"
+#include "pic_buffer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "led_strip.h"
@@ -48,7 +48,7 @@ struct
 {
     status_control_status_t* status;
     QueueHandle_t command_queue_handle;
-    fifo_status_t* fifo_status;
+    buff_status_t* fifo_status;
     wifi_tftp_state_t wifi_tftp_state;
 
     /* LED Blink */
@@ -71,7 +71,7 @@ struct
  *                            structure that manages internal command
  *                            and status handling for the task.
  */
-void status_control_init( status_control_status_t* status_ptr, command_control_task_t* internal_status_ptr, fifo_status_t* fifo_status );
+void status_control_init( status_control_status_t* status_ptr, command_control_task_t* internal_status_ptr, buff_status_t* fifo_status );
 
 
 

@@ -6,7 +6,7 @@
  */
 
 #include "qspi.h"
-#include "PSRAM_FIFO.h"
+#include "pic_buffer.h"
 #include "driver/gpio.h"
 #include "driver/spi_master.h"
 #include "esp_log.h"
@@ -28,7 +28,7 @@ void set_cs_gpio( uint8_t state );
 #define QSPI_MAX_TRANSFER_SIZE_BITS         262143  // 2**18 -1
 
 static spi_device_handle_t qspi_handle;
-fifo_frame_t* qspi_frame_info = NULL;
+frame_unpacked_t* qspi_frame_info = NULL;
 
 static spi_device_interface_config_t FPGA_device_interface_config;
 static spi_bus_config_t qspi_buscfg;
@@ -178,7 +178,7 @@ static esp_err_t copy_and_send_bulk()
     if ( qspi_frame_info->size > QSPI_MAX_TRANSFER_SIZE ) size2send = QSPI_MAX_TRANSFER_SIZE;
     else if ( qspi_frame_info->size > 0 ) size2send = qspi_frame_info->size;
     else return spi_ret;
-    fifo_copy_mem_protected( dma_buffer, ( const void* ) qspi_frame_info->current_ptr, size2send );
+    buff_ctrl_copy_mem_protected( dma_buffer, ( const void* ) qspi_frame_info->current_ptr, size2send );
     spi_ret = qspi_DMA_write( dma_buffer, size2send );
     qspi_frame_info->current_ptr += size2send;
     qspi_frame_info->size -= size2send;
@@ -193,7 +193,7 @@ void set_cs_gpio( uint8_t state )
     if ( ret != ESP_OK ) ESP_LOGE( "QSPI", "Err Set CS: %d", ret );
 }
 
-#define TEST 0
+#define TEST 1
 void fpga_qspi_task( void* pvParameter )
 {
 
@@ -253,7 +253,7 @@ void fpga_qspi_task( void* pvParameter )
         else ESP_LOGI( "QSPI", "Already in Progress" );
 
 #elif ( TEST == 1 ) /* Testing with static picture in PSRAM */
-        if ( qspi_frame_info == NULL ) qspi_frame_info = fifo_get_static_frame();
+        if ( qspi_frame_info == NULL ) qspi_frame_info = buff_ctrl_get_static_frame();
         else
         {
             qspi_frame_info->size        = qspi_frame_info->total_size;
@@ -307,7 +307,7 @@ void fpga_qspi_task( void* pvParameter )
                 else success = 0;  // timed out
             }
             set_cs_gpio( 1 );
-            fifo_mark_frame_4_fpga_done();
+            // fifo_mark_frame_4_fpga_done();
 
             if ( success )
             {

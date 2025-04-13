@@ -14,7 +14,7 @@
 #define FREERTOS_STACK_SIZE_FPGA_CTRL      4096 * 2
 #define FREERTOS_STACK_SIZE_STATUS_CTRL    4096 * 3
 #define FREERTOS_STACK_SIZE_QSPI           4096 * 2
-#define FREERTOS_STACK_SIZE_WIFI           4096
+#define FREERTOS_STACK_SIZE_WIFI           4096 * 2
 
 /* Status Control task */
 #define STAT_CTRL_QUEUE_NUMBER_OF_COMMANDS 5
@@ -51,6 +51,8 @@
 #define IMAGE_BYTES_PER_PIXEL              3
 #define IMAGE_TOTAL_BYTE_SIZE              ( IMAGE_MAX_PIXEL_HEIGHT * IMAGE_MAX_PIXEL_WIDTH * IMAGE_BYTES_PER_PIXEL )
 
+#define IMAGE_JPEG_SIZE_BYTES              19118
+
 /* MISC TASK : LED */
 #define CONFIG_BLINK_PERIOD                1000
 #define CONFIG_BLINK_GPIO                  48
@@ -70,8 +72,8 @@
 #define ENC_PIN_EXP_2                    2
 #define ENC_PIN_EXP_3                    47
 
-/* PSRAM FIFO */
-#define FIFO_NUMBER_OF_FRAMES            3
+/* Buffer Control*/
+// #define FIFO_NUMBER_OF_FRAMES            3
 
 /* UDP TX Task */
 #define UDP_TX_NUMBER_OF_CMD             3
@@ -83,7 +85,12 @@
 #define HW_SETTINGS_LINES_PER_PACKET     3
 #define HW_SETTINGS_WIFI_RX_OFFSET       2  // unusable length in bytes
 
-#define WHERE                            2
+
+#define HTTP_PORT "8123"
+#define HTTP_PATH "/frame"
+#define WIFI_CONN_MAX_RETRY 6
+
+#define WHERE                            1
 #if ( WHERE == 1 )
     #define CONFIG_WIFI_SSID      "UPCF611258"
     #define CONFIG_WIFI_PASSWORD  "Fs4nzkzne4tu"
