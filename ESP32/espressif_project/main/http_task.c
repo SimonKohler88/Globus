@@ -153,7 +153,7 @@ void http_task( void* pvParameters )
     {
         /* We have to go through DNS lookup and socket creation per Request.
          * Does not seem to work otherwise, but does not affect speed very much */
-        // set_gpio_reserve_1_async(1);
+        set_gpio_reserve_1_async(1);
         time_start = xTaskGetTickCount();
         ret                 = lookup_dns( &http_stat );
         if ( !ret )
@@ -205,7 +205,8 @@ void http_task( void* pvParameters )
         // ESP_LOGI( TAG, "done. time=%" PRIu32 ", %" PRIu32, time, data_size );
 
         // time_start = xTaskGetTickCount();
-        set_gpio_reserve_1_async(1);
+        // set_gpio_reserve_1_async(1);
+        // set_gpio_reserve_1_async(0);
         jpeg_unpack( ( uint8_t* ) &jpeg_buffer[ 0 ], http_stat.psram_buffer, data_size, IMAGE_TOTAL_BYTE_SIZE );
         set_gpio_reserve_1_async(0);
         uint32_t time = pdTICKS_TO_MS( xTaskGetTickCount() - time_start );
