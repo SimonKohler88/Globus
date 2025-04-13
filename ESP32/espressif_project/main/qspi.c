@@ -68,8 +68,8 @@ void qspi_init( qspi_status_t* status_ptr )
 
     /* Need to set CS by hand, because DMA transfer only supports 32kB writes, we
      * need ~100kB */
-    ESP_ERROR_CHECK( gpio_set_direction( QSPI_PIN_CS0, GPIO_MODE_OUTPUT ) );
-    set_cs_gpio( 0 );
+    // ESP_ERROR_CHECK( gpio_set_direction( QSPI_PIN_CS0, GPIO_MODE_OUTPUT ) );
+    // set_cs_gpio( 1 );
 
     FPGA_device_interface_config.command_bits   = 0;
     FPGA_device_interface_config.address_bits   = 0;
@@ -106,7 +106,7 @@ void qspi_init( qspi_status_t* status_ptr )
     ret = spi_bus_add_device( QSPI_HOST, &FPGA_device_interface_config, &qspi_handle );
     ESP_ERROR_CHECK( ret );
     ESP_ERROR_CHECK( gpio_set_direction( QSPI_PIN_CS0, GPIO_MODE_OUTPUT ) );
-    set_cs_gpio( 0 );
+    set_cs_gpio( 1 );
 }
 
 BaseType_t qspi_request_frame( void )

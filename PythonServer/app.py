@@ -3,6 +3,7 @@ from video_server.video_preprocessor import process_videos, get_video_data
 from PIL import Image
 import numpy as np
 
+import cv2
 app = Flask(__name__)
 
 FRAME_SIZE = (120, 256)
@@ -11,10 +12,28 @@ FRAME_SIZE = (120, 256)
 # video_data = process_videos("movies", FRAME_SIZE)
 
 pic = "Earth_relief_120x256.jpg"
+pic_bmp = "Earth_relief_120x256.bmp"
+pic2 = "Earth_relief_120x256.jpeg"
+# pic3 = "Earth_relief_120x256_1.jpeg"
+# pic3 = "Earth_relief_120x256_2.jpeg"
+# pic3 = "Earth_relief_120x256_3.jpeg"
 img = np.asarray(Image.open(pic))
 pic_raw = img.flatten().tobytes()
 
-#
+
+# img = cv2.imread(pic_bmp, 0)  # works, but ts greyscale
+img = cv2.imread(pic_bmp, cv2.IMREAD_COLOR_RGB)
+img = cv2.cvtColor(img, cv2.COLOR_RGB2YCrCb)
+encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
+_, buffer = cv2.imencode(".jpg", img, encode_param)
+pic3 = buffer.tobytes()
+
+# plt.imshow(img, cmap='gray')
+    # we don't need more than the framerate
+#     encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 50]
+#     _, buffer = cv2.imencode(".jpg", frame, encode_param)
+#     video_jpegs.append((frame_ms, buffer.tobytes()))
+# #
 # @app.route('/channel_info')
 # def get_channel_lengths():
 #     lengths = [len(audio) for audio, frames in video_data]
@@ -61,7 +80,13 @@ pic_raw = img.flatten().tobytes()
 @app.route('/frame')
 def get_frame():
     # return Response(pic_raw, mimetype='image/jpeg')
-    return Response(open(pic, 'rb'), mimetype='image/jpeg')
+    # pic2 = open(pic, 'rb')
+    # print(len(pic2))
+    # print(Image.open(pic2).info.get('progressive', 0))
+    # pic = Image.open(pic2).tobytes()
+    # print(len(pic))
+    # return Response(open(pic3, 'rb'), mimetype='image/jpeg')
+    return Response(pic3, mimetype='image/jpeg')
 
 
 if __name__ == '__main__':

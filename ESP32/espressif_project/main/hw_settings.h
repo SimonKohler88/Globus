@@ -11,10 +11,10 @@
 #define HW_SETTINGS_DEBUG                  1
 
 /* Freertos */
-#define FREERTOS_STACK_SIZE_FPGA_CTRL      4096 * 2
-#define FREERTOS_STACK_SIZE_STATUS_CTRL    4096 * 3
+#define FREERTOS_STACK_SIZE_FPGA_CTRL      4096
+#define FREERTOS_STACK_SIZE_STATUS_CTRL    4096 * 2
 #define FREERTOS_STACK_SIZE_QSPI           4096 * 2
-#define FREERTOS_STACK_SIZE_WIFI           4096 * 2
+#define FREERTOS_STACK_SIZE_WIFI           4096 * 3
 
 /* Status Control task */
 #define STAT_CTRL_QUEUE_NUMBER_OF_COMMANDS 5
@@ -49,12 +49,14 @@
 #define IMAGE_MAX_PIXEL_HEIGHT             120
 #define IMAGE_MAX_PIXEL_WIDTH              256
 #define IMAGE_BYTES_PER_PIXEL              3
+/* 92160 Bytes. Must be a multiple of 16 */
 #define IMAGE_TOTAL_BYTE_SIZE              ( IMAGE_MAX_PIXEL_HEIGHT * IMAGE_MAX_PIXEL_WIDTH * IMAGE_BYTES_PER_PIXEL )
 
-#define IMAGE_JPEG_SIZE_BYTES              19118
+/* pic: jpeg as baseline, not progressive: 19858 bytes, JPEG in-buffer must be 16byte aligned: 19’872 */
+#define IMAGE_JPEG_SIZE_BYTES              19872
 
 /* MISC TASK : LED */
-#define CONFIG_BLINK_PERIOD                1000
+// #define CONFIG_BLINK_PERIOD                1000
 #define CONFIG_BLINK_GPIO                  48
 #define LED_COLOR_B                        16
 #define LED_COLOR_G                        8

@@ -21,6 +21,11 @@
 #include "sdkconfig.h"
 
 #include "hw_settings.h"
+#include "jpeg2raw.h"
+
+/* gpio access for debugging purposes */
+#include "status_control_task.h"
+
 
 #define WEB_SERVER CONFIG_WIFI_IPV4_ADDR
 #define WEB_PORT   HTTP_PORT
@@ -32,6 +37,7 @@ static const char* REQUEST = "GET " WEB_PATH " HTTP/1.0\r\n"
                              "Host: " WEB_SERVER ":" WEB_PORT "\r\n"
                              "User-Agent: esp-idf/1.0 esp32\r\n"
                              "\r\n";
+/* internal Buffer for JPEG */
 static char jpeg_buffer[ IMAGE_JPEG_SIZE_BYTES ];
 
 struct
@@ -41,12 +47,14 @@ struct
     struct in_addr* addr;
     int s, r;
     char recv_buf[ 1024 ];
+    uint8_t* psram_buffer;
 } typedef http_stat_t;
 
 static http_stat_t http_stat;
 
-void init_http_stat( void )
+void init_http_stat( uint8_t* psram_ptr )
 {
+    http_stat.psram_buffer      = psram_ptr;
     http_stat.hints.ai_family   = AF_INET;
     http_stat.hints.ai_socktype = SOCK_STREAM;
 }
@@ -116,7 +124,7 @@ static uint32_t receive_frame( http_stat_t* stat )
     //        ESP_LOGI(TAG, "... set socket receiving timeout success");
 
     uint32_t data_size = 0;
-    char *buffer_ptr = &jpeg_buffer[0];
+    char* buffer_ptr   = &jpeg_buffer[ 0 ];
     /* Read HTTP response */
     do
     {
@@ -132,13 +140,21 @@ static uint32_t receive_frame( http_stat_t* stat )
 
 void http_task( void* pvParameters )
 {
-
+    /* Task to get a frame by making a GET request to server.
+     * It is triggered by TaskNotify.
+     * Will Notify Jpeg task
+     */
     uint8_t ret        = 0;
     uint32_t data_size = 0;
+    uint32_t time_start =0;
+    set_gpio_reserve_1_async(0);
 
     while ( 1 )
     {
-        uint32_t time_start = xTaskGetTickCount();
+        /* We have to go through DNS lookup and socket creation per Request.
+         * Does not seem to work otherwise, but does not affect speed very much */
+        // set_gpio_reserve_1_async(1);
+        time_start = xTaskGetTickCount();
         ret                 = lookup_dns( &http_stat );
         if ( !ret )
         {
@@ -163,30 +179,38 @@ void http_task( void* pvParameters )
             continue;
         }
 
-        ESP_LOGI( TAG, "connected" );
+        // ESP_LOGI( TAG, "connected" );
         freeaddrinfo( http_stat.res );  //?
 
         ret = send_request( &http_stat );
         if ( !ret )
         {
-            break;
+            continue;
         }
         ret = set_socket_timeout( &http_stat );
         if ( !ret )
         {
-            break;
+            continue;
         }
 
         data_size = receive_frame( &http_stat );
         if ( !data_size )
         {
             ret = 0;
-            break;
+            continue;
         }
 
         close( http_stat.s );
-        uint32_t time = ( xTaskGetTickCount() - time_start ) * 10;
-        ESP_LOGI( TAG, "done. time=%" PRIu32 ", %" PRIu32, time, data_size );
+        // uint32_t time = ( xTaskGetTickCount() - time_start ) * 10;
+        // ESP_LOGI( TAG, "done. time=%" PRIu32 ", %" PRIu32, time, data_size );
+
+        // time_start = xTaskGetTickCount();
+        set_gpio_reserve_1_async(1);
+        jpeg_unpack( ( uint8_t* ) &jpeg_buffer[ 0 ], http_stat.psram_buffer, data_size, IMAGE_TOTAL_BYTE_SIZE );
+        set_gpio_reserve_1_async(0);
+        uint32_t time = pdTICKS_TO_MS( xTaskGetTickCount() - time_start );
+
+        ESP_LOGI( TAG, "jpeg. time=%" PRIu32, time );
         for ( int countdown = 1; countdown >= 0; countdown-- )
         {
             vTaskDelay( 1000 / portTICK_PERIOD_MS );

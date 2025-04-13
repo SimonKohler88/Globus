@@ -9,8 +9,9 @@
 extern "C"
 {
 #endif
+#include <stdint.h>
 
-    void init_http_stat( void );
+    void init_http_stat( uint8_t* psram_ptr );
     void http_task( void* pvParameters );
 #ifdef __cplusplus
 }

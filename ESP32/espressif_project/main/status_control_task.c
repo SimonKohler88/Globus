@@ -137,7 +137,7 @@ void status_control_task( void* pvParameter )
             // TODO: handle commands
         }
 
-        if ( pdTICKS_TO_MS( xTaskGetTickCount() ) - time > 100 )
+        if ( pdTICKS_TO_MS( xTaskGetTickCount() ) - time > 10 )
         {
             time         = pdTICKS_TO_MS( xTaskGetTickCount() );
             uint8_t temp = ( led_color >> 31 );

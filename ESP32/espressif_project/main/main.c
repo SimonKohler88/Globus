@@ -20,10 +20,10 @@
 #include "fpga_ctrl_task.h"
 #include "http_task.h"
 #include "pic_buffer.h"
-#include "qspi.h"
 #include "rpi_interface.h"
 #include "status_control_task.h"
 #include "wifi.h"
+#include "qspi.h"
 
 void vApplicationIdleHook( void );
 
@@ -55,6 +55,7 @@ TaskHandle_t FPGA_QSPI_task_handle = NULL;
 
 /* Interface structures initialisation */
 buff_status_t buff_status;
+buffer_control_t buff_ctrl;
 qspi_status_t qspi_status;
 fpga_status_t fpga_status;
 fpga_task_status_t fpga_task_status;
@@ -68,7 +69,7 @@ void init_system()
 
     ESP_ERROR_CHECK( nvs_flash_init() );
 
-    buff_ctrl_init( &buff_status );
+    buff_ctrl_init( &buff_ctrl, &buff_status );
     // fifo_init( &fifo_status );
     // register_status_struct( ( void* ) &fifo_status, sizeof( fifo_status ) );
 
@@ -84,7 +85,7 @@ void init_system()
     // gpio_dump_io_configuration(stdout, SOC_GPIO_VALID_GPIO_MASK );
     wifi_receive_init();
 
-    init_http_stat();
+    init_http_stat( buff_ctrl.frame_unpacked.frame_start_ptr );
 }
 
 void app_main( void )
