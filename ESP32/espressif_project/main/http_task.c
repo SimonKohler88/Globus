@@ -32,17 +32,10 @@ static const char* REQUEST = "GET " WEB_PATH " HTTP/1.0\r\n"
                              "Host: " WEB_SERVER ":" WEB_PORT "\r\n"
                              "User-Agent: esp-idf/1.0 esp32\r\n"
                              "\r\n";
-// struct
-// {
-//
-// };
+static char jpeg_buffer[ IMAGE_JPEG_SIZE_BYTES ];
 
 struct
 {
-    // const struct addrinfo hints = {
-    //     .ai_family   = AF_INET,
-    //     .ai_socktype = SOCK_STREAM,
-    // };
     struct addrinfo hints;
     struct addrinfo* res;
     struct in_addr* addr;
@@ -51,7 +44,6 @@ struct
 } typedef http_stat_t;
 
 static http_stat_t http_stat;
-
 
 void init_http_stat( void )
 {
@@ -100,7 +92,6 @@ static uint8_t send_request( http_stat_t* stat )
     if ( write( stat->s, REQUEST, strlen( REQUEST ) ) < 0 )
     {
         ESP_LOGE( TAG, "socket send failed" );
-        close( stat->s );
         return 0;
     }
     return 1;
@@ -114,7 +105,6 @@ static uint8_t set_socket_timeout( http_stat_t* stat )
     if ( setsockopt( stat->s, SOL_SOCKET, SO_RCVTIMEO, &receiving_timeout, sizeof( receiving_timeout ) ) < 0 )
     {
         ESP_LOGE( TAG, "failed to set socket receiving timeout" );
-        close( stat->s );
         return 0;
     }
     return 1;
@@ -126,15 +116,16 @@ static uint32_t receive_frame( http_stat_t* stat )
     //        ESP_LOGI(TAG, "... set socket receiving timeout success");
 
     uint32_t data_size = 0;
+    char *buffer_ptr = &jpeg_buffer[0];
     /* Read HTTP response */
     do
     {
         bzero( stat->recv_buf, sizeof( stat->recv_buf ) );
         stat->r = read( stat->s, stat->recv_buf, sizeof( stat->recv_buf ) - 1 );
+        memcpy( buffer_ptr, stat->recv_buf, stat->r );
+        buffer_ptr += stat->r;
         data_size += stat->r;
-        //            for(int i = 0; i < r; i++) {
-        //                putchar(recv_buf[i]);
-        //            }
+        // Todo: copy to RAMbuffer
     } while ( stat->r > 0 );
     return data_size;
 }
@@ -142,13 +133,13 @@ static uint32_t receive_frame( http_stat_t* stat )
 void http_task( void* pvParameters )
 {
 
-    uint8_t ret = 0;
+    uint8_t ret        = 0;
     uint32_t data_size = 0;
 
     while ( 1 )
     {
-
-        ret = lookup_dns( &http_stat );
+        uint32_t time_start = xTaskGetTickCount();
+        ret                 = lookup_dns( &http_stat );
         if ( !ret )
         {
             vTaskDelay( 1000 / portTICK_PERIOD_MS );
@@ -157,7 +148,6 @@ void http_task( void* pvParameters )
 
         /* Print the resolved IP. */
         http_stat.addr = &( ( struct sockaddr_in* ) http_stat.res->ai_addr )->sin_addr;
-        ESP_LOGI( TAG, "DNS lookup succeeded. IP=%s", inet_ntoa( *http_stat.addr ) );
 
         ret = create_socket( &http_stat );
         if ( !ret )
@@ -165,7 +155,6 @@ void http_task( void* pvParameters )
             vTaskDelay( 1000 / portTICK_PERIOD_MS );
             continue;
         }
-        ESP_LOGI( TAG, "allocated socket" );
 
         ret = connect_socket( &http_stat );
         if ( !ret )
@@ -177,37 +166,34 @@ void http_task( void* pvParameters )
         ESP_LOGI( TAG, "connected" );
         freeaddrinfo( http_stat.res );  //?
 
-        uint32_t time_start = xTaskGetTickCount();
-
         ret = send_request( &http_stat );
         if ( !ret )
         {
-            vTaskDelay( 1000 / portTICK_PERIOD_MS );
-            continue;
+            break;
         }
         ret = set_socket_timeout( &http_stat );
         if ( !ret )
         {
-            vTaskDelay( 1000 / portTICK_PERIOD_MS );
-            continue;
+            break;
         }
 
         data_size = receive_frame( &http_stat );
         if ( !data_size )
         {
-            vTaskDelay( 1000 / portTICK_PERIOD_MS );
-            continue;
+            ret = 0;
+            break;
         }
 
-        uint32_t time = ( xTaskGetTickCount() - time_start ) * 10;
-
-        ESP_LOGI( TAG, "done. time=%" PRIu32 ", %" PRIu32, time, data_size );
         close( http_stat.s );
+        uint32_t time = ( xTaskGetTickCount() - time_start ) * 10;
+        ESP_LOGI( TAG, "done. time=%" PRIu32 ", %" PRIu32, time, data_size );
         for ( int countdown = 1; countdown >= 0; countdown-- )
         {
-            //            ESP_LOGI(TAG, "%d... ", countdown);
             vTaskDelay( 1000 / portTICK_PERIOD_MS );
         }
-        ESP_LOGI( TAG, "Starting again!" );
+
+        // vTaskDelay( 1000 / portTICK_PERIOD_MS );
+        //
+        // ESP_LOGI( TAG, "Starting again!" );
     }
 }

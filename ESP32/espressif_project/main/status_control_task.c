@@ -126,11 +126,8 @@ void status_control_task( void* pvParameter )
 
     status_control_command_t cmd_buf;
 
-    uint8_t error_shown = 0;
-
     while ( 1 )
     {
-        // if not enough frames -> trigger one
 
         // handle commands
         uint8_t cmd_waiting = uxQueueMessagesWaiting( status->command_queue_handle );
