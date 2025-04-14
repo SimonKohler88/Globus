@@ -11,11 +11,10 @@
 #include "esp_log.h"
 #include "fpga_ctrl_task.h"
 #include "hw_settings.h"
+#include "pic_buffer.h"
 #include "qspi.h"
 #include "rotor_encoding.h"
 #include "status_control_task_helper.h"
-
-#include "wifi.h"
 
 // TODO: make all
 //  init frame request, reserve etc
@@ -39,19 +38,19 @@ static void IRAM_ATTR frame_request_isr_cb( void* arg )
     portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 }
 
-void status_control_init( status_control_status_t* status_ptr, command_control_task_t* internal_status_ptr, buff_status_t* fifo_status )
+void status_control_init( status_control_status_t* status_ptr, command_control_task_t* internal_status_ptr, task_handles_t* task_handles )
 {
     ESP_LOGI( STAT_CTRL_TAG, "Initializing status control..." );
     internal_status_ptr->status = status_ptr;
     status                      = internal_status_ptr;
-    status->fifo_status         = fifo_status;
+    status->task_handles        = task_handles;
 
     gpio_config_t config = {
         .intr_type = GPIO_INTR_POSEDGE, .mode = GPIO_MODE_INPUT, .pull_up_en = 1, .pin_bit_mask = 1 << STAT_CTRL_PIN_FRAME_REQUEST };
 
     ESP_ERROR_CHECK( gpio_config( &config ) );
     ESP_ERROR_CHECK( gpio_install_isr_service( ESP_INTR_FLAG_IRAM ) );
-    ESP_ERROR_CHECK( gpio_isr_handler_add( STAT_CTRL_PIN_FRAME_REQUEST, frame_request_isr_cb, ( void* ) STAT_CTRL_PIN_FRAME_REQUEST ) );
+    // ESP_ERROR_CHECK( gpio_isr_handler_add( STAT_CTRL_PIN_FRAME_REQUEST, frame_request_isr_cb, ( void* ) STAT_CTRL_PIN_FRAME_REQUEST ) );
     /* FPGA Control Lanes */
 
     /* GPIO Directions */
@@ -116,18 +115,40 @@ void status_control_task( void* pvParameter )
         ESP_LOGE( STAT_CTRL_TAG, "No status struct initialized" );
         return;
     }
+    uint8_t is_first_time = 1;
+    uint32_t ulNotifyValueJPEG;
+    uint32_t ulNotifyValueQSPI;
 
     TickType_t xLastWakeTime    = xTaskGetTickCount();
     const TickType_t xPeriod_ms = 50;
 
     /* for toggling led */
-    TickType_t time    = pdTICKS_TO_MS( xTaskGetTickCount() );
-    uint32_t led_color = 0x01000041;
+    uint32_t led_color              = 0x01000041;
+    TickType_t last_frame_time_used = 0;
 
     status_control_command_t cmd_buf;
 
+    while ( status->task_handles->http_task_handle == NULL || status->task_handles->FPGA_QSPI_task_handle == NULL ||
+            status->task_handles->JPEG_task_handle == NULL )
+    {
+        vTaskDelay( 1 );
+    }
+    TickType_t time = 0;
+
     while ( 1 )
     {
+        time = pdTICKS_TO_MS( xTaskGetTickCount() );
+        /* toggle buffer */
+        if ( !is_first_time )
+        {
+            buff_ctrl_toggle_buff();
+        }
+
+        /* Start Http and JPEG */
+        // start jpeg
+        xTaskNotifyIndexed( status->task_handles->JPEG_task_handle, TASK_NOTIFY_JPEG_START_BIT, 0, eSetBits, );
+        // start http
+        xTaskNotifyIndexed( status->task_handles->http_task_handle, TASK_NOTIFY_HTTP_START_BIT, last_frame_time_used, eSetBits, );
 
         // handle commands
         uint8_t cmd_waiting = uxQueueMessagesWaiting( status->command_queue_handle );
@@ -137,16 +158,29 @@ void status_control_task( void* pvParameter )
             // TODO: handle commands
         }
 
-        if ( pdTICKS_TO_MS( xTaskGetTickCount() ) - time > 10 )
+        if ( STAT_CTRL_ENABLE_LED )
         {
-            time         = pdTICKS_TO_MS( xTaskGetTickCount() );
+            // time         = pdTICKS_TO_MS( xTaskGetTickCount() );
             uint8_t temp = ( led_color >> 31 );
             led_color    = led_color << 1;
             led_color |= temp;
             set_led( status, ( led_color >> 16 ), ( led_color >> 8 ), led_color );
         }
 
-        vTaskDelayUntil( &xLastWakeTime, xPeriod_ms );
+        /* Wait for QSPI
+         * No Clear on Entry, clear on Exit
+         */
+        xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_QSPI_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueQSPI, portMAX_DELAY );
+        // Todo: react on errors
+
+        /* Wait for JPEG
+         * No Clear on Entry, clear on Exit
+         */
+        xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueJPEG, portMAX_DELAY );
+        // Todo: react on errors
+
+        is_first_time = 0;
+        last_frame_time_used = pdTICKS_TO_MS( xTaskGetTickCount() ) - time;
     }
     vTaskDelete( NULL );
 }

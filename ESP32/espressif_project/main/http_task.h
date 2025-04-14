@@ -10,8 +10,9 @@ extern "C"
 {
 #endif
 #include <stdint.h>
+    #include "status_control_task.h"
 
-    void init_http_stat( uint8_t* psram_ptr );
+    void init_http_stat( task_handles_t* task_handles);
     void http_task( void* pvParameters );
 #ifdef __cplusplus
 }

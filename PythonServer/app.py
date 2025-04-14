@@ -77,7 +77,7 @@ pic3 = buffer.tobytes()
 #     return Response(frames[start][1], mimetype='image/jpeg')
 
 
-@app.route('/frame')
+@app.route('/frame/<int:delta_t_ms>')
 def get_frame():
     # return Response(pic_raw, mimetype='image/jpeg')
     # pic2 = open(pic, 'rb')
@@ -86,6 +86,7 @@ def get_frame():
     # pic = Image.open(pic2).tobytes()
     # print(len(pic))
     # return Response(open(pic3, 'rb'), mimetype='image/jpeg')
+    print(delta_t_ms)
     return Response(pic3, mimetype='image/jpeg')
 
 

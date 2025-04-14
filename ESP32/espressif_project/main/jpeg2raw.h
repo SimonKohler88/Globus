@@ -9,6 +9,8 @@
 extern "C"
 {
 #endif
+#include "pic_buffer.h"
+#include "status_control_task.h"
 #include <stdint.h>
 
     struct
@@ -16,11 +18,10 @@ extern "C"
 
     } typedef jpeg_stat_t;
 
-    void jpeg_init( jpeg_stat_t* stat );
+    void jpeg_init( jpeg_stat_t* stat, task_handles_t* task_handles );
 
     void jpeg_task( void* pvParameters );
 
-    void jpeg_unpack(uint8_t* src, uint8_t* dst, uint32_t in_size, uint32_t out_size);
 
 #ifdef __cplusplus
 }

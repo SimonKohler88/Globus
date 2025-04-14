@@ -15,6 +15,7 @@
 #define FREERTOS_STACK_SIZE_STATUS_CTRL    4096 * 2
 #define FREERTOS_STACK_SIZE_QSPI           4096 * 2
 #define FREERTOS_STACK_SIZE_WIFI           4096 * 3
+#define FREERTOS_STACK_SIZE_JPEG           4096
 
 /* Status Control task */
 #define STAT_CTRL_QUEUE_NUMBER_OF_COMMANDS 5
@@ -23,6 +24,7 @@
 #define STAT_CTRL_PIN_RESERVE_2            5
 #define STAT_CTRL_PIN_RESERVE_3            4
 #define STAT_CTRL_PIN_RESET_FPGA           7
+#define STAT_CTRL_ENABLE_LED 1
 
 /* QSPI */
 #define QSPI_PIN_HD_D3                     9
@@ -53,7 +55,8 @@
 #define IMAGE_TOTAL_BYTE_SIZE              ( IMAGE_MAX_PIXEL_HEIGHT * IMAGE_MAX_PIXEL_WIDTH * IMAGE_BYTES_PER_PIXEL )
 
 /* pic: jpeg as baseline, not progressive: 19858 bytes, JPEG in-buffer must be 16byte aligned: 19’872 */
-#define IMAGE_JPEG_SIZE_BYTES              19872
+/* With JPEG in YCrCb Color format a pic is only 8900 */
+#define IMAGE_JPEG_SIZE_BYTES              10000
 
 /* MISC TASK : LED */
 // #define CONFIG_BLINK_PERIOD                1000
