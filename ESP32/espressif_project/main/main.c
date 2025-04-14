@@ -14,9 +14,6 @@
 // #include "led_strip.h"
 #include "sdkconfig.h"
 
-#include "misc_task.h"
-
-#include "PSRAM_FIFO.h"
 #include "fpga_ctrl_task.h"
 #include "http_task.h"
 #include "jpeg2raw.h"

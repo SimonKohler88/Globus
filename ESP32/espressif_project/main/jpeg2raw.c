@@ -49,11 +49,9 @@ static esp_err_t jpeg_unpack( uint8_t* src, uint8_t* dst, uint32_t in_size, uint
 void jpeg_task( void* pvParameters )
 {
     uint32_t ulNotifiedValue;
-    BaseType_t xResult;
     eth_rx_buffer_t* src_ptr;
     frame_unpacked_t* dst_ptr;
     esp_err_t jpeg_ret;
-    uint32_t ulValue2Notify;
 
     while ( jpeg_ctrl.task_handles->status_control_task_handle == NULL )
     {
@@ -66,7 +64,7 @@ void jpeg_task( void* pvParameters )
          * Dont clear on Entry, (we may have work to do already)
          * Clear on Exit
          */
-        xResult = xTaskNotifyWaitIndexed( TASK_NOTIFY_JPEG_START_BIT, pdFALSE, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY );
+        xTaskNotifyWaitIndexed( TASK_NOTIFY_JPEG_START_BIT, pdFALSE, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY );
 
         /* Get current Buffer ptr */
         src_ptr = buff_ctrl_get_jpeg_src();
@@ -86,6 +84,6 @@ void jpeg_task( void* pvParameters )
         else buff_ctrl_set_jpec_dst_done( 0 );
 
         /* Done. Notify Ctrl with success or fail */
-        xTaskNotifyIndexed( jpeg_ctrl.task_handles->status_control_task_handle, TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT, 0, eSetBits, );
+        xTaskNotifyIndexed( jpeg_ctrl.task_handles->status_control_task_handle, TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT, 0, eSetBits);
     }
 }

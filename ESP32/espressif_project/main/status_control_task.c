@@ -146,9 +146,9 @@ void status_control_task( void* pvParameter )
 
         /* Start Http and JPEG */
         // start jpeg
-        xTaskNotifyIndexed( status->task_handles->JPEG_task_handle, TASK_NOTIFY_JPEG_START_BIT, 0, eSetBits, );
+        xTaskNotifyIndexed( status->task_handles->JPEG_task_handle, TASK_NOTIFY_JPEG_START_BIT, 0, eSetBits);
         // start http
-        xTaskNotifyIndexed( status->task_handles->http_task_handle, TASK_NOTIFY_HTTP_START_BIT, last_frame_time_used, eSetBits, );
+        xTaskNotifyIndexed( status->task_handles->http_task_handle, TASK_NOTIFY_HTTP_START_BIT, last_frame_time_used, eSetBits);
 
         // handle commands
         uint8_t cmd_waiting = uxQueueMessagesWaiting( status->command_queue_handle );

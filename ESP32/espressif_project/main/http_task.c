@@ -37,9 +37,9 @@ static const char* REQUEST = "GET " WEB_PATH " HTTP/1.0\r\n"
 //                              "Host: " WEB_SERVER ":" WEB_PORT "\r\n"
 //                              "User-Agent: esp-idf/1.0 esp32\r\n"
 //                              "\r\n";
-static const char* request_buffer[100];
+const char* request_buffer[ 100 ];
 
-//std::string url = mChannelData->getFrameURL() + "/" + std::to_string(videoTime);
+// std::string url = mChannelData->getFrameURL() + "/" + std::to_string(videoTime);
 struct
 {
     struct addrinfo hints;
@@ -99,7 +99,8 @@ static uint8_t connect_socket( http_stat_t* stat )
 
 static uint8_t send_request( http_stat_t* stat )
 {
-    if ( write( stat->s, REQUEST, strlen( REQUEST ) ) < 0 )
+    // if ( write( stat->s, REQUEST, strlen( REQUEST ) ) < 0 )
+    if ( write( stat->s, request_buffer, strlen( REQUEST ) ) < 0 )
     {
         ESP_LOGE( TAG, "socket send failed" );
         return 0;
@@ -210,8 +211,10 @@ void http_task( void* pvParameters )
             //                  "Host: " WEB_SERVER ":" WEB_PORT "\r\n"
             //                  "User-Agent: esp-idf/1.0 esp32\r\n"
             //                  "\r\n";
-            snprintf("GET " WEB_PATH "/%i HTTP/1.0\r\nHost: " WEB_SERVER ":" WEB_PORT "\r\nUser-Agent: esp-idf/1.0 esp32\r\n\r\n",
-                sizeof(request_buffer), request_buffer[0], last_frame_time_used  );
+            snprintf( request_buffer[ 0 ], 84,
+                      "GET " WEB_PATH "/%" PRIu32 " HTTP/1.0\r\nHost: " WEB_SERVER ":" WEB_PORT "\r\nUser-Agent: esp-idf/1.0 esp32\r\n\r\n",
+                      last_frame_time_used );
+
             ret = send_request( &http_stat );
             if ( !ret )
             {
@@ -246,6 +249,6 @@ void http_task( void* pvParameters )
         ESP_LOGI( TAG, "http time=%" PRIu32, time );
 
         // Start QSPI Task
-        xTaskNotifyIndexed( http_stat.task_handles->FPGA_QSPI_task_handle, TASK_NOTIFY_QSPI_START_BIT, data_size, eSetBits, );
+        xTaskNotifyIndexed( http_stat.task_handles->FPGA_QSPI_task_handle, TASK_NOTIFY_QSPI_START_BIT, data_size, eSetBits );
     }
 }

@@ -13,60 +13,8 @@
 
 #include "freertos/FreeRTOS.h"
 
-#include "PSRAM_FIFO.h"
 #include "inttypes.h"
 
-
-/* State of UDP Send Control */
-enum
-{
-    WIFI_CTRL_IDLE,
-    WIFI_CTRL_WAIT_FIRST_PKT,
-    WIFI_CTRL_DATA_TRANSFER
-};
-typedef uint8_t WIFI_CTRL_STATE_t;
-
-/* To communicate from UDP RX Task -> UDP Send Task (Ctrl) */
-enum
-{
-    WIFI_FIRST_PACKET_RECEIVED,
-    WIFI_DATA_TRANSFER_COMPLETED,
-    WIFI_DATA_TRANSFER_ERROR,
-};
-typedef uint32_t WIFI_EVENT_MSG_t;
-
-/* Internal WIFI Structure */
-struct
-{
-    int UDP_socket;
-    fifo_frame_t* current_frame_download;
-    uint16_t tftp_block_number;
-    uint16_t s_retry_num;
-    uint8_t wifi_connected;
-    WIFI_CTRL_STATE_t wifi_ctrl_state;
-
-} typedef WIFI_STAT_INTERNAL_t;
-
-/* TFTP Opcodes */
-typedef enum
-{
-    eReadRequest = 1,
-    eWriteRequest,
-    eData,
-    eAck,
-    eError
-} eTFTPOpcode_t;
-
-/* Error codes from the RFC. */
-typedef enum
-{
-    eFileNotFound = 1,
-    eAccessViolation,
-    eDiskFull,
-    eIllegalTFTPOperation,
-    eUnknownTransferID,
-    eFileAlreadyExists
-} eTFTPErrorCode_t;
 
 /**
  * @brief Initializes the Wi-Fi receive functionality.

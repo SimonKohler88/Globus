@@ -26,7 +26,6 @@ void set_cs_gpio( uint8_t state );
 #define TASK_NOTIFY_QSPI_START_FRAME_BIT    0x01
 #define TASK_NOTIFY_QSPI_FRAME_FINISHED_BIT 0x02
 
-
 #define QSPI_MAX_TRANSFER_SIZE              32768   // 2**18 / 8
 #define QSPI_MAX_TRANSFER_SIZE_BITS         262143  // 2**18 -1
 
@@ -228,7 +227,7 @@ void fpga_qspi_task( void* pvParameter )
 
 #if ( TEST == 0 ) /* No test, Running hot. */
         qspi_frame_info = buff_ctrl_get_qspi_src();
-        if (qspi_frame_info != NULL)
+        if ( qspi_frame_info != NULL )
         {
             qspi_frame_info->current_ptr = qspi_frame_info->frame_start_ptr;
             qspi_frame_info->size        = qspi_frame_info->total_size;
@@ -240,7 +239,6 @@ void fpga_qspi_task( void* pvParameter )
         {
             ESP_LOGI( "QSPI", "Invalid Frame" );
         }
-
 
 #elif ( TEST == 1 ) /* Testing with static picture in PSRAM */
         if ( qspi_frame_info == NULL ) qspi_frame_info = buff_ctrl_get_static_frame();
@@ -314,6 +312,6 @@ void fpga_qspi_task( void* pvParameter )
         }
 
         /* Notify Ctrl */
-        xTaskNotifyIndexed( qspi_ctrl.task_handles->status_control_task_handle, TASK_NOTIFY_CTRL_QSPI_FINISHED_BIT, 0, eSetBits, );
+        xTaskNotifyIndexed( qspi_ctrl.task_handles->status_control_task_handle, TASK_NOTIFY_CTRL_QSPI_FINISHED_BIT, 0, eSetBits );
     }
 }
