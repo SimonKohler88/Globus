@@ -114,6 +114,7 @@ eth_rx_buffer_t* buff_ctrl_get_jpeg_src()
     /* Ptr for jpeg-data to compress. returns NULL when http could not write the buffer */
     eth_rx_buffer_t* ptr = NULL;
     xSemaphoreTake( xSemaphore, portMAX_DELAY );
+    ESP_LOGI( TAG, "get jpec src %" PRIu8 " %" PRIu8, buff_ctrl_ptr->buff_state, buff_ctrl_ptr->rx_buffer_2_valid );
     if ( buff_ctrl_ptr->buff_state == BUFF_CTRL_WIFI_QSI_BUFF_1_JPEG_BUFF_2 )
     {
         if ( buff_ctrl_ptr->rx_buffer_2_valid ) ptr = &buff_ctrl_ptr->rx_buffer_2;
@@ -135,7 +136,7 @@ frame_unpacked_t* buff_ctrl_get_jpeg_dst()
     xSemaphoreTake( xSemaphore, portMAX_DELAY );
     if ( buff_ctrl_ptr->buff_state == BUFF_CTRL_WIFI_QSI_BUFF_1_JPEG_BUFF_2 )
     {
-        ptr = &buff_ctrl_ptr->frame_unpacked_2;
+        ptr                                   = &buff_ctrl_ptr->frame_unpacked_2;
         buff_ctrl_ptr->frame_unpacked_2_valid = 0;
     }
     else
@@ -154,7 +155,6 @@ void buff_ctrl_set_jpec_dst_done( uint8_t valid )
     xSemaphoreGive( xSemaphore );
 }
 
-
 eth_rx_buffer_t* buff_ctrl_get_eth_buff()
 {
     /* return reveice buffer for http task -> set valid to 0 -> http task will set to 1 if transfer successful */
@@ -162,25 +162,34 @@ eth_rx_buffer_t* buff_ctrl_get_eth_buff()
     xSemaphoreTake( xSemaphore, portMAX_DELAY );
     if ( buff_ctrl_ptr->buff_state == BUFF_CTRL_WIFI_QSI_BUFF_1_JPEG_BUFF_2 )
     {
-        ptr = &buff_ctrl_ptr->rx_buffer_1;
+        ptr                              = &buff_ctrl_ptr->rx_buffer_1;
         buff_ctrl_ptr->rx_buffer_1_valid = 0;
     }
 
     else
     {
-        ptr = &buff_ctrl_ptr->rx_buffer_2;
+        ptr                              = &buff_ctrl_ptr->rx_buffer_2;
         buff_ctrl_ptr->rx_buffer_2_valid = 0;
     }
     xSemaphoreGive( xSemaphore );
     return ptr;
 }
 
-void buff_ctrl_set_eth_buff_done( uint8_t valid )
+void buff_ctrl_set_eth_buff_done( uint32_t data_received )
 {
     /* Marked valid by http task if jpeg received */
+    ESP_LOGI( TAG, "Mark eth buf done" );
     xSemaphoreTake( xSemaphore, portMAX_DELAY );
-    if ( buff_ctrl_ptr->buff_state == BUFF_CTRL_WIFI_QSI_BUFF_1_JPEG_BUFF_2 ) buff_ctrl_ptr->rx_buffer_1_valid = !!valid;
-    else buff_ctrl_ptr->rx_buffer_2_valid = !!valid;
+    if ( buff_ctrl_ptr->buff_state == BUFF_CTRL_WIFI_QSI_BUFF_1_JPEG_BUFF_2 )
+    {
+        buff_ctrl_ptr->rx_buffer_1.data_size = data_received;
+        buff_ctrl_ptr->rx_buffer_1_valid = data_received?1:0;
+    }
+    else
+    {
+        buff_ctrl_ptr->rx_buffer_2.data_size = data_received;
+        buff_ctrl_ptr->rx_buffer_2_valid = data_received?1:0;
+    }
     xSemaphoreGive( xSemaphore );
 }
 

@@ -84,13 +84,7 @@
 #define UDP_TX_NUMBER_OF_CMD             3
 
 /* Networkk definitions */
-#define HW_SETTINGS_UDP_PACKET_SIZE      1500
-#define HW_SETTINGS_WIFI_DONNECT_RETRIES 100
-#define HW_SETTINGS_WIFI_DONNECT_RETRIES 100
-#define HW_SETTINGS_LINES_PER_PACKET     3
-#define HW_SETTINGS_WIFI_RX_OFFSET       2  // unusable length in bytes
-
-
+#define HTTP_MAX_RECEIVE_BYTES_PER_IMG 8260
 #define HTTP_PORT "8123"
 #define HTTP_PATH "/frame"
 #define WIFI_CONN_MAX_RETRY 6

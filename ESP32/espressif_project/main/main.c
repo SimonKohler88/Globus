@@ -69,10 +69,12 @@ void init_system()
     status_control_init( &status_control_status, &command_ctrl_task, &task_handles );
     // register_status_struct( ( void* ) &status_control_status, sizeof( status_control_status ) );
 
+    init_http_stat( &task_handles );
+
+    jpeg_init( &task_handles );
     // gpio_dump_io_configuration(stdout, SOC_GPIO_VALID_GPIO_MASK );
     wifi_receive_init();
 
-    init_http_stat( &task_handles );
 }
 
 void app_main( void )

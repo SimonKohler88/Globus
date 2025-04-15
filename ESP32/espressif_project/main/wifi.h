@@ -37,37 +37,6 @@
 void wifi_receive_init( void );
 
 /**
- * @brief Task to handle receiving UDP packets over Wi-Fi connection.
- *
- * @param pvParameters Pointer to the task parameters.
- *
- * This function runs continuously and performs the following operations:
- * - Checks if Wi-Fi is connected.
- * - Creates a UDP socket.
- * - Receives UDP packets as long as Wi-Fi remains connected.
- * - If a socket error occurs or if Wi-Fi disconnects, the socket is shut down, and the task waits before retrying.
- *
- * The task yields control using taskYIELD during packet reception to allow other tasks to run.
- * If HW_SETTINGS_DEBUG is enabled, socket creation and socket closing events are logged.
- */
-void wifi_receive_udp_task( void* pvParameters );
-
-/**
- * @brief Task responsible for sending UDP packets over WiFi.
- *
- * This function handles the sending of specific UDP packets that need to
- * be resent under certain conditions. It initializes a task command
- * queue and consistently checks this queue for commands to send UDP
- * packets. It ensures that sending only occurs if the device is connected
- * to a WiFi network and has a valid UDP socket.
- *
- * @param pvParameters Pointer to any parameters passed to the task upon creation.
- *                     Generally used in FreeRTOS tasks to pass runtime-specific
- *                     information, although not used explicitly in this function.
- */
-void wifi_send_udp_task( void* pvParameters );
-
-/**
  * @brief Checks if the Wi-Fi is currently connected.
  *
  * This function retrieves the current Wi-Fi connection status

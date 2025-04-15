@@ -22,9 +22,7 @@ void set_cs_gpio( uint8_t state );
 
 #define QSPI_TAG                            "QSPI"
 
-/* Task Notifications for QSPI-Transfer */
-#define TASK_NOTIFY_QSPI_START_FRAME_BIT    0x01
-#define TASK_NOTIFY_QSPI_FRAME_FINISHED_BIT 0x02
+
 
 #define QSPI_MAX_TRANSFER_SIZE              32768   // 2**18 / 8
 #define QSPI_MAX_TRANSFER_SIZE_BITS         262143  // 2**18 -1
@@ -213,12 +211,14 @@ void fpga_qspi_task( void* pvParameter )
     // gpio_set_level( QSPI_PIN_CS0, 1 );
     ESP_ERROR_CHECK( gpio_set_direction( QSPI_PIN_CS0, GPIO_MODE_OUTPUT ) );
     set_cs_gpio( 1 );
+    ESP_LOGI( "QSPI", "Enter Loop" );
     while ( 1 )
     {
         /* wait for http task to notify us
          * clear on Entry, clear on exit
          */
         xTaskNotifyWaitIndexed( TASK_NOTIFY_QSPI_START_BIT, ULONG_MAX, ULONG_MAX, &ulNotifiedValuefromHTTP, portMAX_DELAY );
+        ESP_LOGI( "QSPI", "Start" );
 
         // wait for ISR to notify us
         // xTaskNotifyWaitIndexed( TASK_NOTIFY_QSPI_START_FRAME_BIT, ULONG_MAX, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY );
@@ -312,6 +312,7 @@ void fpga_qspi_task( void* pvParameter )
         }
 
         /* Notify Ctrl */
+        ESP_LOGI( "QSPI", "Done" );
         xTaskNotifyIndexed( qspi_ctrl.task_handles->status_control_task_handle, TASK_NOTIFY_CTRL_QSPI_FINISHED_BIT, 0, eSetBits );
     }
 }

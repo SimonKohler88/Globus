@@ -14,16 +14,13 @@ FRAME_SIZE = (120, 256)
 pic = "Earth_relief_120x256.jpg"
 pic_bmp = "Earth_relief_120x256.bmp"
 pic2 = "Earth_relief_120x256.jpeg"
-# pic3 = "Earth_relief_120x256_1.jpeg"
-# pic3 = "Earth_relief_120x256_2.jpeg"
-# pic3 = "Earth_relief_120x256_3.jpeg"
-img = np.asarray(Image.open(pic))
-pic_raw = img.flatten().tobytes()
 
 
 # img = cv2.imread(pic_bmp, 0)  # works, but ts greyscale
 img = cv2.imread(pic_bmp, cv2.IMREAD_COLOR_RGB)
+# esp_jpeg decompressor in ESP only takes YCrCb Color Space
 img = cv2.cvtColor(img, cv2.COLOR_RGB2YCrCb)
+# Compress, 90% quality
 encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
 _, buffer = cv2.imencode(".jpg", img, encode_param)
 pic3 = buffer.tobytes()
@@ -78,14 +75,7 @@ pic3 = buffer.tobytes()
 
 
 @app.route('/frame/<int:delta_t_ms>')
-def get_frame():
-    # return Response(pic_raw, mimetype='image/jpeg')
-    # pic2 = open(pic, 'rb')
-    # print(len(pic2))
-    # print(Image.open(pic2).info.get('progressive', 0))
-    # pic = Image.open(pic2).tobytes()
-    # print(len(pic))
-    # return Response(open(pic3, 'rb'), mimetype='image/jpeg')
+def get_frame(delta_t_ms):
     print(delta_t_ms)
     return Response(pic3, mimetype='image/jpeg')
 

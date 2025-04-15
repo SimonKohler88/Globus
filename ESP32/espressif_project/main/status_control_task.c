@@ -15,6 +15,7 @@
 #include "qspi.h"
 #include "rotor_encoding.h"
 #include "status_control_task_helper.h"
+#include "wifi.h"
 
 // TODO: make all
 //  init frame request, reserve etc
@@ -28,15 +29,15 @@ uint8_t command_queue_storage[ STAT_CTRL_QUEUE_NUMBER_OF_COMMANDS * sizeof( stat
 
 volatile uint8_t line_toggle = 0;
 
-static void IRAM_ATTR frame_request_isr_cb( void* arg )
-{
-    gpio_set_level( STAT_CTRL_PIN_RESERVE_3, line_toggle );
-    line_toggle = !line_toggle;
-
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    xHigherPriorityTaskWoken            = qspi_request_frame();
-    portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
-}
+// static void IRAM_ATTR frame_request_isr_cb( void* arg )
+// {
+//     gpio_set_level( STAT_CTRL_PIN_RESERVE_3, line_toggle );
+//     line_toggle = !line_toggle;
+//
+//     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+//     xHigherPriorityTaskWoken            = qspi_request_frame();
+//     portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+// }
 
 void status_control_init( status_control_status_t* status_ptr, command_control_task_t* internal_status_ptr, task_handles_t* task_handles )
 {
@@ -119,8 +120,8 @@ void status_control_task( void* pvParameter )
     uint32_t ulNotifyValueJPEG;
     uint32_t ulNotifyValueQSPI;
 
-    TickType_t xLastWakeTime    = xTaskGetTickCount();
-    const TickType_t xPeriod_ms = 50;
+    // TickType_t xLastWakeTime    = xTaskGetTickCount();
+    // const TickType_t xPeriod_ms = 50;
 
     /* for toggling led */
     uint32_t led_color              = 0x01000041;
@@ -128,15 +129,23 @@ void status_control_task( void* pvParameter )
 
     status_control_command_t cmd_buf;
 
+    /* wait until all tasks have a handle */
     while ( status->task_handles->http_task_handle == NULL || status->task_handles->FPGA_QSPI_task_handle == NULL ||
             status->task_handles->JPEG_task_handle == NULL )
     {
-        vTaskDelay( 1 );
+        vTaskDelay( 10 );
     }
     TickType_t time = 0;
 
+    ESP_LOGI( STAT_CTRL_TAG, "Enter Loop" );
     while ( 1 )
     {
+        if (!wifi_is_connected())
+        {
+            vTaskDelay( 10 );
+            continue;
+        }
+
         time = pdTICKS_TO_MS( xTaskGetTickCount() );
         /* toggle buffer */
         if ( !is_first_time )
@@ -170,17 +179,20 @@ void status_control_task( void* pvParameter )
         /* Wait for QSPI
          * No Clear on Entry, clear on Exit
          */
-        xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_QSPI_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueQSPI, portMAX_DELAY );
+        // xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_QSPI_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueQSPI, portMAX_DELAY );
+        xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_QSPI_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueQSPI, pdMS_TO_TICKS(60) );
         // Todo: react on errors
 
         /* Wait for JPEG
          * No Clear on Entry, clear on Exit
          */
-        xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueJPEG, portMAX_DELAY );
+        // xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueJPEG, 7 );
+        xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueJPEG, pdMS_TO_TICKS(60) );
         // Todo: react on errors
 
         is_first_time = 0;
         last_frame_time_used = pdTICKS_TO_MS( xTaskGetTickCount() ) - time;
+        ESP_LOGI( STAT_CTRL_TAG, "status_control_task end: %"PRIu32, last_frame_time_used );
     }
     vTaskDelete( NULL );
 }

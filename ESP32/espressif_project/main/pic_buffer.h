@@ -67,7 +67,7 @@ eth_rx_buffer_t* buff_ctrl_get_jpeg_src();
 frame_unpacked_t* buff_ctrl_get_jpeg_dst();
 void buff_ctrl_set_jpec_dst_done( uint8_t valid );
 eth_rx_buffer_t* buff_ctrl_get_eth_buff();
-void buff_ctrl_set_eth_buff_done( uint8_t valid );
+void buff_ctrl_set_eth_buff_done( uint32_t valid );
 frame_unpacked_t* buff_ctrl_get_qspi_src();
 
 frame_unpacked_t* buff_ctrl_get_static_frame( void );

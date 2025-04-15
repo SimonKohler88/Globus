@@ -13,12 +13,8 @@ extern "C"
 #include "status_control_task.h"
 #include <stdint.h>
 
-    struct
-    {
 
-    } typedef jpeg_stat_t;
-
-    void jpeg_init( jpeg_stat_t* stat, task_handles_t* task_handles );
+    void jpeg_init( task_handles_t* task_handles );
 
     void jpeg_task( void* pvParameters );
 

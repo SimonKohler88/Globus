@@ -68,6 +68,9 @@ struct
 /* Task Notification for Inter Task communication
  * HTTP -> QSPI-Task */
 #define TASK_NOTIFY_QSPI_START_BIT          0x00
+/* Internal QSPI-Task Notification Bits */
+#define TASK_NOTIFY_QSPI_START_FRAME_BIT    0x01
+#define TASK_NOTIFY_QSPI_FRAME_FINISHED_BIT 0x02
 
 /* Task Notification for Inter Task communication with HTTP-Task
  * Ctrl -> HTTP

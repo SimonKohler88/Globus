@@ -31,6 +31,8 @@
 // optimization purposes
 #include "status_control_task.h"
 
+static uint8_t is_wifi_connected = 0;
+
 /*
  * Code copied and adapted from esp-idf's "http_request" example
  *
@@ -43,8 +45,11 @@ static const char* TAG                        = "Wifi";
 static SemaphoreHandle_t s_semph_get_ip_addrs = NULL;
 static int s_retry_num                        = 0;
 
+uint8_t wifi_is_connected() { return is_wifi_connected; }
+
 static void wifi_handler_on_wifi_disconnect( void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data )
 {
+    is_wifi_connected = 0;
     s_retry_num++;
     if ( s_retry_num > WIFI_CONN_MAX_RETRY )
     {
@@ -66,12 +71,12 @@ static void wifi_handler_on_wifi_disconnect( void* arg, esp_event_base_t event_b
     ESP_ERROR_CHECK( err );
 }
 
-static void wifi_handler_on_wifi_connect( void* esp_netif, esp_event_base_t event_base, int32_t event_id, void* event_data ) {}
-
-bool wifi_is_our_netif( const char* prefix, esp_netif_t* netif )
+static void wifi_handler_on_wifi_connect( void* esp_netif, esp_event_base_t event_base, int32_t event_id, void* event_data )
 {
-    return strncmp( prefix, esp_netif_get_desc( netif ), strlen( prefix ) - 1 ) == 0;
+    is_wifi_connected = 1;
 }
+
+bool wifi_is_our_netif( const char* prefix, esp_netif_t* netif ) { return strncmp( prefix, esp_netif_get_desc( netif ), strlen( prefix ) - 1 ) == 0; }
 
 static void wifi_handler_on_sta_got_ip( void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data )
 {

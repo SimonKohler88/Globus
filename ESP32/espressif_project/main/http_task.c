@@ -37,7 +37,7 @@ static const char* REQUEST = "GET " WEB_PATH " HTTP/1.0\r\n"
 //                              "Host: " WEB_SERVER ":" WEB_PORT "\r\n"
 //                              "User-Agent: esp-idf/1.0 esp32\r\n"
 //                              "\r\n";
-const char* request_buffer[ 100 ];
+static char request_buffer[ 100 ];
 
 // std::string url = mChannelData->getFrameURL() + "/" + std::to_string(videoTime);
 struct
@@ -47,7 +47,7 @@ struct
     struct in_addr* addr;
     int s, r;
     char recv_buf[ 1024 ];
-    uint8_t* psram_buffer;
+    // uint8_t* psram_buffer;
 
     task_handles_t* task_handles;
 } typedef http_stat_t;
@@ -79,7 +79,6 @@ static uint8_t create_socket( http_stat_t* stat )
     if ( stat->s < 0 )
     {
         ESP_LOGE( TAG, "Failed to allocate socket." );
-        freeaddrinfo( stat->res );
         return 0;
     }
     return 1;
@@ -89,8 +88,6 @@ static uint8_t connect_socket( http_stat_t* stat )
     if ( connect( stat->s, stat->res->ai_addr, stat->res->ai_addrlen ) != 0 )
     {
         ESP_LOGE( TAG, "socket connect failed errno=%d", errno );
-        close( stat->s );
-        freeaddrinfo( stat->res );
 
         return 0;
     }
@@ -100,7 +97,7 @@ static uint8_t connect_socket( http_stat_t* stat )
 static uint8_t send_request( http_stat_t* stat )
 {
     // if ( write( stat->s, REQUEST, strlen( REQUEST ) ) < 0 )
-    if ( write( stat->s, request_buffer, strlen( REQUEST ) ) < 0 )
+    if ( write( stat->s, request_buffer, strlen( request_buffer ) ) < 0 )
     {
         ESP_LOGE( TAG, "socket send failed" );
         return 0;
@@ -111,8 +108,8 @@ static uint8_t send_request( http_stat_t* stat )
 static uint8_t set_socket_timeout( http_stat_t* stat )
 {
     struct timeval receiving_timeout;
-    receiving_timeout.tv_sec  = 5;
-    receiving_timeout.tv_usec = 0;
+    receiving_timeout.tv_sec  = 0;
+    receiving_timeout.tv_usec = 400000;
     if ( setsockopt( stat->s, SOL_SOCKET, SO_RCVTIMEO, &receiving_timeout, sizeof( receiving_timeout ) ) < 0 )
     {
         ESP_LOGE( TAG, "failed to set socket receiving timeout" );
@@ -127,14 +124,20 @@ static uint32_t receive_frame( http_stat_t* stat, eth_rx_buffer_t* eth_buff )
     //        ESP_LOGI(TAG, "... set socket receiving timeout success");
 
     uint32_t data_size = 0;
+    uint8_t* buff_ptr  = eth_buff->buff_start_ptr;
     /* Read HTTP response */
     do
     {
         bzero( stat->recv_buf, sizeof( stat->recv_buf ) );
         stat->r = read( stat->s, stat->recv_buf, sizeof( stat->recv_buf ) - 1 );
-        memcpy( eth_buff, stat->recv_buf, stat->r );
-        eth_buff += stat->r;
+        memcpy( buff_ptr, stat->recv_buf, stat->r );
+        buff_ptr += stat->r;
         data_size += stat->r;
+        if ( data_size > HTTP_MAX_RECEIVE_BYTES_PER_IMG )
+        {
+            ESP_LOGE( TAG, "File size More than %" PRIu32, HTTP_MAX_RECEIVE_BYTES_PER_IMG );
+            return 0;
+        }
     } while ( stat->r > 0 );
     return data_size;
 }
@@ -155,11 +158,11 @@ void http_task( void* pvParameters )
 
     set_gpio_reserve_1_async( 0 );
 
-    while ( http_stat.task_handles->http_task_handle == NULL || http_stat.task_handles->FPGA_QSPI_task_handle == NULL ||
-            http_stat.task_handles->JPEG_task_handle == NULL )
-    {
-        vTaskDelay( 1 );
-    }
+    // while ( http_stat.task_handles->http_task_handle == NULL || http_stat.task_handles->FPGA_QSPI_task_handle == NULL ||
+    //         http_stat.task_handles->JPEG_task_handle == NULL )
+    // {
+    //     vTaskDelay( 1 );
+    // }
 
     while ( 1 )
     {
@@ -171,19 +174,27 @@ void http_task( void* pvParameters )
          *  Clear on Entry
          *  Clear on Exit
          */
-        xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT, ULONG_MAX, ULONG_MAX, &last_frame_time_used, portMAX_DELAY );
+        ESP_LOGI( TAG, "HTTP Req Start Waiting" );
+        xTaskNotifyWaitIndexed( TASK_NOTIFY_HTTP_START_BIT, ULONG_MAX, ULONG_MAX, &last_frame_time_used, portMAX_DELAY );
+        ESP_LOGI( TAG, "HTTP Req Start: dT %" PRIu32, last_frame_time_used );
         set_gpio_reserve_1_async( 1 );
 
         /* Get Buffer */
+
         eth_buff = buff_ctrl_get_eth_buff();
 
+        ESP_LOGI( TAG, "Buff: %" PRIxPTR, eth_buff );
+
         time_start = xTaskGetTickCount();
-        ret        = lookup_dns( &http_stat );
+
+        ESP_LOGI( TAG, "Lookup dns" );
+        ret = lookup_dns( &http_stat );
         if ( !ret )
         {
-            vTaskDelay( 1000 / portTICK_PERIOD_MS );
+            vTaskDelay( pdMS_TO_TICKS( 10 ) );
         }
 
+        ESP_LOGI( TAG, "create sock" );
         if ( ret )
         {
             /* Print the resolved IP. */
@@ -192,18 +203,20 @@ void http_task( void* pvParameters )
             ret = create_socket( &http_stat );
             if ( !ret )
             {
-                vTaskDelay( 1000 / portTICK_PERIOD_MS );
+                vTaskDelay( pdMS_TO_TICKS( 10 ) );
             }
         }
+        ESP_LOGI( TAG, "connect sock" );
         if ( ret )
         {
             ret = connect_socket( &http_stat );
             if ( !ret )
             {
-                vTaskDelay( 4000 / portTICK_PERIOD_MS );
+                vTaskDelay( pdMS_TO_TICKS( 10 ) );
             }
         }
         freeaddrinfo( http_stat.res );  //?
+        ESP_LOGI( TAG, "send req" );
         if ( ret )
         {
             // TODO: put last_frame_time_used into get-request string
@@ -211,14 +224,14 @@ void http_task( void* pvParameters )
             //                  "Host: " WEB_SERVER ":" WEB_PORT "\r\n"
             //                  "User-Agent: esp-idf/1.0 esp32\r\n"
             //                  "\r\n";
-            snprintf( request_buffer[ 0 ], 84,
+            snprintf( request_buffer, 88,
                       "GET " WEB_PATH "/%" PRIu32 " HTTP/1.0\r\nHost: " WEB_SERVER ":" WEB_PORT "\r\nUser-Agent: esp-idf/1.0 esp32\r\n\r\n",
                       last_frame_time_used );
 
             ret = send_request( &http_stat );
             if ( !ret )
             {
-                vTaskDelay( 1000 / portTICK_PERIOD_MS );
+                vTaskDelay( pdMS_TO_TICKS( 10 ) );
             }
         }
         if ( ret )
@@ -226,16 +239,18 @@ void http_task( void* pvParameters )
             ret = set_socket_timeout( &http_stat );
             if ( !ret )
             {
-                vTaskDelay( 1000 / portTICK_PERIOD_MS );
+                vTaskDelay( pdMS_TO_TICKS( 10 ) );
             }
         }
+        ESP_LOGI( TAG, "rx data" );
+        data_size = 0;
         if ( ret )
         {
             data_size = receive_frame( &http_stat, eth_buff );
             if ( !data_size )
             {
                 ret = 0;
-                vTaskDelay( 1000 / portTICK_PERIOD_MS );
+                vTaskDelay( pdMS_TO_TICKS( 10 ) );
             }
         }
         close( http_stat.s );
@@ -243,8 +258,9 @@ void http_task( void* pvParameters )
         set_gpio_reserve_1_async( 0 );
         uint32_t time = pdTICKS_TO_MS( xTaskGetTickCount() - time_start );
 
-        /* set buffer valid if more than 0 data reveived */
-        buff_ctrl_set_eth_buff_done( !!data_size );
+        /* set buffer valid if more than 0 data received */
+        // eth_buff->data_size = data_size;
+        buff_ctrl_set_eth_buff_done( data_size );
 
         ESP_LOGI( TAG, "http time=%" PRIu32, time );
 
