@@ -102,7 +102,7 @@
 #define HTTP_PATH "/frame"
 #define WIFI_CONN_MAX_RETRY 6
 
-#define WHERE                            1
+#define WHERE                            2
 #if ( WHERE == 1 )
     #define CONFIG_WIFI_SSID      "UPCF611258"
     #define CONFIG_WIFI_PASSWORD  "Fs4nzkzne4tu"
@@ -115,8 +115,8 @@
     #define CONFIG_WIFI_IPV4_ADDR "192.168.137.2"
 #endif
 
-#define CONFIG_UDP_PORT              1234
+// #define CONFIG_UDP_PORT              1234
 // #define CONFIG_UDP_FRAME_PACKET_SIZE 1024
-#define CONFIG_UDP_FRAME_PACKET_SIZE 1400
+// #define CONFIG_UDP_FRAME_PACKET_SIZE 1400
 
 #endif /* MAIN_HW_SETTINGS_H_ */

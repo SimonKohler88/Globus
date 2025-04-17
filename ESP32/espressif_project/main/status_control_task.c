@@ -150,27 +150,31 @@ void status_control_task( void* pvParameter )
     {
         vTaskDelay( 10 );
     }
+#ifndef DEVELOPMENT_SET_QSPI_ON_PIN_OUT
     uint64_t time_us_start = 0;
     uint64_t time_delta_us = 0;
+    uint64_t time_us = 0;
 
-#ifndef DEVELOPMENT_SET_QSPI_ON_PIN_OUT
     xTaskNotifyIndexed( status->task_handles->WIFI_task_handle, TASK_NOTIFY_WIFI_START_BIT, 0, eSetBits );
     xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_WIFI_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueWIFI, portMAX_DELAY );
+    time_us_start = esp_timer_get_time();
 #endif
 
     if ( CTRL_TASK_VERBOSE ) ESP_LOGI( STAT_CTRL_TAG, "Enter Loop" );
     while ( 1 )
     {
 #ifndef DEVELOPMENT_SET_QSPI_ON_PIN_OUT
+
+        time_delta_us        = esp_timer_get_time() - time_us_start;
+        last_frame_time_used = ( uint32_t ) ( ( ( uint32_t ) time_delta_us + 500 ) / 1000 );
+        time_us_start = esp_timer_get_time();
+        if ( CTRL_TASK_VERBOSE ) ESP_LOGI( STAT_CTRL_TAG, "last frame: %" PRIu32, last_frame_time_used );
         while ( !wifi_is_connected() )
         {
             // TODO: Maybe do something else?
             vTaskDelay( pdMS_TO_TICKS( 1000 ) );
         }
 
-
-        // time_us_start = esp_rtc_get_time_us();
-        time_us_start = esp_timer_get_time();
         set_gpio_reserve_1_async( 1 );
 
         /* toggle buffer */
@@ -212,13 +216,8 @@ void status_control_task( void* pvParameter )
         xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueJPEG, pdMS_TO_TICKS( 60 ) );
         // Todo: react on errors
 
-        // last_frame_time_used =  xTaskGetTickCount();
-        // time_delta_us = esp_rtc_get_time_us() - time_us_start;
-        time_delta_us        = esp_timer_get_time() - time_us_start;
-        last_frame_time_used = ( uint32_t ) ( ( ( uint32_t ) time_delta_us + 500 ) / 1000 );
-        if ( CTRL_TASK_VERBOSE ) ESP_LOGI( STAT_CTRL_TAG, "end: %" PRIu32, last_frame_time_used );
+
         set_gpio_reserve_1_async( 0 );
-        vTaskDelay( 1 );
 #endif
 
 #ifdef DEVELOPMENT_SET_QSPI_ON_PIN_OUT
