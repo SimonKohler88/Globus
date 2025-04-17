@@ -34,7 +34,7 @@
  * Any errors in initializing components will be handled using the ESP_ERROR_CHECK mechanism,
  * which stops execution in case of failure.
  */
-void wifi_receive_init( void );
+void wifi_receive_init_task( void* pvParameter );
 
 /**
  * @brief Checks if the Wi-Fi is currently connected.

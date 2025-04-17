@@ -114,12 +114,10 @@ eth_rx_buffer_t* buff_ctrl_get_jpeg_src()
     /* Ptr for jpeg-data to compress. returns NULL when http could not write the buffer */
     eth_rx_buffer_t* ptr = NULL;
     xSemaphoreTake( xSemaphore, portMAX_DELAY );
-    ESP_LOGI( TAG, "get jpec src %" PRIu8 " %" PRIu8, buff_ctrl_ptr->buff_state, buff_ctrl_ptr->rx_buffer_2_valid );
     if ( buff_ctrl_ptr->buff_state == BUFF_CTRL_WIFI_QSI_BUFF_1_JPEG_BUFF_2 )
     {
         if ( buff_ctrl_ptr->rx_buffer_2_valid ) ptr = &buff_ctrl_ptr->rx_buffer_2;
     }
-
     else
     {
         if ( buff_ctrl_ptr->rx_buffer_1_valid ) ptr = &buff_ctrl_ptr->rx_buffer_1;
@@ -141,7 +139,7 @@ frame_unpacked_t* buff_ctrl_get_jpeg_dst()
     }
     else
     {
-        if ( buff_ctrl_ptr->frame_unpacked_1_valid ) ptr = &buff_ctrl_ptr->frame_unpacked_1;
+        ptr                                   = &buff_ctrl_ptr->frame_unpacked_1;
         buff_ctrl_ptr->frame_unpacked_1_valid = 0;
     }
     xSemaphoreGive( xSemaphore );
@@ -178,17 +176,16 @@ eth_rx_buffer_t* buff_ctrl_get_eth_buff()
 void buff_ctrl_set_eth_buff_done( uint32_t data_received )
 {
     /* Marked valid by http task if jpeg received */
-    ESP_LOGI( TAG, "Mark eth buf done" );
     xSemaphoreTake( xSemaphore, portMAX_DELAY );
     if ( buff_ctrl_ptr->buff_state == BUFF_CTRL_WIFI_QSI_BUFF_1_JPEG_BUFF_2 )
     {
         buff_ctrl_ptr->rx_buffer_1.data_size = data_received;
-        buff_ctrl_ptr->rx_buffer_1_valid = data_received?1:0;
+        buff_ctrl_ptr->rx_buffer_1_valid     = data_received ? 1 : 0;
     }
     else
     {
         buff_ctrl_ptr->rx_buffer_2.data_size = data_received;
-        buff_ctrl_ptr->rx_buffer_2_valid = data_received?1:0;
+        buff_ctrl_ptr->rx_buffer_2_valid     = data_received ? 1 : 0;
     }
     xSemaphoreGive( xSemaphore );
 }
@@ -214,6 +211,4 @@ void copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 {
     /* Copy from code to PSRAM */
     ext_copy_static_pic_to_PSRAM( start_ptr );
-
-    // ESP_LOGI( TAG, "Copied Data to ADDR %" PRIx32, ( uint32_t ) start_ptr );
 }

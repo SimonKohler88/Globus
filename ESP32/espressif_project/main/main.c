@@ -27,7 +27,7 @@ void vApplicationIdleHook( void );
 
 /* Static Allocations for Freertos task instead of dynamic */
 StaticTask_t xHttpTaskBuffer;
-StackType_t xHttpTaskStack[ FREERTOS_STACK_SIZE_WIFI ];
+StackType_t xHttpTaskStack[ FREERTOS_STACK_SIZE_HTTP ];
 
 StaticTask_t xFPGACtrlTaskBuffer;
 StackType_t xFPGACtrlStack[ FREERTOS_STACK_SIZE_FPGA_CTRL ];
@@ -40,6 +40,10 @@ StackType_t xFPGAQSPIStack[ FREERTOS_STACK_SIZE_QSPI ];
 
 StaticTask_t xJPEGTaskBuffer;
 StackType_t xJPEGStack[ FREERTOS_STACK_SIZE_JPEG ];
+
+StaticTask_t xWIFITaskBuffer;
+StackType_t xWIFIStack[ FREERTOS_STACK_SIZE_WIFI ];
+
 
 /* Structures initialisation */
 static task_handles_t task_handles;  // for inter-task communication
@@ -73,7 +77,7 @@ void init_system()
 
     jpeg_init( &task_handles );
     // gpio_dump_io_configuration(stdout, SOC_GPIO_VALID_GPIO_MASK );
-    wifi_receive_init();
+    // wifi_receive_init();
 
 }
 
@@ -89,6 +93,15 @@ void app_main( void )
     //                                                        xFPGACtrlStack,                /* Array to use as the task's stack. */
     //                                                        &xFPGACtrlTaskBuffer,          /* Variable to hold the task's data structure. */
     //                                                        0 );                           /* Core which executes the task*/
+    task_handles.WIFI_task_handle =
+        xTaskCreateStaticPinnedToCore( wifi_receive_init_task,             /* Function that implements the task. */
+                                       "wifi_task",                /* Text name for the task. */
+                                       FREERTOS_STACK_SIZE_WIFI, /* Number of indexes in the xStack array. */
+                                       &task_handles,                     /* Parameter passed into the task. */
+                                       tskIDLE_PRIORITY + 5,            /* Priority at which the task is created. */
+                                       xWIFIStack,             /* Array to use as the task's stack. */
+                                       &xWIFITaskBuffer,       /* Variable to hold the task's data structure. */
+                                       0 );                             /* Core which executes the task*/
 
 
     task_handles.status_control_task_handle =
@@ -116,7 +129,7 @@ void app_main( void )
 
     task_handles.http_task_handle = xTaskCreateStaticPinnedToCore( http_task,                /* Function that implements the task. */
                                                                    "http_task",              /* Text name for the task. */
-                                                                   FREERTOS_STACK_SIZE_WIFI, /* Number of indexes in the xStack array. */
+                                                                   FREERTOS_STACK_SIZE_HTTP, /* Number of indexes in the xStack array. */
                                                                    ( void* ) 1,              /* Parameter passed into the task. */
                                                                    tskIDLE_PRIORITY + 10,    /* Priority at which the task is created. */
                                                                    xHttpTaskStack,           /* Array to use as the task's stack. */

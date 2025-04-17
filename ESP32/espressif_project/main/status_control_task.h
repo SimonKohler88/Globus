@@ -24,10 +24,11 @@ struct
 struct
 {
     TaskHandle_t http_task_handle;
-    TaskHandle_t FPGA_ctrl_task_handle;
+    // TaskHandle_t FPGA_ctrl_task_handle;
     TaskHandle_t status_control_task_handle;
     TaskHandle_t FPGA_QSPI_task_handle;
     TaskHandle_t JPEG_task_handle;
+    TaskHandle_t WIFI_task_handle;
 
 } typedef task_handles_t;
 
@@ -64,6 +65,7 @@ struct
  * JPEG-> Ctrl, QSPI->Ctrl */
 #define TASK_NOTIFY_CTRL_QSPI_FINISHED_BIT 0x00
 #define TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT 0x01
+#define TASK_NOTIFY_CTRL_WIFI_FINISHED_BIT 0x02
 
 /* Task Notification for Inter Task communication
  * HTTP -> QSPI-Task */
@@ -82,6 +84,10 @@ struct
  */
 #define TASK_NOTIFY_JPEG_START_BIT          0x00
 
+/* Task Notification for Intertask comm
+ * Ctrl-->Wifi
+ */
+#define TASK_NOTIFY_WIFI_START_BIT          0x00
 /**
  * Initializes the status control with the given status pointers.
  *

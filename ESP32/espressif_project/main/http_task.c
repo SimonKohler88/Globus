@@ -29,17 +29,8 @@
 
 static const char* TAG = "http";
 
-static const char* REQUEST = "GET " WEB_PATH " HTTP/1.0\r\n"
-                             "Host: " WEB_SERVER ":" WEB_PORT "\r\n"
-                             "User-Agent: esp-idf/1.0 esp32\r\n"
-                             "\r\n";
-// static char* request[81] = "GET " WEB_PATH " HTTP/1.0\r\n"
-//                              "Host: " WEB_SERVER ":" WEB_PORT "\r\n"
-//                              "User-Agent: esp-idf/1.0 esp32\r\n"
-//                              "\r\n";
 static char request_buffer[ 100 ];
 
-// std::string url = mChannelData->getFrameURL() + "/" + std::to_string(videoTime);
 struct
 {
     struct addrinfo hints;
@@ -47,8 +38,6 @@ struct
     struct in_addr* addr;
     int s, r;
     char recv_buf[ 1024 ];
-    // uint8_t* psram_buffer;
-
     task_handles_t* task_handles;
 } typedef http_stat_t;
 
@@ -68,7 +57,6 @@ static uint8_t lookup_dns( http_stat_t* stat )
     if ( err != 0 || stat->res == NULL )
     {
         ESP_LOGE( TAG, "DNS lookup failed err=%d res=%p", err, stat->res );
-
         return 0;
     }
     return 1;
@@ -96,7 +84,6 @@ static uint8_t connect_socket( http_stat_t* stat )
 
 static uint8_t send_request( http_stat_t* stat )
 {
-    // if ( write( stat->s, REQUEST, strlen( REQUEST ) ) < 0 )
     if ( write( stat->s, request_buffer, strlen( request_buffer ) ) < 0 )
     {
         ESP_LOGE( TAG, "socket send failed" );
@@ -120,9 +107,6 @@ static uint8_t set_socket_timeout( http_stat_t* stat )
 
 static uint32_t receive_frame( http_stat_t* stat, eth_rx_buffer_t* eth_buff )
 {
-
-    //        ESP_LOGI(TAG, "... set socket receiving timeout success");
-
     uint32_t data_size = 0;
     uint8_t* buff_ptr  = eth_buff->buff_start_ptr;
     /* Read HTTP response */
@@ -130,14 +114,15 @@ static uint32_t receive_frame( http_stat_t* stat, eth_rx_buffer_t* eth_buff )
     {
         bzero( stat->recv_buf, sizeof( stat->recv_buf ) );
         stat->r = read( stat->s, stat->recv_buf, sizeof( stat->recv_buf ) - 1 );
-        memcpy( buff_ptr, stat->recv_buf, stat->r );
-        buff_ptr += stat->r;
         data_size += stat->r;
-        if ( data_size > HTTP_MAX_RECEIVE_BYTES_PER_IMG )
+        if ( data_size > IMAGE_JPEG_SIZE_BYTES )
         {
-            ESP_LOGE( TAG, "File size More than %" PRIu32, HTTP_MAX_RECEIVE_BYTES_PER_IMG );
+            ESP_LOGE( TAG, "File size More than %" PRIu32, ( uint32_t ) IMAGE_JPEG_SIZE_BYTES );
             return 0;
         }
+        memcpy( buff_ptr, stat->recv_buf, stat->r );
+        buff_ptr += stat->r;
+
     } while ( stat->r > 0 );
     return data_size;
 }
@@ -146,7 +131,7 @@ void http_task( void* pvParameters )
 {
     /* Task to get a frame by making a GET request to server.
      * It is triggered by TaskNotify.
-     * Will Notify Jpeg task
+     * Will Notify QSPI task
      */
     uint8_t ret         = 0;
     uint32_t data_size  = 0;
@@ -156,13 +141,6 @@ void http_task( void* pvParameters )
 
     eth_rx_buffer_t* eth_buff;
 
-    set_gpio_reserve_1_async( 0 );
-
-    // while ( http_stat.task_handles->http_task_handle == NULL || http_stat.task_handles->FPGA_QSPI_task_handle == NULL ||
-    //         http_stat.task_handles->JPEG_task_handle == NULL )
-    // {
-    //     vTaskDelay( 1 );
-    // }
 
     while ( 1 )
     {
@@ -174,27 +152,21 @@ void http_task( void* pvParameters )
          *  Clear on Entry
          *  Clear on Exit
          */
-        ESP_LOGI( TAG, "HTTP Req Start Waiting" );
+        if ( HTTP_TASK_VERBOSE ) ESP_LOGI( TAG, "HTTP Req Start Waiting" );
         xTaskNotifyWaitIndexed( TASK_NOTIFY_HTTP_START_BIT, ULONG_MAX, ULONG_MAX, &last_frame_time_used, portMAX_DELAY );
-        ESP_LOGI( TAG, "HTTP Req Start: dT %" PRIu32, last_frame_time_used );
-        set_gpio_reserve_1_async( 1 );
+        if ( HTTP_TASK_VERBOSE ) ESP_LOGI( TAG, "HTTP Req Start: dT %" PRIu32, last_frame_time_used );
 
         /* Get Buffer */
-
         eth_buff = buff_ctrl_get_eth_buff();
-
-        ESP_LOGI( TAG, "Buff: %" PRIxPTR, eth_buff );
 
         time_start = xTaskGetTickCount();
 
-        ESP_LOGI( TAG, "Lookup dns" );
         ret = lookup_dns( &http_stat );
         if ( !ret )
         {
             vTaskDelay( pdMS_TO_TICKS( 10 ) );
         }
 
-        ESP_LOGI( TAG, "create sock" );
         if ( ret )
         {
             /* Print the resolved IP. */
@@ -206,7 +178,6 @@ void http_task( void* pvParameters )
                 vTaskDelay( pdMS_TO_TICKS( 10 ) );
             }
         }
-        ESP_LOGI( TAG, "connect sock" );
         if ( ret )
         {
             ret = connect_socket( &http_stat );
@@ -216,14 +187,8 @@ void http_task( void* pvParameters )
             }
         }
         freeaddrinfo( http_stat.res );  //?
-        ESP_LOGI( TAG, "send req" );
         if ( ret )
         {
-            // TODO: put last_frame_time_used into get-request string
-            // static const char* REQUEST = "GET " WEB_PATH " HTTP/1.0\r\n"
-            //                  "Host: " WEB_SERVER ":" WEB_PORT "\r\n"
-            //                  "User-Agent: esp-idf/1.0 esp32\r\n"
-            //                  "\r\n";
             snprintf( request_buffer, 88,
                       "GET " WEB_PATH "/%" PRIu32 " HTTP/1.0\r\nHost: " WEB_SERVER ":" WEB_PORT "\r\nUser-Agent: esp-idf/1.0 esp32\r\n\r\n",
                       last_frame_time_used );
@@ -234,6 +199,7 @@ void http_task( void* pvParameters )
                 vTaskDelay( pdMS_TO_TICKS( 10 ) );
             }
         }
+
         if ( ret )
         {
             ret = set_socket_timeout( &http_stat );
@@ -242,7 +208,7 @@ void http_task( void* pvParameters )
                 vTaskDelay( pdMS_TO_TICKS( 10 ) );
             }
         }
-        ESP_LOGI( TAG, "rx data" );
+
         data_size = 0;
         if ( ret )
         {
@@ -255,14 +221,12 @@ void http_task( void* pvParameters )
         }
         close( http_stat.s );
 
-        set_gpio_reserve_1_async( 0 );
         uint32_t time = pdTICKS_TO_MS( xTaskGetTickCount() - time_start );
 
         /* set buffer valid if more than 0 data received */
-        // eth_buff->data_size = data_size;
         buff_ctrl_set_eth_buff_done( data_size );
 
-        ESP_LOGI( TAG, "http time=%" PRIu32, time );
+        if ( HTTP_TASK_VERBOSE ) ESP_LOGI( TAG, "http time=%" PRIu32, time );
 
         // Start QSPI Task
         xTaskNotifyIndexed( http_stat.task_handles->FPGA_QSPI_task_handle, TASK_NOTIFY_QSPI_START_BIT, data_size, eSetBits );

@@ -19,10 +19,7 @@ struct
 
 jpeg_ctrl_t jpeg_ctrl;
 
-void jpeg_init( task_handles_t* task_handles )
-{
-    jpeg_ctrl.task_handles = task_handles;
-}
+void jpeg_init( task_handles_t* task_handles ) { jpeg_ctrl.task_handles = task_handles; }
 
 static esp_err_t jpeg_unpack( uint8_t* src, uint8_t* dst, uint32_t in_size, uint32_t out_size )
 {
@@ -56,11 +53,7 @@ void jpeg_task( void* pvParameters )
     frame_unpacked_t* dst_ptr;
     esp_err_t jpeg_ret;
 
-    // while ( jpeg_ctrl.task_handles->status_control_task_handle == NULL )
-    // {
-    //     vTaskDelay( 1 );
-    // }
-    ESP_LOGI( TAG, "Enter Loop" );
+    if ( JPEG_TASK_VERBOSE ) ESP_LOGI( TAG, "Enter Loop" );
     while ( 1 )
     {
         if ( jpeg_ctrl.task_handles->status_control_task_handle == NULL )
@@ -73,7 +66,7 @@ void jpeg_task( void* pvParameters )
          * Clear on Exit
          */
         xTaskNotifyWaitIndexed( TASK_NOTIFY_JPEG_START_BIT, pdFALSE, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY );
-        ESP_LOGI( TAG, "Start JPEG Conversion" );
+        if ( JPEG_TASK_VERBOSE ) ESP_LOGI( TAG, "Start JPEG Conversion" );
 
         /* Get current Buffer ptr */
         src_ptr = buff_ctrl_get_jpeg_src();
@@ -81,16 +74,25 @@ void jpeg_task( void* pvParameters )
         {
             /* http task failed to receive in this buffer-> do not calc */
             jpeg_ret = ESP_FAIL;
+            ESP_LOGE( TAG, "No Ptr" );
         }
         else
         {
             dst_ptr  = buff_ctrl_get_jpeg_dst();
             /* Decompress JPEG. Note: jpeg must be in YCrCb Colorspace */
             jpeg_ret = jpeg_unpack( src_ptr->buff_start_ptr, dst_ptr->frame_start_ptr, src_ptr->data_size, dst_ptr->total_size );
+            if ( jpeg_ret != ESP_OK )
+            {
+                ESP_LOGE( TAG, "JPEG Conversion Failed" );
+            }
         }
 
-        if ( jpeg_ret != ESP_OK ) buff_ctrl_set_jpec_dst_done( 1 );
-        else buff_ctrl_set_jpec_dst_done( 0 );
+        if ( jpeg_ret != ESP_OK )
+        {
+            buff_ctrl_set_jpec_dst_done( 0 );
+            ESP_LOGE( TAG, "JPEG Conversion Failed" );
+        }
+        else buff_ctrl_set_jpec_dst_done( 1 );
 
         /* Done. Notify Ctrl */
         xTaskNotifyIndexed( jpeg_ctrl.task_handles->status_control_task_handle, TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT, 0, eSetBits );

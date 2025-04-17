@@ -20,12 +20,10 @@
 void qspi_post_transaction_cb( spi_transaction_t* trans );
 void set_cs_gpio( uint8_t state );
 
-#define QSPI_TAG                            "QSPI"
+#define QSPI_TAG                    "QSPI"
 
-
-
-#define QSPI_MAX_TRANSFER_SIZE              32768   // 2**18 / 8
-#define QSPI_MAX_TRANSFER_SIZE_BITS         262143  // 2**18 -1
+#define QSPI_MAX_TRANSFER_SIZE      32768   // 2**18 / 8
+#define QSPI_MAX_TRANSFER_SIZE_BITS 262143  // 2**18 -1
 
 static spi_device_handle_t qspi_handle;
 frame_unpacked_t* qspi_frame_info = NULL;
@@ -199,7 +197,12 @@ void set_cs_gpio( uint8_t state )
     if ( ret != ESP_OK ) ESP_LOGE( "QSPI", "Err Set CS: %d", ret );
 }
 
-#define TEST 0
+#ifndef DEVELOPMENT_SET_QSPI_ON_PIN_OUT
+    #define QSPI_TEST 0
+#else
+    #define QSPI_TEST 1
+#endif
+
 void fpga_qspi_task( void* pvParameter )
 {
 
@@ -211,21 +214,21 @@ void fpga_qspi_task( void* pvParameter )
     // gpio_set_level( QSPI_PIN_CS0, 1 );
     ESP_ERROR_CHECK( gpio_set_direction( QSPI_PIN_CS0, GPIO_MODE_OUTPUT ) );
     set_cs_gpio( 1 );
-    ESP_LOGI( "QSPI", "Enter Loop" );
+    if ( QSPI_TASK_VERBOSE ) ESP_LOGI( "QSPI", "Enter Loop" );
     while ( 1 )
     {
         /* wait for http task to notify us
          * clear on Entry, clear on exit
          */
         xTaskNotifyWaitIndexed( TASK_NOTIFY_QSPI_START_BIT, ULONG_MAX, ULONG_MAX, &ulNotifiedValuefromHTTP, portMAX_DELAY );
-        ESP_LOGI( "QSPI", "Start" );
+        if ( QSPI_TASK_VERBOSE ) ESP_LOGI( "QSPI", "Start" );
 
         // wait for ISR to notify us
         // xTaskNotifyWaitIndexed( TASK_NOTIFY_QSPI_START_FRAME_BIT, ULONG_MAX, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY );
         uint8_t frame_sent = 0;
         esp_err_t spi_ret  = ESP_OK;
 
-#if ( TEST == 0 ) /* No test, Running hot. */
+#if ( QSPI_TEST == 0 ) /* No test, Running hot. */
         qspi_frame_info = buff_ctrl_get_qspi_src();
         if ( qspi_frame_info != NULL )
         {
@@ -237,10 +240,10 @@ void fpga_qspi_task( void* pvParameter )
         }
         else
         {
-            ESP_LOGI( "QSPI", "Invalid Frame" );
+            ESP_LOGW( "QSPI", "Invalid Frame" );
         }
 
-#elif ( TEST == 1 ) /* Testing with static picture in PSRAM */
+#elif ( QSPI_TEST == 1 ) /* Testing with static picture in PSRAM */
         if ( qspi_frame_info == NULL ) qspi_frame_info = buff_ctrl_get_static_frame();
         else
         {
@@ -256,7 +259,7 @@ void fpga_qspi_task( void* pvParameter )
                           ( uint32_t ) qspi_frame_info->size );
         }
 
-#elif ( TEST == 2 ) /* Testwise sending small buffer. uncomment the static memory on top of the file */
+#elif ( QSPI_TEST == 2 ) /* Testwise sending small buffer. uncomment the static memory on top of the file */
         set_cs_gpio( 0 );
         qspi_DMA_write_debug_test( test_data, 256 );
         xTaskNotifyWaitIndexed( TASK_NOTIFY_QSPI_FRAME_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifiedValue, 5 );
@@ -270,7 +273,6 @@ void fpga_qspi_task( void* pvParameter )
             uint8_t success = 0;
             for ( uint8_t i = 0; i < ( uint8_t ) ( qspi_frame_info->total_size / QSPI_MAX_TRANSFER_SIZE + 1 ); i++ )
             {
-                // set_cs_gpio( 0 );
                 // ESP_LOGI( "QSPI", "waiting for finishing transfer" );
                 //  wait for Post-DMA-ISR to notify us
                 xResult = xTaskNotifyWaitIndexed( TASK_NOTIFY_QSPI_FRAME_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifiedValue, 5 );
@@ -284,8 +286,6 @@ void fpga_qspi_task( void* pvParameter )
                     }
 
                     spi_ret = copy_and_send_bulk();
-                    // uint32_t size = qspi_frame_info->total_size;
-                    // ESP_LOGI( "QSPI", "next piece totalsize:%"PRIu32" size %"PRIu32" ", size, qspi_frame_info->size );
                     if ( spi_ret != ESP_OK )
                     {
                         success = 0;
@@ -295,11 +295,10 @@ void fpga_qspi_task( void* pvParameter )
                 else success = 0;  // timed out
             }
             set_cs_gpio( 1 );
-            // fifo_mark_frame_4_fpga_done();
 
             if ( success )
             {
-                ESP_LOGI( "QSPI", "success" );
+                if ( QSPI_TASK_VERBOSE ) ESP_LOGI( "QSPI", "success" );
             }
             else
             {
@@ -311,8 +310,10 @@ void fpga_qspi_task( void* pvParameter )
             qspi_ctrl.status->missed_spi_transfers++;
         }
 
+#ifndef DEVELOPMENT_SET_QSPI_ON_PIN_OUT
         /* Notify Ctrl */
-        ESP_LOGI( "QSPI", "Done" );
+        if ( QSPI_TASK_VERBOSE ) ESP_LOGI( "QSPI", "Done" );
         xTaskNotifyIndexed( qspi_ctrl.task_handles->status_control_task_handle, TASK_NOTIFY_CTRL_QSPI_FINISHED_BIT, 0, eSetBits );
+#endif
     }
 }
