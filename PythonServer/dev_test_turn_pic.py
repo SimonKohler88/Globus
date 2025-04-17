@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 
@@ -74,19 +75,56 @@ class Quaternion(object):
 
 if __name__ == '__main__':
     pic_bmp = "Earth_relief_120x256.bmp"
-    img = cv2.imread(pic_bmp)
-    img2 = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
-    blank_image = np.zeros(img2.shape, np.uint8)
+    img = cv2.imread(pic_bmp, cv2.IMREAD_COLOR_RGB)
+    print(img.shape)
 
-    d_x = 50
+    theta_v = np.deg2rad(90)
+    phi_v = np.deg2rad(90)
+    xA = np.sin(theta_v) * np.cos(phi_v)
+    yA = np.sin(theta_v) * np.sin(phi_v)
+    zA = np.cos(theta_v)
 
-    for x in range(img2.shape[1]):
-        for y in range(img2.shape[0]):
-            y_new = int(y * np.cos((1 - np.cos(x)) * x))
-            x_new = x + d_x
-            if x_new >= img2.shape[1]:
-                x_new = x_new - img2.shape[1]
-            blank_image[y][x] = img2[y_new][x_new]
+    alpha = np.deg2rad(23.4)
+    x_max = img.shape[1]
+    y_max = img.shape[0]
+    x_half = x_max / 2
+    y_half = y_max / 2
 
-    cv2.imshow('win', img)
-    cv2.waitKey(0)
+    img_out = np.zeros((img.shape[0] * 2, img.shape[1] * 2, img.shape[2]), np.uint8)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    for y, row in enumerate(img):
+        for x in range(len(row)):
+            # normalize y to [-pi/2 ... pi/2]
+            y_norm = ((y) / y_max) * (np.pi)
+            # normalize x to [-pi ... pi]
+            x_norm = ((x) / x_max) * np.pi * 2
+
+            theta_p = y_norm
+            phi_p = x_norm
+            xB = np.sin(theta_p) * np.cos(phi_p)
+            yB = np.sin(theta_p) * np.sin(phi_p)
+            zB = np.cos(theta_p)
+            qB = Quaternion(0, xB, yB, zB)
+            qA = Quaternion(np.cos(0.5 * alpha), xA * np.sin(0.5 * alpha), yA * np.sin(0.5 * alpha),
+                            zA * np.sin(0.5 * alpha))
+            qAi = qA.conjugate()
+            qBr = qA * (qB * qAi)
+            # phi_n, theta_n = qBr.to_axisangle()
+            # y_n = int(phi_n / np.pi * y_max)
+            # x_n = int(theta_n / np.pi * x_max)
+            pix = img[y][x]
+            # img_out[y_n][x_n] = pix
+
+            x_n, y_n, z_n = qBr.to_xyz()
+            col = f'#{pix[0]:02x}{pix[1]:02x}{pix[2]:02x}'
+            ax.plot([x_n], [y_n], [z_n], marker='o', color=col)
+
+            # pix = img[y_n][x_n]
+            # img_out[y][x] = pix
+            # print(x_norm, y_norm, x_n, y_n)
+
+    plt.show()
+    # plt.imshow(img_out)
