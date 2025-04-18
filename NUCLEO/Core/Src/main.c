@@ -61,7 +61,7 @@ static MOT_CTRL_t motor_control = {
 };
 
 static INDUCTION_t induction = {
-    .i2c_if = { .duty_cycle = 50, .frequency = 10000, .dead_time = 100 },
+    .i2c_if = { .duty_cycle = 50, .frequency = 11000, .dead_time = 100 },
 };
 
 static TRIPLE_ADC_t adc_triplet = {};
