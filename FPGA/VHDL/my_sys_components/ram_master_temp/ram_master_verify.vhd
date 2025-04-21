@@ -253,9 +253,9 @@ begin
     -- check : must be a endofpacket after startofpacket
     assert always aso_out0_startofpacket -> eventually! aso_out0_endofpacket;
 	p_stimuli_avs_out: process
-        alias dut_const_row2row_offset is <<constant .ram_master_tb.dut_ram_master.C_ADDR_ROW_TO_ROW_OFFSET:integer>>;
-        alias addr_b_col_shift_offset is <<constant .ram_master_tb.dut_ram_master.C_ADDR_B_COL_SHIFT_OFFSET:integer>>;
-        alias image_cols is <<constant .ram_master_tb.dut_ram_master.C_IMAGE_COLS:integer>>;
+        -- alias dut_const_row2row_offset is <<constant .ram_master_tb.dut_ram_master.C_ADDR_ROW_TO_ROW_OFFSET:integer>>;
+        -- alias addr_b_col_shift_offset is <<constant .ram_master_tb.dut_ram_master.C_ADDR_B_COL_SHIFT_OFFSET:integer>>;
+        -- alias image_cols is <<constant .ram_master_tb.dut_ram_master.C_IMAGE_COLS:integer>>;
 
 	begin
         aso_out0_data <= (others => '0');
@@ -265,9 +265,9 @@ begin
         transfer_out_ongoing <= '0';
         s_dump_ram <= '0';
         input_file <= '0';
-        write(output, "addr row2row off: " & to_string(dut_const_row2row_offset) & lf);
-        write(output, "addr_b_col_shift_offset: " & to_string(addr_b_col_shift_offset) & lf);
-        write(output, "image_cols: " & to_string(image_cols) & lf);
+        -- write(output, "addr row2row off: " & to_string(dut_const_row2row_offset) & lf);
+        -- write(output, "addr_b_col_shift_offset: " & to_string(addr_b_col_shift_offset) & lf);
+        -- write(output, "image_cols: " & to_string(image_cols) & lf);
         write(output, "------------------------------------------------" & lf);
 
         wait for 50 ns;
@@ -317,19 +317,19 @@ begin
         pulse_out(conduit_intern_col_fire, clock_clk);
         wait for 3 us;
         wait on asi_in1_endofpacket;
-        wait for 40 ns;
+        wait for 10 us;
         conduit_intern_col_nr(3 downto 0) <= X"1";
         pulse_out(conduit_intern_col_fire, clock_clk);
 
         wait until rising_edge(asi_in1_endofpacket);
-        wait for 50 ns;
+        wait for 10 us;
         conduit_intern_col_nr(3 downto 0) <= X"6";
         pulse_out(conduit_intern_col_fire, clock_clk);
 
         wait until falling_edge(asi_in1_endofpacket);
 
         test_ongoing <= '0';
-        wait for 1 us;
+        wait for 10 us;
 
         -- test case 1: check if write works with delayed ready->valid, correct memory-space swap
         test_case_nr <= 1;

@@ -1,9 +1,15 @@
+# Ignore all
+*
+# Unignore all with extensions
+!*.*
+
 *.bak
 *.vcd
 *.cf
 *.ghw
 *.do
 *.wlf
+*.o
 *transcript
 /wave_data
 

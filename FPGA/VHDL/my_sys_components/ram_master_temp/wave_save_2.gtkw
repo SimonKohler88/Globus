@@ -1,15 +1,15 @@
 [*]
-[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Sun Apr 06 08:58:58 2025
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Mon Apr 21 14:32:22 2025
 [*]
-[dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\ram_master_temp\func.ghw"
-[dumpfile_mtime] "Sun Apr 06 08:58:30 2025"
-[dumpfile_size] 1876077
-[savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\ram_master_temp\wave_save_2.gtkw"
-[timestart] 96932
-[size] 1920 1017
+[dumpfile] "/home/simon/Documents/GitHub/Globus/FPGA/VHDL/my_sys_components/ram_master_temp/func.ghw"
+[dumpfile_mtime] "Mon Apr 21 14:29:26 2025"
+[dumpfile_size] 2031529
+[savefile] "/home/simon/Documents/GitHub/Globus/FPGA/VHDL/my_sys_components/ram_master_temp/wave_save_2.gtkw"
+[timestart] 145400000000
+[size] 1868 981
 [pos] -1 -1
-*-8.000000 150636 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-32.299999 163770000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.ram_master_tb.
 [treeopen] top.ram_master_tb.dut_ram_master.
@@ -49,6 +49,9 @@ top.ram_master_tb.dut_ram_master.aso_out0_a_valid
 @28
 top.ram_master_tb.dut_ram_master.active_aso_valid
 top.ram_master_tb.dut_ram_master.aso_out1_b_valid
+@29
+#{top.ram_master_tb.dut_ram_master.valid_ff[1:0]} top.ram_master_tb.dut_ram_master.valid_ff[1] top.ram_master_tb.dut_ram_master.valid_ff[0]
+@28
 top.ram_master_tb.dut_ram_master.aso_out1_b_startofpacket
 top.ram_master_tb.verify_ram_master.asi_in1_startofpacket
 @22
