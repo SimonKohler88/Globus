@@ -85,7 +85,7 @@ architecture rtl of led_interface is
 	signal pix_out_D :t_pixel_buffer_out_array := (others =>(others => '0'));
 
 	signal start_spi_pulse :std_logic;
-	signal spi_pulse_stretch :std_logic_vector(6 downto 0);
+	signal spi_pulse_stretch :std_logic_vector(12 downto 0);
 	signal sync_start_spi_pulse_ff :std_logic_vector(1 downto 0);
 	signal sync_start_spi_pulse  :std_logic;
 
@@ -152,11 +152,12 @@ begin
                 );
 
 			when t_fifo_check=>
+				-- Must enable redirection of fp-input. Check commented line below (ca line 182)
 				conduit_debug_led_led_dbg_out <= (others => '0');
-
 				conduit_debug_led_led_dbg_out_2 <= (
                     0 => conduit_fire,
                     1 => ram_to_buff_in_progress,
+                    2 => asi_in0_valid or asi_in1_valid,
                     3 => spi_fake_cs,
                     others=>'0'
                 );
@@ -178,7 +179,9 @@ begin
 	conduit_col_info_out_fire <= fire_out;
 	spi_fake_cs <= not spi_in_progress;
 	
-	conduit_fire_signal <= conduit_debug_led_led_dbg_in(0) when test_state=t_fifo_check else conduit_fire;
+	-- dangerous line: discards real fp, takes debug fp instead when in t_fifo_check
+	-- conduit_fire_signal <= conduit_debug_led_led_dbg_in(0) when test_state=t_fifo_check else conduit_fire;
+	conduit_fire_signal <= conduit_fire;
 
 	p_fire_delay : process(all)
 	begin
@@ -326,16 +329,17 @@ begin
 					pix_out_D(d)(28 downto 24)  <= BRIGHTNESS;
 				end loop;
 
-				spi_pulse_stretch <= spi_pulse_stretch(5 downto 0) & "1";
+				spi_pulse_stretch <= spi_pulse_stretch(11 downto 0) & "1";
 			else
-				spi_pulse_stretch <= spi_pulse_stretch(5 downto 0) & "0";
+				spi_pulse_stretch <= spi_pulse_stretch(11 downto 0) & "0";
 			end if;
 		end if;
 	end process;
 
 	-- stretch spi start pulse for clock domain crossing
-	start_spi_pulse <= spi_pulse_stretch(6) or spi_pulse_stretch(5) or spi_pulse_stretch(4) or spi_pulse_stretch(3) or
-					   spi_pulse_stretch(2) or spi_pulse_stretch(1) or spi_pulse_stretch(0);
+	start_spi_pulse <= spi_pulse_stretch(11) or spi_pulse_stretch(10) or spi_pulse_stretch(9) or spi_pulse_stretch(8) 
+					or spi_pulse_stretch(7)  or spi_pulse_stretch(6) or spi_pulse_stretch(5) or spi_pulse_stretch(4) 
+					or spi_pulse_stretch(3) or spi_pulse_stretch(2) or spi_pulse_stretch(1) or spi_pulse_stretch(0);
 
 	-- generate start pulse in spi clock domain
 	p_spi_sync: process(all)

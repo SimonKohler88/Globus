@@ -220,8 +220,10 @@ begin
 				conduit_debug_ram_out_2(31 downto 0) <= (others => '0');
 
 				conduit_debug_ram_out <= (
-					24 => test_pack_sig, -- sop
-					25 => test_pack_sig_2, -- eop
+					-- 24 => test_pack_sig, -- sop
+					24 => aso_out0_startofpacket_1 or aso_out1_B_startofpacket, -- sop
+					-- 25 => test_pack_sig_2, -- eop
+					25 => aso_out0_endofpacket_1 or aso_out1_B_endofpacket, -- eop
 					26 => asi_in0_valid,
 					27 => asi_in0_ready,
 					others => '0'
@@ -437,9 +439,15 @@ begin
 
 		elsif stage=3 then
 			addr_b_preload <= addr_b_preload + addr_adder + C_IMAGE_COLS + C_IMAGE_COLS;
-
-			stage := 0;
-
+			addr_ready <= '1';
+			stage := 4;
+			
+		elsif stage=4 then -- wait until read state has seen signal
+			addr_ready <= '1';
+			
+			if main_state=main_read then
+				stage := 0;
+			end if;
 		else
 			-- reset when signal has been read by statemachine
 			if addr_ready='1' and read_state /= idle then
