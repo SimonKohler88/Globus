@@ -8,10 +8,10 @@
 #ifndef MAIN_STATUS_CONTROL_TASK_H_
 #define MAIN_STATUS_CONTROL_TASK_H_
 
-#include "PSRAM_FIFO.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "led_strip.h"
+#include "pic_buffer.h"
 #include "stdint.h"
 
 /* Structure for Interface */
@@ -19,6 +19,18 @@ struct
 {
 
 } typedef status_control_status_t;
+
+/* Task Handles for intertask communication */
+struct
+{
+    TaskHandle_t http_task_handle;
+    // TaskHandle_t FPGA_ctrl_task_handle;
+    TaskHandle_t status_control_task_handle;
+    TaskHandle_t FPGA_QSPI_task_handle;
+    TaskHandle_t JPEG_task_handle;
+    TaskHandle_t WIFI_task_handle;
+
+} typedef task_handles_t;
 
 /* Command possibilities for task from ETH */
 enum
@@ -35,21 +47,13 @@ struct
     uint32_t value;
 } typedef status_control_command_t;
 
-enum
-{
-    WIFI_TFTP_IDLE,
-    WIFI_TFTP_FRAME_REQUESTED,
-    WIFI_TFTP_IN_PROGRESS,
-};
-typedef uint8_t wifi_tftp_state_t;
-
 /* Internal Structure */
 struct
 {
     status_control_status_t* status;
     QueueHandle_t command_queue_handle;
-    fifo_status_t* fifo_status;
-    wifi_tftp_state_t wifi_tftp_state;
+
+    task_handles_t* task_handles;
 
     /* LED Blink */
     led_strip_handle_t led_strip;
@@ -57,6 +61,33 @@ struct
 
 } typedef command_control_task_t;
 
+/* Bit definitions for inter-Task communication Rendevous
+ * JPEG-> Ctrl, QSPI->Ctrl */
+#define TASK_NOTIFY_CTRL_QSPI_FINISHED_BIT 0x00
+#define TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT 0x01
+#define TASK_NOTIFY_CTRL_WIFI_FINISHED_BIT 0x02
+
+/* Task Notification for Inter Task communication
+ * HTTP -> QSPI-Task */
+#define TASK_NOTIFY_QSPI_START_BIT          0x00
+/* Internal QSPI-Task Notification Bits */
+#define TASK_NOTIFY_QSPI_START_FRAME_BIT    0x01
+#define TASK_NOTIFY_QSPI_FRAME_FINISHED_BIT 0x02
+
+/* Task Notification for Inter Task communication with HTTP-Task
+ * Ctrl -> HTTP
+ */
+#define TASK_NOTIFY_HTTP_START_BIT          0x00
+
+/* Task Notification for Inter Task communication with JPEG-Task
+ * Ctrl -> JPEG
+ */
+#define TASK_NOTIFY_JPEG_START_BIT          0x00
+
+/* Task Notification for Intertask comm
+ * Ctrl-->Wifi
+ */
+#define TASK_NOTIFY_WIFI_START_BIT          0x00
 /**
  * Initializes the status control with the given status pointers.
  *
@@ -71,7 +102,9 @@ struct
  *                            structure that manages internal command
  *                            and status handling for the task.
  */
-void status_control_init( status_control_status_t* status_ptr, command_control_task_t* internal_status_ptr, fifo_status_t* fifo_status );
+void status_control_init( status_control_status_t* status_ptr, command_control_task_t* internal_status_ptr, task_handles_t* task_handles );
+
+void set_gpio_reserve_1_async( uint8_t value );
 
 /**
  * @brief Task function for controlling status operations. This task manages the

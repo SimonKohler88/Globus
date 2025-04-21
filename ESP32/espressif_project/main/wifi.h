@@ -13,60 +13,8 @@
 
 #include "freertos/FreeRTOS.h"
 
-#include "PSRAM_FIFO.h"
 #include "inttypes.h"
 
-
-/* State of UDP Send Control */
-enum
-{
-    WIFI_CTRL_IDLE,
-    WIFI_CTRL_WAIT_FIRST_PKT,
-    WIFI_CTRL_DATA_TRANSFER
-};
-typedef uint8_t WIFI_CTRL_STATE_t;
-
-/* To communicate from UDP RX Task -> UDP Send Task (Ctrl) */
-enum
-{
-    WIFI_FIRST_PACKET_RECEIVED,
-    WIFI_DATA_TRANSFER_COMPLETED,
-    WIFI_DATA_TRANSFER_ERROR,
-};
-typedef uint32_t WIFI_EVENT_MSG_t;
-
-/* Internal WIFI Structure */
-struct
-{
-    int UDP_socket;
-    fifo_frame_t* current_frame_download;
-    uint16_t tftp_block_number;
-    uint16_t s_retry_num;
-    uint8_t wifi_connected;
-    WIFI_CTRL_STATE_t wifi_ctrl_state;
-
-} typedef WIFI_STAT_INTERNAL_t;
-
-/* TFTP Opcodes */
-typedef enum
-{
-    eReadRequest = 1,
-    eWriteRequest,
-    eData,
-    eAck,
-    eError
-} eTFTPOpcode_t;
-
-/* Error codes from the RFC. */
-typedef enum
-{
-    eFileNotFound = 1,
-    eAccessViolation,
-    eDiskFull,
-    eIllegalTFTPOperation,
-    eUnknownTransferID,
-    eFileAlreadyExists
-} eTFTPErrorCode_t;
 
 /**
  * @brief Initializes the Wi-Fi receive functionality.
@@ -86,38 +34,7 @@ typedef enum
  * Any errors in initializing components will be handled using the ESP_ERROR_CHECK mechanism,
  * which stops execution in case of failure.
  */
-void wifi_receive_init( void );
-
-/**
- * @brief Task to handle receiving UDP packets over Wi-Fi connection.
- *
- * @param pvParameters Pointer to the task parameters.
- *
- * This function runs continuously and performs the following operations:
- * - Checks if Wi-Fi is connected.
- * - Creates a UDP socket.
- * - Receives UDP packets as long as Wi-Fi remains connected.
- * - If a socket error occurs or if Wi-Fi disconnects, the socket is shut down, and the task waits before retrying.
- *
- * The task yields control using taskYIELD during packet reception to allow other tasks to run.
- * If HW_SETTINGS_DEBUG is enabled, socket creation and socket closing events are logged.
- */
-void wifi_receive_udp_task( void* pvParameters );
-
-/**
- * @brief Task responsible for sending UDP packets over WiFi.
- *
- * This function handles the sending of specific UDP packets that need to
- * be resent under certain conditions. It initializes a task command
- * queue and consistently checks this queue for commands to send UDP
- * packets. It ensures that sending only occurs if the device is connected
- * to a WiFi network and has a valid UDP socket.
- *
- * @param pvParameters Pointer to any parameters passed to the task upon creation.
- *                     Generally used in FreeRTOS tasks to pass runtime-specific
- *                     information, although not used explicitly in this function.
- */
-void wifi_send_udp_task( void* pvParameters );
+void wifi_receive_init_task( void* pvParameter );
 
 /**
  * @brief Checks if the Wi-Fi is currently connected.

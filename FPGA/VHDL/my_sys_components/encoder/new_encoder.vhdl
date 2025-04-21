@@ -90,6 +90,7 @@ begin
 
 			when t1 =>
 				conduit_debug_enc_enc_dbg_out <= (others => '0');
+				conduit_debug_enc_enc_dbg_out(2 downto 0) <= std_logic_vector(column_counter(4 downto 2));
 				conduit_debug_enc_enc_dbg_out_2 <= (
 					0 => conduit_intern_col_fire,
 					1 => sync_a,

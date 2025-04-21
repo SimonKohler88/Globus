@@ -49,7 +49,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -85,7 +85,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -121,7 +121,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -157,7 +157,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -193,7 +193,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -229,7 +229,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -265,7 +265,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -301,7 +301,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -337,7 +337,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -373,7 +373,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -409,7 +409,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -445,7 +445,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -481,7 +481,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -517,7 +517,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -553,7 +553,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -589,7 +589,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -625,7 +625,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -661,7 +661,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -697,7 +697,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -733,7 +733,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -769,7 +769,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -805,7 +805,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -841,7 +841,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -877,7 +877,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -913,7 +913,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -949,7 +949,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -985,7 +985,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1021,7 +1021,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1057,7 +1057,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1093,7 +1093,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1129,7 +1129,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1165,7 +1165,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1201,7 +1201,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1237,7 +1237,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1273,7 +1273,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1309,7 +1309,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1345,7 +1345,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1381,7 +1381,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1417,7 +1417,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1453,7 +1453,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1489,7 +1489,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1525,7 +1525,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1561,7 +1561,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1597,7 +1597,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1633,7 +1633,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1669,7 +1669,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1705,7 +1705,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1741,7 +1741,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1777,7 +1777,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1813,7 +1813,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1849,7 +1849,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1885,7 +1885,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1921,7 +1921,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1957,7 +1957,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -1993,7 +1993,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2029,7 +2029,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2065,7 +2065,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2101,7 +2101,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2137,7 +2137,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2173,7 +2173,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2209,7 +2209,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2245,7 +2245,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2281,7 +2281,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2317,7 +2317,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2353,7 +2353,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2389,7 +2389,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2425,7 +2425,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2461,7 +2461,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2497,7 +2497,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2533,7 +2533,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2569,7 +2569,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2605,7 +2605,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2641,7 +2641,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2677,7 +2677,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2713,7 +2713,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2749,7 +2749,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2785,7 +2785,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2821,7 +2821,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2857,7 +2857,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2893,7 +2893,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2929,7 +2929,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -2965,7 +2965,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3001,7 +3001,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3037,7 +3037,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3073,7 +3073,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3109,7 +3109,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3145,7 +3145,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3181,7 +3181,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3217,7 +3217,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3253,7 +3253,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3289,7 +3289,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3325,7 +3325,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3361,7 +3361,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3397,7 +3397,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3433,7 +3433,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3469,7 +3469,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3505,7 +3505,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3541,7 +3541,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3577,7 +3577,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3613,7 +3613,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3649,7 +3649,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3685,7 +3685,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3721,7 +3721,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3757,7 +3757,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3793,7 +3793,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3829,7 +3829,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3865,7 +3865,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3901,7 +3901,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3937,7 +3937,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -3973,7 +3973,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4009,7 +4009,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4045,7 +4045,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4081,7 +4081,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4117,7 +4117,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4153,7 +4153,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4189,7 +4189,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4225,7 +4225,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4261,7 +4261,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4297,7 +4297,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4333,7 +4333,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4369,7 +4369,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4405,7 +4405,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4441,7 +4441,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4477,7 +4477,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4513,7 +4513,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4549,7 +4549,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4585,7 +4585,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4621,7 +4621,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4657,7 +4657,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4693,7 +4693,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4729,7 +4729,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4765,7 +4765,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4801,7 +4801,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4837,7 +4837,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4873,7 +4873,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4909,7 +4909,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4945,7 +4945,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -4981,7 +4981,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -5017,7 +5017,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -5053,7 +5053,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -5089,7 +5089,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -5125,7 +5125,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -5161,7 +5161,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -5197,7 +5197,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -5233,7 +5233,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -5269,7 +5269,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -5305,7 +5305,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -5341,7 +5341,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -5377,7 +5377,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -5413,7 +5413,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -5449,7 +5449,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -5485,7 +5485,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -5521,7 +5521,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -5557,7 +5557,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -5593,7 +5593,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -5629,7 +5629,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -5665,7 +5665,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -5701,7 +5701,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
@@ -5737,7 +5737,7 @@ void ext_copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 	}};
 
 	memcpy( temp_ptr, &copy_buff, 576);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	temp_ptr += 576;
 	copy_buff = ( copy_buff_t ){ .buff={
