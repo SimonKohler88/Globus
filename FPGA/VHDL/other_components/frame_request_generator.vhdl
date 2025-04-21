@@ -110,6 +110,7 @@ begin
 			dbg_enc_counter_is_counting <= '0';
 			dbg_enc_counter <= 0;
 		elsif rising_edge(clock_clk) then
+			dbg_enc_out <= '0';
 			if enable_pin_input_intern then
 
 				if pulse_out_pin_in_intern='1' then
@@ -125,6 +126,11 @@ begin
 						dbg_enc_counter_is_counting <= '0';
 						dbg_enc_counter <= 0;
 					end if;
+					
+					if dbg_enc_counter=dbg_enc_after_req0_clocks then
+						dbg_enc_out <= '1';
+					end if;
+					
 				end if;
 			else
 				dbg_enc_counter_is_counting <= '0';
@@ -133,8 +139,8 @@ begin
 		end if;
 	end process;
 
-	dbg_enc_pulse_out_intern <=  '1' when dbg_enc_counter=dbg_enc_after_req0_clocks or dbg_enc_counter=dbg_enc_counter_first_pulse else '0';
-	dbg_enc_out <= '1' when dbg_enc_enable_intern and enable_pin_input_intern and dbg_enc_pulse_out_intern else '0';
+	-- dbg_enc_pulse_out_intern <=  '1' when dbg_enc_counter=dbg_enc_after_req0_clocks or dbg_enc_counter=dbg_enc_counter_first_pulse else '0';
+	-- dbg_enc_out <= '1' when dbg_enc_enable_intern and dbg_enc_counter= else '0';
 end architecture;
 
 

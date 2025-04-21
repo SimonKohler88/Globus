@@ -91,6 +91,7 @@ architecture rtl of led_interface is
 
 	signal fire_delay_ff: std_logic_vector(2 downto 0);
 	signal fire_out :std_logic;
+	signal conduit_fire_signal : std_logic;
 
 	signal pix_in_counter_A : natural range 0 to 70 := 0;
 	signal pix_in_counter_B : natural range 0 to 70 := 0;
@@ -112,7 +113,7 @@ architecture rtl of led_interface is
 
 
 begin
-	test_state <= t_fp;
+	test_state <= t_fifo_check;
 	p_test: process(all)
 	begin
 		case test_state is
@@ -176,6 +177,8 @@ begin
     
 	conduit_col_info_out_fire <= fire_out;
 	spi_fake_cs <= not spi_in_progress;
+	
+	conduit_fire_signal <= conduit_debug_led_led_dbg_in(0) when test_state=t_fifo_check else conduit_fire;
 
 	p_fire_delay : process(all)
 	begin
@@ -183,8 +186,8 @@ begin
 			fire_delay_ff <= (others => '0');
 			conduit_col_info_out_col_nr <= (others => '0');
 		elsif rising_edge(clock_clk) then
-			fire_delay_ff <= fire_delay_ff(1 downto 0) & conduit_fire;
-
+			fire_delay_ff <= fire_delay_ff(1 downto 0) & conduit_fire_signal;
+			
 			if fire_delay_ff(2 downto 1) = "01" then
 				fire_out <= '1';
 				conduit_col_info_out_col_nr <= conduit_col_info;
