@@ -67,6 +67,11 @@ architecture rtl of led_interface is
 	constant BIT_PER_SPI_START_END_FRAME: integer:= 32;
 	constant BRIGHTNESS : std_logic_vector(4 downto 0) := "01000";
 	-- constant BRIGHTNESS : std_logic_vector(4 downto 0) := "01111";
+	-- 01000: 8 out of 32 == 1/4
+	-- 10000: 16 == 1/2
+	-- 11111: 31 == full throttle
+	-- 00100: 4 == 1/8
+	
 	-- 0100 0000 == 0x40
 	-- 00001000 == 0x08
 	-- from protocol: 1110 1000 = 0xE8
