@@ -72,11 +72,21 @@ begin
 
     p_stim : process
 	begin
-        s_pin_enable <= '0';
-        s_pin <= '0';
-        wait for 400 us;
-
         s_pin_enable <= '1';
+        s_pin <= '0';
+        
+        wait for 10 us;
+        s_pin <= '1';
+        wait for 10 us;
+        s_pin <= '0';
+
+        wait for 100 us;
+        wait for 10 us;
+        s_pin <= '1';
+        wait for 10 us;
+        s_pin <= '0';
+
+        wait for 100 us;
         wait for 10 us;
         s_pin <= '1';
         wait for 10 us;
@@ -84,7 +94,13 @@ begin
 
         wait for 100 us;
 
-        s_pin_enable <= '1';
+        wait for 10 us;
+        s_pin <= '1';
+        wait for 10 us;
+        s_pin <= '0';
+
+        wait for 100 us;
+
         wait for 10 us;
         s_pin <= '1';
         wait for 10 us;

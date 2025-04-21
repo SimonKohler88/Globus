@@ -66,7 +66,7 @@ architecture rtl of qspi_interface is
 	type state_test is (none, t1, t_data2ram, t_fifo_check);
 	signal test_state         : state_test;
 
-	signal test_pack_sig_stretch   :std_logic_vector(2 downto 0);
+	signal test_pack_sig_stretch   :std_logic_vector(5 downto 0);
 	signal test_pack_sig_stretch_2 :std_logic_vector(2 downto 0);
 	signal test_pack_sig           :std_logic;
 	signal test_pack_sig_2         :std_logic;
@@ -145,12 +145,12 @@ begin
             test_pack_sig_stretch     <= (others => '0');
             test_pack_sig_stretch_2   <= (others => '0');
         elsif rising_edge(clock_clk) then
-           test_pack_sig_stretch   <= test_pack_sig_stretch(1 downto 0)   & aso_out0_startofpacket;
+           test_pack_sig_stretch   <= test_pack_sig_stretch(test_pack_sig_stretch'length -2 downto 0)   & aso_out0_startofpacket;
            test_pack_sig_stretch_2 <= test_pack_sig_stretch_2(1 downto 0) & aso_out0_endofpacket;
         end if;
 	end process;
 
-	test_pack_sig <=   test_pack_sig_stretch(2) or test_pack_sig_stretch(1) or test_pack_sig_stretch(0);
+	test_pack_sig <=   test_pack_sig_stretch(5) or test_pack_sig_stretch(4) or test_pack_sig_stretch(3) or test_pack_sig_stretch(2) or test_pack_sig_stretch(1) or test_pack_sig_stretch(0);
 	test_pack_sig_2 <= test_pack_sig_stretch_2(2) or test_pack_sig_stretch_2(1) or test_pack_sig_stretch_2(0);
 
 

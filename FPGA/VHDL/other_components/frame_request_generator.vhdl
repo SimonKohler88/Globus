@@ -73,37 +73,14 @@ begin
 	end process;
 
 	enable_pin_input_intern <= enable_pin_input_ff(1);
-	pin_input_intern_re <= pin_input_ff(1) and not pin_input_ff(0);
+	pin_input_intern_re <= pin_input_ff(0) and not pin_input_ff(1);
 	dbg_enc_enable_intern <= enable_dbg_enc_ff(1);
-
-	-- generate long pulse when input comes
-   p_count_pin: process(all)
-	begin
-		if reset_reset ='0' then
-            pin_counter <= (others=>'0');
-			pin_counter_is_counting <= '0';
-
-		elsif rising_edge(clock_clk) then
-            if pin_counter_is_counting ='0' and pin_input_intern_re = '1' then
-					pin_counter_is_counting <= '1';
-				end if;
-
-				if pin_counter_is_counting = '1' then
-
-					if pin_counter < on_clocks then
-						pin_counter <= pin_counter + 1;
-					else
-						pin_counter <= (others=>'0');
-						pin_counter_is_counting <= '0';
-					end if;
-				end if;
-		end if;
-	end process;
-	pulse_out_pin_in_intern <= '1' when pin_counter_is_counting else '0';
-
-	pulse_out <= pulse_out_pin_in_intern when enable_pin_input_intern else pulse_out_counter_intern;
-
-	-- ------- generating 2 encoder-pulses after framerequest to check fifo in ram_master
+	
+	pulse_out <= '0';
+	dbg_enc_pulse_out_intern <=  '0'; 
+	pulse_out_pin_in_intern <=  '0'; 
+	
+	
 	p_count_enc_counter: process(all)
 	begin
 		if reset_reset ='0' then
@@ -113,7 +90,7 @@ begin
 			dbg_enc_out <= '0';
 			if enable_pin_input_intern then
 
-				if pulse_out_pin_in_intern='1' then
+				if pin_input_intern_re='1' then
 					dbg_enc_counter <= 0;
 					dbg_enc_counter_is_counting <= '1';
 				end if;
