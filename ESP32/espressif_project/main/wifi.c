@@ -29,14 +29,19 @@
 #include "sdkconfig.h"
 
 // optimization purposes
+#include "pic_buffer.h"
+#include "hw_settings.h"
 #include "status_control_task.h"
+
+// #include "portmacro.h"
+// #include "sdkconfig.h"
 
 
 static task_handles_t* task_handles;
 static uint8_t is_wifi_connected = 0;
 
 /*
- * Code copied and adapted from esp-idf's "http_request" example
+ * Code copied and adapted from esp-idf's "http_request" template
  *
  *
  *
@@ -172,25 +177,25 @@ esp_err_t wifi_sta_do_disconnect( void )
     return esp_wifi_disconnect();
 }
 
-static void wifi_stop( void )
-{
-    esp_err_t err = esp_wifi_stop();
-    if ( err == ESP_ERR_WIFI_NOT_INIT )
-    {
-        return;
-    }
-    ESP_ERROR_CHECK( err );
-    ESP_ERROR_CHECK( esp_wifi_deinit() );
-    ESP_ERROR_CHECK( esp_wifi_clear_default_wifi_driver_and_handlers( s_sta_netif ) );
-    esp_netif_destroy( s_sta_netif );
-    s_sta_netif = NULL;
-}
+// static void wifi_stop( void )
+// {
+//     esp_err_t err = esp_wifi_stop();
+//     if ( err == ESP_ERR_WIFI_NOT_INIT )
+//     {
+//         return;
+//     }
+//     ESP_ERROR_CHECK( err );
+//     ESP_ERROR_CHECK( esp_wifi_deinit() );
+//     ESP_ERROR_CHECK( esp_wifi_clear_default_wifi_driver_and_handlers( s_sta_netif ) );
+//     esp_netif_destroy( s_sta_netif );
+//     s_sta_netif = NULL;
+// }
 
-static void wifi_shutdown( void )
-{
-    wifi_sta_do_disconnect();
-    wifi_stop();
-}
+// static void wifi_shutdown( void )
+// {
+//     wifi_sta_do_disconnect();
+//     wifi_stop();
+// }
 
 void wifi_receive_init_task( void* pvParameter )
 {

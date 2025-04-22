@@ -81,5 +81,5 @@ def get_frame(delta_t_ms):
 
 
 if __name__ == '__main__':
-    # app.run(host='0.0.0.0', port=8123)
-    app.run(host = '192.168.137.2', port=8123, debug=True)
+    app.run(host='0.0.0.0', port=8123)
+    # app.run(host = '192.168.137.2', port=8123, debug=True)

@@ -48,7 +48,7 @@ uint32_t get_status_data( void *data_ptr )
 
     // uint8_t* ptr = (uint8_t*) data_ptr;
 
-    if ( HW_SETTINGS_DEBUG )
+    if ( RPI_IF_VERBOSE )
     {
         //		ESP_LOGI( "WIFI", "num: %" PRIu8 "\n", num_status_structs );
         //		ESP_LOGI( "WIFI", "size: %" PRIu32 "\n", size );

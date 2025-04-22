@@ -12,6 +12,8 @@
 #include "hw_settings.h"
 #include "led_strip.h"
 
+
+
 void init_led( command_control_task_t *comm_ctrl )
 {
     /* LED strip initialization with the GPIO and pixels number*/

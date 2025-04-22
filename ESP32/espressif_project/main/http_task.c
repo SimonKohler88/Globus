@@ -3,6 +3,10 @@
 //
 
 #include "http_task.h"
+
+#include "sdkconfig.h"
+#include <stdint.h>
+#include <string.h>
 #include "esp_event.h"
 #include "esp_log.h"
 #include "esp_system.h"
@@ -23,9 +27,9 @@
 #include "hw_settings.h"
 #include "pic_buffer.h"
 
-#define WEB_SERVER CONFIG_WIFI_IPV4_ADDR
-#define WEB_PORT   HTTP_PORT
-#define WEB_PATH   HTTP_PATH
+#define WEB_SERVER          CONFIG_WIFI_IPV4_ADDR
+#define WEB_PORT            HTTP_PORT
+#define WEB_PATH            HTTP_PATH
 
 static const char* TAG = "http";
 
@@ -159,6 +163,9 @@ void http_task( void* pvParameters )
         /* Get Buffer */
         eth_buff = buff_ctrl_get_eth_buff();
 
+        /* Notify JPEG Task to start conversion */
+        xTaskNotifyIndexed( http_stat.task_handles->JPEG_task_handle, TASK_NOTIFY_JPEG_START_BIT, 0, eSetBits );
+
         time_start = xTaskGetTickCount();
 
         ret = lookup_dns( &http_stat );
@@ -229,6 +236,6 @@ void http_task( void* pvParameters )
         if ( HTTP_TASK_VERBOSE ) ESP_LOGI( TAG, "http time=%" PRIu32, time );
 
         // Start QSPI Task
-        xTaskNotifyIndexed( http_stat.task_handles->FPGA_QSPI_task_handle, TASK_NOTIFY_QSPI_START_BIT, data_size, eSetBits );
+        xTaskNotifyIndexed( http_stat.task_handles->status_control_task_handle, TASK_NOTIFY_CTRL_HTTP_FINISHED_BIT, data_size, eSetBits );
     }
 }
