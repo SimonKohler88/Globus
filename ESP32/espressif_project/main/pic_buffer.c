@@ -36,6 +36,12 @@ static uint8_t eth_rx_buffer_2[ IMAGE_JPEG_SIZE_BYTES ];
 static StaticSemaphore_t xMutexBuffer;
 static SemaphoreHandle_t xSemaphore = NULL;
 
+void buff_ctrl_copy_mem_protected( void* dst_ptr, const void* src_ptr, uint32_t size )
+{
+    xSemaphoreTake( xSemaphore, portMAX_DELAY );
+    memcpy( dst_ptr, src_ptr, size );
+    xSemaphoreGive( xSemaphore );
+}
 
 void buff_ctrl_init( buffer_control_t* buff_ctrl, buff_status_t* status )
 {

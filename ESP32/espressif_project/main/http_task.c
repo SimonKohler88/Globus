@@ -4,9 +4,6 @@
 
 #include "http_task.h"
 
-#include "sdkconfig.h"
-#include <stdint.h>
-#include <string.h>
 #include "esp_event.h"
 #include "esp_log.h"
 #include "esp_system.h"
@@ -14,6 +11,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "nvs_flash.h"
+#include "sdkconfig.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -27,9 +25,9 @@
 #include "hw_settings.h"
 #include "pic_buffer.h"
 
-#define WEB_SERVER          CONFIG_WIFI_IPV4_ADDR
-#define WEB_PORT            HTTP_PORT
-#define WEB_PATH            HTTP_PATH
+#define WEB_SERVER CONFIG_WIFI_IPV4_ADDR
+#define WEB_PORT   HTTP_PORT
+#define WEB_PATH   HTTP_PATH
 
 static const char* TAG = "http";
 
@@ -111,8 +109,8 @@ static uint8_t set_socket_timeout( http_stat_t* stat )
 
 static uint32_t receive_frame( http_stat_t* stat, eth_rx_buffer_t* eth_buff )
 {
-    uint32_t data_size = 0;
-    uint8_t* buff_ptr  = eth_buff->buff_start_ptr;
+    uint32_t data_size     = 0;
+    uint8_t* buff_ptr      = eth_buff->buff_start_ptr;
     /* Read HTTP response */
     do
     {
@@ -124,8 +122,10 @@ static uint32_t receive_frame( http_stat_t* stat, eth_rx_buffer_t* eth_buff )
             ESP_LOGE( TAG, "File size More than %" PRIu32, ( uint32_t ) IMAGE_JPEG_SIZE_BYTES );
             return 0;
         }
+
         memcpy( buff_ptr, stat->recv_buf, stat->r );
         buff_ptr += stat->r;
+
 
     } while ( stat->r > 0 );
     return data_size;
@@ -144,7 +144,6 @@ void http_task( void* pvParameters )
     uint32_t last_frame_time_used;
 
     eth_rx_buffer_t* eth_buff;
-
 
     while ( 1 )
     {

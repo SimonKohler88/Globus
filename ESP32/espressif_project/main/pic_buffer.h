@@ -43,6 +43,7 @@ struct
     eth_rx_buffer_t rx_buffer_2;
 } typedef buffer_control_t;
 
+void buff_ctrl_copy_mem_protected( void* dst_ptr, const void* src_ptr, uint32_t size );
 void buff_ctrl_init( buffer_control_t* buff_ctrl, buff_status_t* status );
 eth_rx_buffer_t* buff_ctrl_get_jpeg_src();
 eth_rx_buffer_t* buff_ctrl_get_eth_buff();

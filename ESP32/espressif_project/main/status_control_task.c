@@ -219,7 +219,7 @@ void status_control_task( void* pvParameter )
             time_delta_us = esp_timer_get_time() - time_us_start;
             last_frame_time_used = ( uint32_t ) ( ( ( uint32_t ) time_delta_us + 500 ) / 1000 );
             time_us_start        = esp_timer_get_time();
-            ESP_LOGI( STAT_CTRL_TAG, "freeframes: %" PRIu8, num_free_frames );
+            // ESP_LOGI( STAT_CTRL_TAG, "freeframes: %" PRIu8, num_free_frames );
             xTaskNotifyIndexed( status->task_handles->http_task_handle, TASK_NOTIFY_HTTP_START_BIT, last_frame_time_used, eSetBits );
         }
 #endif

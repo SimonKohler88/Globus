@@ -70,7 +70,7 @@
 #define IMAGE_TOTAL_BYTE_SIZE              ( IMAGE_MAX_PIXEL_HEIGHT * IMAGE_MAX_PIXEL_WIDTH * IMAGE_BYTES_PER_PIXEL )
 
 /* pic: jpeg as baseline, not progressive, in YCrCb Color format: ~8900 bytes, JPEG in-buffer must be 16byte aligned*/
-#define IMAGE_JPEG_SIZE_BYTES              ( 10000 )
+#define IMAGE_JPEG_SIZE_BYTES              ( 11000 )
 
 /* LED */
 #define CONFIG_BLINK_GPIO                  ( 48 )
@@ -91,7 +91,7 @@
 #define HTTP_TASK_VERBOSE   ( 0 )
 #define QSPI_TASK_VERBOSE   ( 0 )
 #define CTRL_TASK_VERBOSE   ( 0 )
-#define JPEG_TASK_VERBOSE   ( 0 )
+#define JPEG_TASK_VERBOSE   ( 1 )
 #define FIFO_VERBOSE        ( 0 )
 #define PIC_BUFF_VERBOSE    ( 0 )
 #define RPI_IF_VERBOSE      ( 0 )

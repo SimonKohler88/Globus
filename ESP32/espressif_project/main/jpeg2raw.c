@@ -15,7 +15,7 @@
 
 static const char* TAG = "jpeg";
 
-#define JPEG_WORK_AREA_SIZE   ( 5100 )
+#define JPEG_WORK_AREA_SIZE   ( 4100 )
 static uint8_t jpec_work_area[ JPEG_WORK_AREA_SIZE ];
 
 struct

@@ -82,7 +82,7 @@ void fifo_init( fifo_status_t* status )
             frame.size            = 0;
             xQueueSend( fifo_control.free_frames, &frame, 0 );
             fifo_control.status->free_frames++;
-            ESP_LOGI( TAG, "Allocated Frame Buffer %" PRIu8 " , size %" PRIu32 " Bytes", i, frame_size_bytes );
+            ESP_LOGI( TAG, "Allocated Frame Buffer %" PRIu8 " , size %" PRIu32 " Bytes at 0x%"PRIx32, i, frame_size_bytes, (uint32_t ) frame.frame_start_ptr);
         }
         else ESP_LOGE( TAG, "Failed to allocate PSRAM Memory, frame %d", i );
     }
