@@ -58,7 +58,7 @@ void status_control_init( status_control_status_t* status_ptr, command_control_t
 
 #ifdef DEVELOPMENT_SET_QSPI_ON_PIN_OUT
     ESP_ERROR_CHECK( gpio_install_isr_service( ESP_INTR_FLAG_IRAM ) );
-    ESP_LOGW( "Dev State:QSPI triggering on INPUT Interrupt" );
+    ESP_LOGW( STAT_CTRL_TAG, "Dev State:QSPI triggering on INPUT Interrupt" );
     ESP_ERROR_CHECK( gpio_isr_handler_add( STAT_CTRL_PIN_FRAME_REQUEST, frame_request_isr_cb, ( void* ) STAT_CTRL_PIN_FRAME_REQUEST ) );
 #endif
 

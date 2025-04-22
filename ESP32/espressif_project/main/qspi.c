@@ -120,7 +120,7 @@ BaseType_t qspi_request_frame( void )
 
     if ( internal_qspi_task_handle != NULL )
     {
-        xTaskNotifyIndexedFromISR( internal_qspi_task_handle, TASK_NOTIFY_QSPI_START_FRAME_BIT, 0, eSetBits, &xHigherPriorityTaskWoken );
+        xTaskNotifyIndexedFromISR( internal_qspi_task_handle, TASK_NOTIFY_QSPI_START_BIT, 0, eSetBits, &xHigherPriorityTaskWoken );
     }
     return xHigherPriorityTaskWoken;
 }
@@ -217,11 +217,13 @@ void fpga_qspi_task( void* pvParameter )
     if ( QSPI_TASK_VERBOSE ) ESP_LOGI( "QSPI", "Enter Loop" );
     while ( 1 )
     {
-        /* wait for http task to notify us
+
+        /* wait for http task (or Pin in DevMode) to notify us
          * clear on Entry, clear on exit
          */
         xTaskNotifyWaitIndexed( TASK_NOTIFY_QSPI_START_BIT, ULONG_MAX, ULONG_MAX, &ulNotifiedValuefromHTTP, portMAX_DELAY );
         if ( QSPI_TASK_VERBOSE ) ESP_LOGI( "QSPI", "Start" );
+
 
         // wait for ISR to notify us
         // xTaskNotifyWaitIndexed( TASK_NOTIFY_QSPI_START_FRAME_BIT, ULONG_MAX, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY );
@@ -229,6 +231,7 @@ void fpga_qspi_task( void* pvParameter )
         esp_err_t spi_ret  = ESP_OK;
 
 #if ( QSPI_TEST == 0 ) /* No test, Running hot. */
+
         qspi_frame_info = buff_ctrl_get_qspi_src();
         if ( qspi_frame_info != NULL )
         {
