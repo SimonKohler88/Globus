@@ -29,6 +29,9 @@ void jpeg_init( task_handles_t* task_handles ) { jpeg_ctrl.task_handles = task_h
 
 static esp_err_t jpeg_unpack( uint8_t* src, uint8_t* dst, uint32_t in_size, uint32_t out_size )
 {
+
+    assert(src != NULL);
+    assert(dst != NULL);
     esp_err_t ret;
     esp_jpeg_image_cfg_t jpeg_cfg = {
         .indata                       = ( uint8_t* ) src,

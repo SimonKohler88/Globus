@@ -91,6 +91,9 @@ esp_err_t esp_jpeg_decode(esp_jpeg_image_cfg_t *cfg, esp_jpeg_image_output_t *im
 
 
     cfg->priv.read = 0;
+    JDEC.device = (void *)cfg;
+    JDEC.width = img->width;
+    JDEC.height = img->height;
 
     /* Prepare image */
     res = jd_prepare(&JDEC, jpeg_decode_in_cb, workbuf, workbuf_size, cfg);
