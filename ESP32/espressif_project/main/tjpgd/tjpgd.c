@@ -1112,6 +1112,7 @@ static JRESULT mcu_output (
 
 #define LDB_WORD(ptr)       (uint16_t)(((uint16_t)*((uint8_t*)(ptr))<<8)|(uint16_t)*(uint8_t*)((ptr)+1))
 
+#include "esp_log.h"
 
 JRESULT jd_prepare (
     JDEC *jd,               /* Blank decompressor object */
@@ -1175,6 +1176,7 @@ JRESULT jd_prepare (
             len = LDB_WORD(seg + 3);
         }
         if (len <= 2 || (marker >> 8) != 0xFF) {
+            ESP_LOGE("jpg", "FMT1 1");
             return JDR_FMT1;
         }
         len -= 2;           /* Segent content size */
@@ -1264,6 +1266,7 @@ JRESULT jd_prepare (
             }
 
             if (!jd->width || !jd->height) {
+                ESP_LOGE("jpg", "FMT1 2");
                 return JDR_FMT1;    /* Err: Invalid image size */
             }
             if (seg[0] != jd->ncomp) {
@@ -1281,10 +1284,12 @@ JRESULT jd_prepare (
 #if JD_DEFAULT_HUFFMAN
                     jd_load_default_huffman(jd); // Always returns OK
 #else
+                    ESP_LOGE("jpg", "FMT1 3");
                     return JDR_FMT1;                    /* Err: Nnot loaded */
 #endif
                 }
                 if (!jd->qttbl[jd->qtid[i]]) {          /* Check dequantizer table for this component */
+                    ESP_LOGE("jpg", "FMT1 4");
                     return JDR_FMT1;                    /* Err: Not loaded */
                 }
             }
@@ -1292,6 +1297,7 @@ JRESULT jd_prepare (
             /* Allocate working buffer for MCU and pixel output */
             n = jd->msy * jd->msx;                      /* Number of Y blocks in the MCU */
             if (!n) {
+                ESP_LOGE("jpg", "FMT1 5");
                 return JDR_FMT1;    /* Err: SOF0 has not been loaded */
             }
             len = n * 64 * 2 + 64;                      /* Allocate buffer for IDCT and RGB output */

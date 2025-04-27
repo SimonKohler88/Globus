@@ -3,13 +3,19 @@
 //
 
 #include "jpeg2raw.h"
+
 #include "esp_check.h"
 #include "esp_log.h"
 #include "jpeg_decoder.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
+#include "pic_buffer.h"
+#include "psram_fifo.h"
 
 static const char* TAG = "jpeg";
 
-#define JPEG_WORK_AREA_SIZE 5100
+#define JPEG_WORK_AREA_SIZE   ( 4100 )
 static uint8_t jpec_work_area[ JPEG_WORK_AREA_SIZE ];
 
 struct
@@ -23,6 +29,9 @@ void jpeg_init( task_handles_t* task_handles ) { jpeg_ctrl.task_handles = task_h
 
 static esp_err_t jpeg_unpack( uint8_t* src, uint8_t* dst, uint32_t in_size, uint32_t out_size )
 {
+
+    assert(src != NULL);
+    assert(dst != NULL);
     esp_err_t ret;
     esp_jpeg_image_cfg_t jpeg_cfg = {
         .indata                       = ( uint8_t* ) src,
@@ -50,7 +59,7 @@ void jpeg_task( void* pvParameters )
 {
     uint32_t ulNotifiedValue;
     eth_rx_buffer_t* src_ptr;
-    frame_unpacked_t* dst_ptr;
+    fifo_frame_t* dst_ptr;
     esp_err_t jpeg_ret;
 
     if ( JPEG_TASK_VERBOSE ) ESP_LOGI( TAG, "Enter Loop" );
@@ -68,31 +77,48 @@ void jpeg_task( void* pvParameters )
         xTaskNotifyWaitIndexed( TASK_NOTIFY_JPEG_START_BIT, pdFALSE, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY );
         if ( JPEG_TASK_VERBOSE ) ESP_LOGI( TAG, "Start JPEG Conversion" );
 
+        jpeg_ret       = ESP_FAIL;
+        uint8_t src_ok = 0;
+        uint8_t dst_ok = 0;
+
         /* Get current Buffer ptr */
         src_ptr = buff_ctrl_get_jpeg_src();
         if ( src_ptr == NULL || src_ptr->data_size == 0 )
         {
             /* http task failed to receive in this buffer-> do not calc */
-            jpeg_ret = ESP_FAIL;
-            ESP_LOGE( TAG, "No Ptr" );
+            ESP_LOGE( TAG, "No Src Ptr" );
         }
-        else
+        else src_ok = 1;
+
+        /* Get Frame Buffer from FIFO */
+        if ( src_ok )
         {
-            dst_ptr  = buff_ctrl_get_jpeg_dst();
+            dst_ptr = fifo_get_free_frame();
+
+            if ( dst_ptr == NULL )
+            {
+                ESP_LOGE( TAG, "No FIFO frame" );
+            }
+            else dst_ok = 1;
+        }
+
+        if ( src_ok && dst_ok )
+        {
             /* Decompress JPEG. Note: jpeg must be in YCrCb Colorspace */
             jpeg_ret = jpeg_unpack( src_ptr->buff_start_ptr, dst_ptr->frame_start_ptr, src_ptr->data_size, dst_ptr->total_size );
+
             if ( jpeg_ret != ESP_OK )
             {
                 ESP_LOGE( TAG, "JPEG Conversion Failed" );
             }
+            else if ( JPEG_TASK_VERBOSE ) ESP_LOGI( TAG, "JPEG Conversion OK" );
         }
 
-        if ( jpeg_ret != ESP_OK )
+        if ( dst_ok && jpeg_ret != ESP_OK )
         {
-            buff_ctrl_set_jpec_dst_done( 0 );
-            ESP_LOGE( TAG, "JPEG Conversion Failed" );
+            fifo_return_free_frame();
         }
-        else buff_ctrl_set_jpec_dst_done( 1 );
+        else if ( jpeg_ret == ESP_OK ) fifo_mark_free_frame_done();
 
         /* Done. Notify Ctrl */
         xTaskNotifyIndexed( jpeg_ctrl.task_handles->status_control_task_handle, TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT, 0, eSetBits );

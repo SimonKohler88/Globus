@@ -2,7 +2,26 @@
 /* TJpgDec System Configurations R0.03          */
 /*----------------------------------------------*/
 
-#include "sdkconfig.h"
+
+// JPEG Decoder
+//
+// CONFIG_JD_USE_ROM is not set
+#define CONFIG_JD_SZBUF 512
+#define CONFIG_JD_FORMAT 0
+// CONFIG_JD_FORMAT_RGB888=y
+// CONFIG_JD_FORMAT_RGB565 is not set
+// CONFIG_JD_USE_SCALE=y
+// CONFIG_JD_TBLCLIP=y
+#define CONFIG_JD_FASTDECODE 1
+#define CONFIG_JD_TBLCLIP 1
+#define CONFIG_JD_DEFAULT_HUFFMAN 0
+
+// CONFIG_JD_FASTDECODE_BASIC is not set
+// CONFIG_JD_FASTDECODE_32BIT=y
+// CONFIG_JD_FASTDECODE_TABLE is not set
+// CONFIG_JD_DEFAULT_HUFFMAN=y
+// end of JPEG Decoder
+
 
 #define JD_SZBUF        CONFIG_JD_SZBUF
 /* Specifies size of stream input buffer */
