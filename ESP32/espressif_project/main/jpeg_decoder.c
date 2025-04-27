@@ -12,6 +12,7 @@
 #include "esp_err.h"
 #include "esp_check.h"
 #include "jpeg_decoder.h"
+#include "psram_fifo.h"
 
 #if CONFIG_JD_USE_ROM
 /* When supported in ROM, use ROM functions */
@@ -91,6 +92,9 @@ esp_err_t esp_jpeg_decode(esp_jpeg_image_cfg_t *cfg, esp_jpeg_image_output_t *im
 
 
     cfg->priv.read = 0;
+    JDEC.device = (void *)cfg;
+    JDEC.width = img->width;
+    JDEC.height = img->height;
 
     /* Prepare image */
     res = jd_prepare(&JDEC, jpeg_decode_in_cb, workbuf, workbuf_size, cfg);
@@ -137,6 +141,7 @@ static unsigned int jpeg_decode_in_cb(JDEC *dec, uint8_t *buff, unsigned int nby
         }
 
         /* Copy data from JPEG image */
+        if (buff == NULL || cfg->indata == NULL) return 0;
         memcpy(buff, &cfg->indata[cfg->priv.read], to_read);
         cfg->priv.read += to_read;
     } else if (buff == NULL) {
@@ -164,6 +169,9 @@ static jpeg_decode_out_t jpeg_decode_out_cb(JDEC *dec, void *bitmap, JRECT *rect
     uint8_t *in = (uint8_t *)bitmap;
     uint32_t line = dec->width / scale_div;
     uint8_t *dst = (uint8_t *)cfg->outbuf;
+
+    fifo_semaphore_take();
+
     for (int y = rect->top; y <= rect->bottom; y++) {
         for (int x = rect->left; x <= rect->right; x++) {
             if ( (JD_FORMAT == 0 && cfg->out_format == JPEG_IMAGE_FORMAT_RGB888) ||
@@ -197,6 +205,7 @@ static jpeg_decode_out_t jpeg_decode_out_cb(JDEC *dec, void *bitmap, JRECT *rect
             in += ESP_JPEG_COLOR_BYTES;
         }
     }
+    fifo_semaphore_give();
 
     return 1;
 }

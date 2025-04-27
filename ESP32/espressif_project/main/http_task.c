@@ -3,6 +3,7 @@
 //
 
 #include "http_task.h"
+
 #include "esp_event.h"
 #include "esp_log.h"
 #include "esp_system.h"
@@ -10,6 +11,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "nvs_flash.h"
+#include "sdkconfig.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -107,8 +109,8 @@ static uint8_t set_socket_timeout( http_stat_t* stat )
 
 static uint32_t receive_frame( http_stat_t* stat, eth_rx_buffer_t* eth_buff )
 {
-    uint32_t data_size = 0;
-    uint8_t* buff_ptr  = eth_buff->buff_start_ptr;
+    uint32_t data_size     = 0;
+    uint8_t* buff_ptr      = eth_buff->buff_start_ptr;
     /* Read HTTP response */
     do
     {
@@ -120,8 +122,15 @@ static uint32_t receive_frame( http_stat_t* stat, eth_rx_buffer_t* eth_buff )
             ESP_LOGE( TAG, "File size More than %" PRIu32, ( uint32_t ) IMAGE_JPEG_SIZE_BYTES );
             return 0;
         }
-        memcpy( buff_ptr, stat->recv_buf, stat->r );
+        /* last sanity check */
+        if (buff_ptr == NULL || stat->r > sizeof( stat->recv_buf ) - 1)
+        {
+            ESP_LOGE( TAG, "Sanity fail: bf_ptr: 0x%" PRIx32", r: %i", ( uint32_t ) buff_ptr, stat->r );
+            return 0;
+        }
+        if (stat->r > 0) memcpy( buff_ptr, stat->recv_buf, stat->r );
         buff_ptr += stat->r;
+
 
     } while ( stat->r > 0 );
     return data_size;
@@ -141,7 +150,6 @@ void http_task( void* pvParameters )
 
     eth_rx_buffer_t* eth_buff;
 
-
     while ( 1 )
     {
         /* We have to go through DNS lookup and socket creation per Request.
@@ -158,6 +166,9 @@ void http_task( void* pvParameters )
 
         /* Get Buffer */
         eth_buff = buff_ctrl_get_eth_buff();
+
+        /* Notify JPEG Task to start conversion */
+        xTaskNotifyIndexed( http_stat.task_handles->JPEG_task_handle, TASK_NOTIFY_JPEG_START_BIT, 0, eSetBits );
 
         time_start = xTaskGetTickCount();
 
@@ -229,6 +240,6 @@ void http_task( void* pvParameters )
         if ( HTTP_TASK_VERBOSE ) ESP_LOGI( TAG, "http time=%" PRIu32, time );
 
         // Start QSPI Task
-        xTaskNotifyIndexed( http_stat.task_handles->FPGA_QSPI_task_handle, TASK_NOTIFY_QSPI_START_BIT, data_size, eSetBits );
+        xTaskNotifyIndexed( http_stat.task_handles->status_control_task_handle, TASK_NOTIFY_CTRL_HTTP_FINISHED_BIT, data_size, eSetBits );
     }
 }

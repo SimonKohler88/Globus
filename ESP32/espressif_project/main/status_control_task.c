@@ -8,27 +8,24 @@
 #include "status_control_task.h"
 
 #include "driver/gpio.h"
+#include "driver/gptimer.h"
 #include "esp_log.h"
-#include "fpga_ctrl_task.h"
 #include "hw_settings.h"
-#include "pic_buffer.h"
+#include "psram_fifo.h"
 #include "qspi.h"
-#include "rotor_encoding.h"
 #include "status_control_task_helper.h"
 #include "wifi.h"
 
 #include <esp_timer.h>
-#include <rtc.h>
-
-// TODO: make all
-//  init frame request, reserve etc
 
 static command_control_task_t* status = NULL;
 
-#define STAT_CTRL_TAG "status_control_task"
+#define STAT_CTRL_TAG    "status_control_task"
+#define TIMER_RESOLUTION ( 10 * 1000 )
 
 StaticQueue_t xQueueBuffer_command_queue;
 uint8_t command_queue_storage[ STAT_CTRL_QUEUE_NUMBER_OF_COMMANDS * sizeof( status_control_command_t ) ];
+gptimer_handle_t gptimer = NULL;
 
 volatile uint8_t line_toggle = 0;
 
@@ -41,6 +38,16 @@ static void IRAM_ATTR frame_request_isr_cb( void* arg )
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     xHigherPriorityTaskWoken            = qspi_request_frame();
     portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+}
+#else
+static bool IRAM_ATTR frame_request_timer_isr_cb( gptimer_handle_t timer, const gptimer_alarm_event_data_t* edata, void* user_ctx )
+{
+    gpio_set_level( STAT_CTRL_PIN_RESERVE_3, line_toggle );
+    line_toggle = !line_toggle;
+
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    xHigherPriorityTaskWoken            = qspi_request_frame();
+    return xHigherPriorityTaskWoken;
 }
 #endif
 
@@ -81,6 +88,28 @@ void status_control_init( status_control_status_t* status_ptr, command_control_t
     internal_status_ptr->command_queue_handle = xQueueCreateStatic( STAT_CTRL_QUEUE_NUMBER_OF_COMMANDS, sizeof( status_control_command_t ),
                                                                     &command_queue_storage[ 0 ], &xQueueBuffer_command_queue );
 
+    /* init timer with callback for QSPI-thread start */
+    gptimer_config_t timer_config = {
+        .clk_src       = GPTIMER_CLK_SRC_DEFAULT,
+        .direction     = GPTIMER_COUNT_UP,
+        .resolution_hz = TIMER_RESOLUTION,
+    };
+    ESP_ERROR_CHECK( gptimer_new_timer( &timer_config, &gptimer ) );
+
+    gptimer_alarm_config_t alarm_config = {
+        .reload_count               = 0,                                                                  // counter will reload with 0 on alarm event
+        .alarm_count                = ( uint32_t ) ( TIMER_RESOLUTION / ( STAT_CTRL_QSPI_FRAME_RATE ) ),  // period = 1s @resolution 1MHz
+        .flags.auto_reload_on_alarm = true,                                                               // enable auto-reload
+    };
+    ESP_ERROR_CHECK( gptimer_set_alarm_action( gptimer, &alarm_config ) );
+
+    gptimer_event_callbacks_t cbs = {
+        .on_alarm = frame_request_timer_isr_cb,  // register user callback
+    };
+    ESP_ERROR_CHECK( gptimer_register_event_callbacks( gptimer, &cbs, NULL ) );
+    ESP_ERROR_CHECK( gptimer_enable( gptimer ) );
+
+    /* init led */
     init_led( internal_status_ptr );
 }
 
@@ -138,8 +167,10 @@ void status_control_task( void* pvParameter )
     /* for toggling led */
     uint32_t led_color              = 0x01000041;
     TickType_t last_frame_time_used = 0;
-    TickType_t time = 0;
-    time = xTaskGetTickCount();
+    TickType_t time                 = 0;
+    time                            = xTaskGetTickCount();
+
+    uint8_t num_free_frames = 0;
 
     set_gpio_reserve_1_async( 0 );
     status_control_command_t cmd_buf;
@@ -153,10 +184,14 @@ void status_control_task( void* pvParameter )
 #ifndef DEVELOPMENT_SET_QSPI_ON_PIN_OUT
     uint64_t time_us_start = 0;
     uint64_t time_delta_us = 0;
-    uint64_t time_us = 0;
 
+    /* init wifi */
     xTaskNotifyIndexed( status->task_handles->WIFI_task_handle, TASK_NOTIFY_WIFI_START_BIT, 0, eSetBits );
     xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_WIFI_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueWIFI, portMAX_DELAY );
+
+    /* start qspi timer */
+    ESP_ERROR_CHECK( gptimer_start( gptimer ) );
+
     time_us_start = esp_timer_get_time();
 #endif
 
@@ -165,23 +200,28 @@ void status_control_task( void* pvParameter )
     {
 #ifndef DEVELOPMENT_SET_QSPI_ON_PIN_OUT
 
-        time_delta_us        = esp_timer_get_time() - time_us_start;
-        last_frame_time_used = ( uint32_t ) ( ( ( uint32_t ) time_delta_us + 500 ) / 1000 );
-        time_us_start = esp_timer_get_time();
+
         if ( CTRL_TASK_VERBOSE ) ESP_LOGI( STAT_CTRL_TAG, "last frame: %" PRIu32, last_frame_time_used );
         while ( !wifi_is_connected() )
         {
+
             // TODO: Maybe do something else?
+            if ( CTRL_TASK_VERBOSE ) ESP_LOGI( STAT_CTRL_TAG, "WIFI down, waiting" );
             vTaskDelay( pdMS_TO_TICKS( 1000 ) );
         }
 
         set_gpio_reserve_1_async( 1 );
 
-        /* toggle buffer */
-        buff_ctrl_toggle_buff();
-        /* Start Http and JPEG */
-        xTaskNotifyIndexed( status->task_handles->JPEG_task_handle, TASK_NOTIFY_JPEG_START_BIT, 0, eSetBits );
-        xTaskNotifyIndexed( status->task_handles->http_task_handle, TASK_NOTIFY_HTTP_START_BIT, last_frame_time_used, eSetBits );
+        num_free_frames = fifo_has_free_frame();
+        if ( num_free_frames != 0 )
+        {
+            /* Start Http and JPEG */
+            time_delta_us = esp_timer_get_time() - time_us_start;
+            last_frame_time_used = ( uint32_t ) ( ( ( uint32_t ) time_delta_us + 500 ) / 1000 );
+            time_us_start        = esp_timer_get_time();
+            // ESP_LOGI( STAT_CTRL_TAG, "freeframes: %" PRIu8, num_free_frames );
+            xTaskNotifyIndexed( status->task_handles->http_task_handle, TASK_NOTIFY_HTTP_START_BIT, last_frame_time_used, eSetBits );
+        }
 #endif
 
         // handle commands
@@ -194,7 +234,7 @@ void status_control_task( void* pvParameter )
 
         if ( STAT_CTRL_ENABLE_LED && pdTICKS_TO_MS( xTaskGetTickCount() - time ) > 200 )
         {
-            time         =  xTaskGetTickCount() ;
+            time         = xTaskGetTickCount();
             uint8_t temp = ( led_color >> 31 );
             led_color    = led_color << 1;
             led_color |= temp;
@@ -202,20 +242,24 @@ void status_control_task( void* pvParameter )
         }
 
 #ifndef DEVELOPMENT_SET_QSPI_ON_PIN_OUT
-        /* Wait for QSPI
-         * No Clear on Entry, clear on Exit
-         */
-        xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_QSPI_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueQSPI, portMAX_DELAY );
-        // xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_QSPI_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueQSPI, pdMS_TO_TICKS( 60 ) );
-        // Todo: react on errors
 
-        /* Wait for JPEG
-         * No Clear on Entry, clear on Exit
-         */
-        // xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueJPEG, 7 );
-        xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueJPEG, pdMS_TO_TICKS( 60 ) );
-        // Todo: react on errors
+        if ( num_free_frames != 0 )
+        {
+            /* Wait for QSPI
+             * No Clear on Entry, clear on Exit
+             */
+            xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_HTTP_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueQSPI, portMAX_DELAY );
+            // xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_HTTP_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueQSPI, pdMS_TO_TICKS( 60 ) );
+            // Todo: react on errors
 
+            /* Wait for JPEG
+             * No Clear on Entry, clear on Exit
+             */
+            // xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueJPEG, 7 );
+            xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueJPEG, pdMS_TO_TICKS( 60 ) );
+            // Todo: react on errors
+        }
+        else vTaskDelay( pdMS_TO_TICKS( 10 ) );
 
         set_gpio_reserve_1_async( 0 );
 #endif

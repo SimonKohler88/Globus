@@ -2,11 +2,15 @@ from flask import Flask, Response, jsonify
 from video_server.video_preprocessor import process_videos, get_video_data
 from PIL import Image
 import numpy as np
+import time
+
 
 import cv2
 app = Flask(__name__)
 
 FRAME_SIZE = (120, 256)
+
+t_last = None
 
 # process the video files
 # video_data = process_videos("movies", FRAME_SIZE)
@@ -76,10 +80,20 @@ pic3 = buffer.tobytes()
 
 @app.route('/frame/<int:delta_t_ms>')
 def get_frame(delta_t_ms):
-    print(delta_t_ms)
+    global t_last
+    t_now = time.time()
+    
+    if t_last is not None:
+        t_delta = t_now - t_last
+        if t_delta > 4:
+            with open(f'log_out/Missed_{t_now}', 'w') as f:
+                pass
+            print('missed')
+    t_last = t_now
+    
     return Response(pic3, mimetype='image/jpeg')
 
 
 if __name__ == '__main__':
-    # app.run(host='0.0.0.0', port=8123)
-    app.run(host = '192.168.137.2', port=8123, debug=True)
+    app.run(host='0.0.0.0', port=8123)
+    # app.run(host = '192.168.137.2', port=8123, debug=True)
