@@ -7,13 +7,13 @@
 
 #include "psram_fifo.h"
 
-#include "inttypes.h"
 #include "esp_event.h"
 #include "esp_heap_caps.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "freertos/task.h"
+#include "inttypes.h"
 #include "nvs_flash.h"
 #include <string.h>
 
@@ -49,10 +49,14 @@ static SemaphoreHandle_t xSemaphore = NULL;
 
 void fifo_copy_mem_protected( void* dst_ptr, const void* src_ptr, uint32_t size )
 {
+    if (dst_ptr == NULL || src_ptr == NULL || size == 0) return;
     xSemaphoreTake( xSemaphore, portMAX_DELAY );
     memcpy( dst_ptr, src_ptr, size );
     xSemaphoreGive( xSemaphore );
 }
+
+void fifo_semaphore_take( void ) { xSemaphoreTake( xSemaphore, portMAX_DELAY ); }
+void fifo_semaphore_give( void ) { xSemaphoreGive( xSemaphore ); }
 
 void fifo_init( fifo_status_t* status )
 {
@@ -82,7 +86,8 @@ void fifo_init( fifo_status_t* status )
             frame.size            = 0;
             xQueueSend( fifo_control.free_frames, &frame, 0 );
             fifo_control.status->free_frames++;
-            ESP_LOGI( TAG, "Allocated Frame Buffer %" PRIu8 " , size %" PRIu32 " Bytes at 0x%"PRIx32, i, frame_size_bytes, (uint32_t ) frame.frame_start_ptr);
+            ESP_LOGI( TAG, "Allocated Frame Buffer %" PRIu8 " , size %" PRIu32 " Bytes at 0x%" PRIx32, i, frame_size_bytes,
+                      ( uint32_t ) frame.frame_start_ptr );
         }
         else ESP_LOGE( TAG, "Failed to allocate PSRAM Memory, frame %d", i );
     }
@@ -160,7 +165,7 @@ void fifo_mark_frame_4_fpga_done( void )
 uint8_t fifo_has_free_frame( void )
 {
     if ( FIFO_VERBOSE ) ESP_LOGI( "FIFO", "has free" );
-    if (fifo_control.frame_rpi_2_fifo_in_progress) return 0;
+    if ( fifo_control.frame_rpi_2_fifo_in_progress ) return 0;
 
     uint8_t num = 0;
     num         = uxQueueMessagesWaiting( fifo_control.free_frames );
@@ -248,5 +253,4 @@ void copy_static_pic_to_PSRAM( uint8_t* start_ptr )
 {
     /* Copy from code to PSRAM */
     ext_copy_static_pic_to_PSRAM( start_ptr );
-
 }

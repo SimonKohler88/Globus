@@ -42,6 +42,7 @@ uint32_t get_status_data( void *data_ptr )
     for ( uint8_t i = 0; i < num_status_structs; i++ )
     {
         size += registered_status_structs[ i ].size;
+        // TODO: sanity check
         memcpy( data_ptr, registered_status_structs[ i ].struct_ptr, registered_status_structs[ i ].size );
         data_ptr += registered_status_structs[ i ].size;
     }

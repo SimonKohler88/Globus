@@ -201,5 +201,7 @@ fifo_frame_t* fifo_get_static_frame( void );
  * @param size Size, in bytes, of the data to be copied from the source to the destination.
  */
 void fifo_copy_mem_protected( void* dst_ptr, const void* src_ptr, uint32_t size );
+void fifo_semaphore_take( void );
+void fifo_semaphore_give( void );
 
 #endif /* MAIN_PSRAM_FIFO_H_ */

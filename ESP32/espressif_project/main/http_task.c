@@ -122,8 +122,13 @@ static uint32_t receive_frame( http_stat_t* stat, eth_rx_buffer_t* eth_buff )
             ESP_LOGE( TAG, "File size More than %" PRIu32, ( uint32_t ) IMAGE_JPEG_SIZE_BYTES );
             return 0;
         }
-
-        memcpy( buff_ptr, stat->recv_buf, stat->r );
+        /* last sanity check */
+        if (buff_ptr == NULL || stat->r > sizeof( stat->recv_buf ) - 1)
+        {
+            ESP_LOGE( TAG, "Sanity fail: bf_ptr: 0x%" PRIx32", r: %i", ( uint32_t ) buff_ptr, stat->r );
+            return 0;
+        }
+        if (stat->r > 0) memcpy( buff_ptr, stat->recv_buf, stat->r );
         buff_ptr += stat->r;
 
 
