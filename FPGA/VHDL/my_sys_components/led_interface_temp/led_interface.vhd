@@ -109,6 +109,7 @@ architecture rtl of led_interface is
 	signal spi_state : t_spi_state;
 	signal next_spi_state : t_spi_state;
 	signal spi_in_progress: std_logic;
+	signal spi_in_progress_ff: std_logic_vector(12 downto 0);
 	signal spi_fake_cs: std_logic;
 
 	signal ram_to_buff_in_progress :std_logic;
@@ -182,12 +183,12 @@ begin
     use_bgr <= '1';
     
 	conduit_col_info_out_fire <= fire_out;
-	spi_fake_cs <= not spi_in_progress;
 	
 	-- dangerous line: discards real fp, takes debug fp instead when in t_fifo_check
 	-- conduit_fire_signal <= conduit_debug_led_led_dbg_in(0) when test_state=t_fifo_check else conduit_fire;
-	conduit_fire_signal <= conduit_fire;
+	conduit_fire_signal <= conduit_fire; -- good line
 
+	-- delay fp to RAM Master a few clk for no real reason.
 	p_fire_delay : process(all)
 	begin
 		if reset_reset ='1' then
@@ -221,6 +222,23 @@ begin
 	end if;
 	end process;
 
+	-- verify purpose: make a chip select for SPI- transfer:
+	-- Will be read by second ESP over QSPI and sent to server
+	p_dbg_fake_cs: process(all)
+	begin
+	if reset_reset='1' then
+		spi_fake_cs <= '1';
+		spi_in_progress_ff <= (others=>'0');
+	elsif rising_edge(clock_clk) then
+		spi_in_progress_ff <= spi_in_progress_ff(spi_in_progress_ff'length-2 downto 0) & spi_in_progress;
+
+		if fire_delay_ff(1 downto 0) = "01" then -- rising edge of firepulse
+			spi_fake_cs <= '0';
+		elsif spi_in_progress_ff(spi_in_progress_ff'length-1 downto spi_in_progress_ff'length-2) = "10" then -- falling edge, delayed
+			spi_fake_cs <= '1';
+		end if;
+	end if;
+	end process;
 
 	--receiving streams to buffer
 	p_receive_stream_A: process(all)
