@@ -16,7 +16,7 @@
  *
  * Comment out following line for hot version
  */
-// #define DEVELOPMENT_SET_QSPI_ON_PIN_OUT   ( 1 )
+#define DEVELOPMENT_HTTP_NOTIFY_TIMEOUT   ( 1 )
 
 /* Freertos */
 #define FREERTOS_STACK_SIZE_STATUS_CTRL    ( 4096 * 2 )

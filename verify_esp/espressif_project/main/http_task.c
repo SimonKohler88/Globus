@@ -170,20 +170,27 @@ void http_task( void* pvParameters )
          *  Clear on Exit
          */
         if ( HTTP_TASK_VERBOSE ) ESP_LOGI( TAG, "HTTP Req Start Waiting" );
-        // xTaskNotifyWaitIndexed( TASK_NOTIFY_HTTP_START_BIT, ULONG_MAX, ULONG_MAX, NULL, portMAX_DELAY );
+#ifdef DEVELOPMENT_HTTP_NOTIFY_TIMEOUT
         ret = xTaskNotifyWaitIndexed( TASK_NOTIFY_HTTP_START_BIT, ULONG_MAX, ULONG_MAX, NULL, 10 );
+#else
+        xTaskNotifyWaitIndexed( TASK_NOTIFY_HTTP_START_BIT, ULONG_MAX, ULONG_MAX, NULL, portMAX_DELAY );
+#endif
         if ( HTTP_TASK_VERBOSE ) ESP_LOGI( TAG, "HTTP Req Start" );
+#ifdef DEVELOPMENT_HTTP_NOTIFY_TIMEOUT
 
         if ( ret != pdTRUE )
         {
             if ( HTTP_TASK_VERBOSE ) ESP_LOGI( TAG, "Test Pack" );
             convert( &tx_buffer_test[ 0 ], QSPI_MAX_TRANSFER_SIZE, &spi_buffer );
-            wifi_send_packet_raw( (uint8_t*) &spi_buffer, sizeof( spi_buffer ) );
+            wifi_send_packet_raw( ( uint8_t* ) &spi_buffer, sizeof( spi_buffer ) );
         }
         else
         {
+#endif
             convert( &tx_buffer[ 0 ], QSPI_MAX_TRANSFER_SIZE, &spi_buffer );
-            wifi_send_packet_raw( (uint8_t*)&spi_buffer, sizeof( spi_buffer ) );
+            wifi_send_packet_raw( ( uint8_t* ) &spi_buffer, sizeof( spi_buffer ) );
+#ifdef DEVELOPMENT_HTTP_NOTIFY_TIMEOUT
         }
+#endif
     }
 }
