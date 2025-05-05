@@ -169,6 +169,7 @@ void status_control_task( void* pvParameter )
     TickType_t last_frame_time_used = 0;
     TickType_t time                 = 0;
     time                            = xTaskGetTickCount();
+    uint8_t wait_notify_result      = pdFALSE;
 
     uint8_t num_free_frames = 0;
 
@@ -248,16 +249,21 @@ void status_control_task( void* pvParameter )
             /* Wait for QSPI
              * No Clear on Entry, clear on Exit
              */
-            xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_HTTP_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueQSPI, portMAX_DELAY );
-            // xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_HTTP_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueQSPI, pdMS_TO_TICKS( 60 ) );
-            // Todo: react on errors
+            wait_notify_result = xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_HTTP_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueQSPI, pdMS_TO_TICKS( 100 ) );
+            if ( wait_notify_result == pdFALSE )
+            {
+                ESP_LOGW( STAT_CTRL_TAG, "Fell through HTTP Finished Waiting" );
+            }
 
             /* Wait for JPEG
              * No Clear on Entry, clear on Exit
              */
-            // xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueJPEG, 7 );
-            xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueJPEG, pdMS_TO_TICKS( 60 ) );
-            // Todo: react on errors
+            wait_notify_result = xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueJPEG, pdMS_TO_TICKS( 70 ) );
+
+            if ( wait_notify_result == pdFALSE )
+            {
+                ESP_LOGW( STAT_CTRL_TAG, "Fell through JPEG Finished Waiting" );
+            }
         }
         else vTaskDelay( pdMS_TO_TICKS( 10 ) );
 

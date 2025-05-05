@@ -92,13 +92,13 @@
 #define HTTP_TASK_VERBOSE   ( 0 )
 #define QSPI_TASK_VERBOSE   ( 0 )
 #define CTRL_TASK_VERBOSE   ( 0 )
-#define JPEG_TASK_VERBOSE   ( 1 )
+#define JPEG_TASK_VERBOSE   ( 0 )
 #define FIFO_VERBOSE        ( 0 )
 #define PIC_BUFF_VERBOSE    ( 0 )
 #define RPI_IF_VERBOSE      ( 0 )
 
 /* Networkk definitions */
-#define HTTP_PORT           "1234"
+#define HTTP_PORT           "80"
 #define HTTP_PATH           "/frame"
 #define WIFI_CONN_MAX_RETRY ( 6 )
 
@@ -112,7 +112,8 @@
 #if ( WHERE == 2 )
     #define CONFIG_WIFI_SSID      "DESKTOP-P96TM8B 9415"
     #define CONFIG_WIFI_PASSWORD  "5716Jt3/"
-    #define CONFIG_WIFI_IPV4_ADDR "192.168.137.1"
+    // #define CONFIG_WIFI_IPV4_ADDR "192.168.137.1"
+    #define CONFIG_WIFI_IPV4_ADDR "192.168.50.20"
 #endif
 
 #if ( WHERE == 3 )
@@ -121,7 +122,9 @@
     // #define CONFIG_WIFI_IPV4_ADDR "192.168.68.127"
     // #define CONFIG_WIFI_IPV4_ADDR "192.168.103.100"
     // #define CONFIG_WIFI_IPV4_ADDR "10.42.0.1"
-    #define CONFIG_WIFI_IPV4_ADDR "192.168.3.1"
+    #define CONFIG_WIFI_IPV4_ADDR "192.168.1.1"
+    // #define AP_BSSID              { 0x2c, 0xcf, 0x67, 0x77, 0x92, 0x89 }  // Mac of access point, raspi intern
+    #define AP_BSSID              { 0x94, 0x18, 0x65, 0xcd, 0xb0, 0x51 }  // Mac of access point, raspi extern
 #endif
 
 #endif /* MAIN_HW_SETTINGS_H_ */
