@@ -29,13 +29,12 @@
 #include "sdkconfig.h"
 
 // optimization purposes
-#include "pic_buffer.h"
 #include "hw_settings.h"
+#include "pic_buffer.h"
 #include "status_control_task.h"
 
 // #include "portmacro.h"
 // #include "sdkconfig.h"
-
 
 static task_handles_t* task_handles;
 static uint8_t is_wifi_connected = 0;
@@ -114,6 +113,7 @@ static esp_err_t wifi_sta_do_connect( wifi_config_t wifi_config, bool wait )
 
     ESP_LOGI( TAG, "Connecting to %s...", wifi_config.sta.ssid );
     ESP_ERROR_CHECK( esp_wifi_set_config( WIFI_IF_STA, &wifi_config ) );
+    // ESP_ERROR_CHECK( esp_wifi_set_max_tx_power( 8 ) );
     esp_err_t ret = esp_wifi_connect();
     if ( ret != ESP_OK )
     {
@@ -151,12 +151,36 @@ static esp_err_t wifi_connect( void )
     wifi_config_t wifi_config = {
         .sta =
             {
-                .ssid               = CONFIG_WIFI_SSID,
-                .password           = CONFIG_WIFI_PASSWORD,
-                .scan_method        = WIFI_ALL_CHANNEL_SCAN,
-                .sort_method        = WIFI_CONNECT_AP_BY_SIGNAL,
+                .ssid       = CONFIG_WIFI_SSID,
+                .password   = CONFIG_WIFI_PASSWORD,
+                .ft_enabled = true,  // disabling: adding failed ap to blacklist
+    // .btm_enabled = true, // does nothing
+    // .mbo_enabled = true, // enabled: does not see ap anymore
+    // .rm_enabled = false, // does nothing
+    // .owe_enabled = false, // does nothing
+    // .transition_disable = false, // does nothing
+
+#ifdef AP_BSSID
+            /* In case we connect to raspi: take specific AP (the raspi) and nothing else */
+                .bssid_set = true,
+                .bssid     = AP_BSSID,
+#endif
+                .failure_retry_cnt = 10,  // tries multiple times to connect before scanning again
+
+                // .he_dcm_set= true, //does nothing
+                // .he_mcs9_enabled = false, // does nothing
+
+                // .he_su_beamformee_disabled                      = false,// does nothing
+                // .he_trig_su_bmforming_feedback_disabled         = false,// does nothing
+                // .he_trig_mu_bmforming_partial_feedback_disabled = false,// does nothing
+                // .he_trig_cqi_feedback_disabled                  = false,// does nothing
+
+                // .scan_method        = WIFI_ALL_CHANNEL_SCAN,
+                // .sort_method        = WIFI_CONNECT_AP_BY_SIGNAL,
+
                 .threshold.rssi     = -127,
-                .threshold.authmode = WIFI_AUTH_OPEN,
+                .threshold.authmode = WIFI_AUTH_WPA_PSK,
+                .pmf_cfg            = { .capable = true, .required = false },
             },
     };
 
@@ -222,6 +246,5 @@ void wifi_receive_init_task( void* pvParameter )
         // ESP_ERROR_CHECK( esp_register_shutdown_handler( &wifi_shutdown ) );
         ESP_LOGI( TAG, "Wifi initializing done" );
         xTaskNotifyIndexed( task_handles->status_control_task_handle, TASK_NOTIFY_CTRL_WIFI_FINISHED_BIT, err == ESP_OK, eSetBits );
-
     }
 }

@@ -1,12 +1,12 @@
-from flask import Flask, Response, jsonify
-from video_server.video_preprocessor import process_videos, get_video_data
-from PIL import Image
-import numpy as np
+from flask import Flask, Response, jsonify, render_template
+# from video_server.video_preprocessor import process_videos, get_video_data
+# from PIL import Image
+# import numpy as np
 import time
 
 
 import cv2
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 
 FRAME_SIZE = (120, 256)
 
@@ -15,15 +15,17 @@ t_last = None
 # process the video files
 # video_data = process_videos("movies", FRAME_SIZE)
 
-pic = "Earth_relief_120x256.jpg"
+# pic = "Earth_relief_120x256.jpg"
 pic_bmp = "Earth_relief_120x256.bmp"
-pic2 = "Earth_relief_120x256.jpeg"
+# pic2 = "Earth_relief_120x256.jpeg"
 
 
 # img = cv2.imread(pic_bmp, 0)  # works, but ts greyscale
-img = cv2.imread(pic_bmp, cv2.IMREAD_COLOR_RGB)
+img = cv2.imread(pic_bmp)
+# img = cv2.cvtColor(img, cv2.IMREAD_COLOR_RGB)
 # esp_jpeg decompressor in ESP only takes YCrCb Color Space
-img = cv2.cvtColor(img, cv2.COLOR_RGB2YCrCb)
+# img = cv2.cvtColor(img, cv2.COLOR_RGB2YCrCb)
+img = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
 # Compress, 90% quality
 encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
 _, buffer = cv2.imencode(".jpg", img, encode_param)
@@ -77,6 +79,9 @@ pic3 = buffer.tobytes()
 #         start = len(frames) - 1
 #     return Response(frames[start][1], mimetype='image/jpeg')
 
+@app.route('/')
+def home():
+    return render_template('index.html')
 
 @app.route('/frame/<int:delta_t_ms>')
 def get_frame(delta_t_ms):
@@ -95,5 +100,6 @@ def get_frame(delta_t_ms):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8123)
-    # app.run(host = '192.168.137.2', port=8123, debug=True)
+    # app.run(host='0.0.0.0', port=8123)
+    app.run(host = '192.168.3.1', port=1234)
+    # app.run(host = '192.168.137.1', port=8123)

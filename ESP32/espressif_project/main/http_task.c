@@ -77,7 +77,7 @@ static uint8_t connect_socket( http_stat_t* stat )
 {
     if ( connect( stat->s, stat->res->ai_addr, stat->res->ai_addrlen ) != 0 )
     {
-        ESP_LOGE( TAG, "socket connect failed errno=%d", errno );
+        ESP_LOGE( TAG, "socket connect failed errno=%i", errno );
 
         return 0;
     }
