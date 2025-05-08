@@ -67,7 +67,7 @@ def extract_video_frames(video_file, target_size, frame_rate=15):
                     # resize the frame to fix in our target size
                     frame = resize_cover(frame, target_size)
                     # low quality to save space and bandwidth
-                    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 50]
+                    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
                     _, buffer = cv2.imencode(".jpg", frame, encode_param)
                     video_jpegs.append((frame_ms, buffer.tobytes()))
                 progress.update(1)

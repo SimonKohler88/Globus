@@ -20,7 +20,7 @@
 // #define LWIP_DEBUG 1
 
 /* Freertos */
-#define FREERTOS_STACK_SIZE_FPGA_CTRL      ( 4096 )
+// #define FREERTOS_STACK_SIZE_FPGA_CTRL      ( 4096 )
 #define FREERTOS_STACK_SIZE_STATUS_CTRL    ( 4096 * 2 )
 #define FREERTOS_STACK_SIZE_QSPI           ( 4096 * 2 )
 #define FREERTOS_STACK_SIZE_HTTP           ( 4096 * 3 )
@@ -28,14 +28,14 @@
 #define FREERTOS_STACK_SIZE_WIFI           ( 4096 )
 
 /* Status Control task */
-#define STAT_CTRL_QUEUE_NUMBER_OF_COMMANDS ( 5 )
+// #define STAT_CTRL_QUEUE_NUMBER_OF_COMMANDS ( 5 )
 #define STAT_CTRL_PIN_FRAME_REQUEST        ( 8 )
 #define STAT_CTRL_PIN_RESERVE_1            ( 6 )
 #define STAT_CTRL_PIN_RESERVE_2            ( 5 )
 #define STAT_CTRL_PIN_RESERVE_3            ( 4 )
 #define STAT_CTRL_PIN_RESET_FPGA           ( 7 )
 #define STAT_CTRL_ENABLE_LED               ( 1 )
-#define STAT_CTRL_QSPI_FRAME_RATE          ( 16 )
+#define STAT_CTRL_QSPI_FRAME_RATE          ( 16 ) // Oscilloscope: 17 fps
 #define T_GROUP_0                          ( TIMER_GROUP_0 )
 #define T_ID                               ( TIMER_0 )
 
@@ -70,8 +70,11 @@
 /* 92160 Bytes. Must be a multiple of 16 */
 #define IMAGE_TOTAL_BYTE_SIZE              ( IMAGE_MAX_PIXEL_HEIGHT * IMAGE_MAX_PIXEL_WIDTH * IMAGE_BYTES_PER_PIXEL )
 
-/* pic: jpeg as baseline, not progressive, in YCrCb Color format: ~8900 bytes, JPEG in-buffer must be 16byte aligned*/
-#define IMAGE_JPEG_SIZE_BYTES              ( 11000 )
+/* pic: jpeg as baseline, not progressive
+ * in YCrCb Color format: ~8900 bytes,
+ * in RGB Color Format: ~16000 bytes
+ * JPEG in-buffer must be 16byte aligned*/
+#define IMAGE_JPEG_SIZE_BYTES              ( 20000 )
 
 /* LED */
 #define CONFIG_BLINK_GPIO                  ( 48 )
@@ -89,10 +92,10 @@
 #define ENC_PIN_EXP_3       ( 47 )
 
 /* Task Verbosity */
-#define HTTP_TASK_VERBOSE   ( 0 )
+#define HTTP_TASK_VERBOSE   ( 1 )
 #define QSPI_TASK_VERBOSE   ( 0 )
 #define CTRL_TASK_VERBOSE   ( 0 )
-#define JPEG_TASK_VERBOSE   ( 0 )
+#define JPEG_TASK_VERBOSE   ( 1 )
 #define FIFO_VERBOSE        ( 0 )
 #define PIC_BUFF_VERBOSE    ( 0 )
 #define RPI_IF_VERBOSE      ( 0 )
@@ -102,7 +105,7 @@
 #define HTTP_PATH           "/frame"
 #define WIFI_CONN_MAX_RETRY ( 6 )
 
-#define WHERE               ( 3 )
+#define WHERE               ( 1 )
 #if ( WHERE == 1 )
     #define CONFIG_WIFI_SSID      "UPCF611258"
     #define CONFIG_WIFI_PASSWORD  "Fs4nzkzne4tu"
@@ -112,8 +115,9 @@
 #if ( WHERE == 2 )
     #define CONFIG_WIFI_SSID      "DESKTOP-P96TM8B 9415"
     #define CONFIG_WIFI_PASSWORD  "5716Jt3/"
-    // #define CONFIG_WIFI_IPV4_ADDR "192.168.137.1"
-    #define CONFIG_WIFI_IPV4_ADDR "192.168.50.20"
+    // #define CONFIG_WIFI_IPV4_ADDR "192.168.50.20"
+    // #define CONFIG_WIFI_IPV4_ADDR "192.168.0.22"
+    #define CONFIG_WIFI_IPV4_ADDR "192.168.137.1"
 #endif
 
 #if ( WHERE == 3 )

@@ -8,9 +8,9 @@
 #ifndef MAIN_STATUS_CONTROL_TASK_H_
 #define MAIN_STATUS_CONTROL_TASK_H_
 
-#include "stdint.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
+#include "stdint.h"
 
 #include "led_strip.h"
 
@@ -32,20 +32,16 @@ struct
 
 } typedef task_handles_t;
 
-/* Command possibilities for task from ETH */
-enum
-{
-    COMMAND_DEBUG = 0,
-    COMMAND_SEND_STATUS,
-};
-typedef uint8_t COMMANDS_t;
 
-/* Command Structure for Queue */
 struct
 {
-    COMMANDS_t command;
-    uint32_t value;
-} typedef status_control_command_t;
+  uint8_t s_led_state;
+  led_strip_handle_t led_strip;
+  uint8_t red;
+  uint8_t green;
+  uint8_t blue;
+  uint8_t toggle_state;
+} typedef led_state_t;
 
 /* Internal Structure */
 struct
@@ -55,39 +51,38 @@ struct
 
     task_handles_t* task_handles;
 
-    /* LED Blink */
-    led_strip_handle_t led_strip;
-    uint8_t s_led_state;
+    /* LED */
+    led_state_t led;
 
 } typedef command_control_task_t;
 
 /* Bit definitions for inter-Task communication Rendevous
  * JPEG-> Ctrl, QSPI->Ctrl */
-#define TASK_NOTIFY_CTRL_HTTP_FINISHED_BIT    ( 0x00 )
-#define TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT    ( 0x01 )
-#define TASK_NOTIFY_CTRL_WIFI_FINISHED_BIT    ( 0x02 )
+#define TASK_NOTIFY_CTRL_HTTP_FINISHED_BIT  ( 0x00 )
+#define TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT  ( 0x01 )
+#define TASK_NOTIFY_CTRL_WIFI_FINISHED_BIT  ( 0x02 )
 
 /* Task Notification for Inter Task communication
  * HTTP -> QSPI-Task */
-#define TASK_NOTIFY_QSPI_START_BIT            ( 0x00 )
+#define TASK_NOTIFY_QSPI_START_BIT          ( 0x00 )
 /* Internal QSPI-Task Notification Bits */
-#define TASK_NOTIFY_QSPI_START_FRAME_BIT      ( 0x01 )
-#define TASK_NOTIFY_QSPI_FRAME_FINISHED_BIT   ( 0x02 )
+#define TASK_NOTIFY_QSPI_START_FRAME_BIT    ( 0x01 )
+#define TASK_NOTIFY_QSPI_FRAME_FINISHED_BIT ( 0x02 )
 
 /* Task Notification for Inter Task communication with HTTP-Task
  * Ctrl -> HTTP
  */
-#define TASK_NOTIFY_HTTP_START_BIT            ( 0x00 )
+#define TASK_NOTIFY_HTTP_START_BIT          ( 0x00 )
 
 /* Task Notification for Inter Task communication with JPEG-Task
  * Ctrl -> JPEG
  */
-#define TASK_NOTIFY_JPEG_START_BIT            ( 0x00 )
+#define TASK_NOTIFY_JPEG_START_BIT          ( 0x00 )
 
 /* Task Notification for Intertask comm
  * Ctrl-->Wifi
  */
-#define TASK_NOTIFY_WIFI_START_BIT            ( 0x00 )
+#define TASK_NOTIFY_WIFI_START_BIT          ( 0x00 )
 /**
  * Initializes the status control with the given status pointers.
  *
