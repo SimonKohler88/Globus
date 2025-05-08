@@ -51,3 +51,39 @@ void setup_led_color(led_state_t *led, uint8_t red, uint8_t green, uint8_t blue)
     led->green = green;
     led->blue = blue;
 }
+
+void set_led_red( led_state_t *led )
+{
+    setup_led_color( led, 128, 0, 0 );
+    update_led( led );
+}
+
+void set_led_green( led_state_t *led )
+{
+    setup_led_color( led, 0, 128, 0 );
+    update_led( led );
+}
+
+void set_led_blue( led_state_t *led )
+{
+    setup_led_color( led, 0, 0, 128 );
+    update_led( led );
+}
+
+void set_led_cyan( led_state_t *led )
+{
+    setup_led_color( led, 0, 64, 64 );
+    update_led( led );
+}
+
+void set_led_magenta( led_state_t *led )
+{
+    setup_led_color( led, 64, 0, 64 );
+    update_led( led );
+}
+
+void set_led_yellow( led_state_t *led )
+{
+    setup_led_color( led, 64, 64, 0 );
+    update_led( led );
+}

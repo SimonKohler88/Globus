@@ -12,7 +12,26 @@ extern "C"
 #include <stdint.h>
     #include "status_control_task.h"
 
+    /**
+     * Initializes the internal structure
+     *
+     * @param task_handles pointer to task handle struct
+     */
     void init_http_stat( task_handles_t* task_handles);
+
+    /**
+     * HTTP Task
+     *
+     * When Notify-Bit given:
+     *   * creates a socket
+     *   * requests a frame from server
+     *   * validates the downloaded data
+     *   * notifies status_control_task
+     *
+     * @param pvParameters  A pointer to task parameters, if any, used for task-specific
+     *                    needs. Typically used to pass structures or other data
+     *                    necessary for task operation.
+     */
     void http_task( void* pvParameters );
 #ifdef __cplusplus
 }

@@ -43,6 +43,78 @@ void update_led( led_state_t* led );
  */
 void clear_led( led_state_t *led );
 
+/**
+ * @brief Sets the LED color to specific RGB values.
+ *
+ * This function configures the LED color using individual red, green, and blue
+ * components. Each component can range from 0 to 255, where 0 represents off
+ * and 255 represents full intensity for that color.
+ *
+ * @param led Pointer to the led_state_t structure containing LED configuration
+ * @param red Red component intensity (0-255)
+ * @param green Green component intensity (0-255)
+ * @param blue Blue component intensity (0-255)
+ */
 void setup_led_color(led_state_t *led, uint8_t red, uint8_t green, uint8_t blue);
+
+/**
+ * @brief Sets the LED color to red.
+ *
+ * This function configures the LED to display a red color by setting
+ * the red component to half max intensity and other components to zero.
+ *
+ * @param led Pointer to the led_state_t structure containing LED configuration
+ */
+void set_led_red( led_state_t *led );
+
+/**
+ * @brief Sets the LED color to blue.
+ *
+ * This function configures the LED to display a red color by setting
+ * the blue component to half max intensity and other components to zero.
+ *
+ * @param led Pointer to the led_state_t structure containing LED configuration
+ */
+void set_led_blue( led_state_t *led );
+
+/**
+ * @brief Sets the LED color to green.
+ *
+ * This function configures the LED to display a red color by setting
+ * the green component to half max intensity and other components to zero.
+ *
+ * @param led Pointer to the led_state_t structure containing LED configuration
+ */
+void set_led_green( led_state_t *led );
+
+/**
+ * @brief Sets the LED color to cyan.
+ *
+ * This function configures the LED to display a red color by setting
+ * the blue and green component to quarter max intensity and other components to zero.
+ *
+ * @param led Pointer to the led_state_t structure containing LED configuration
+ */
+void set_led_cyan( led_state_t *led );
+
+/**
+ * @brief Sets the LED color to magenta.
+ *
+ * This function configures the LED to display a red color by setting
+ * the blue and red component to quarter max intensity and other components to zero.
+ *
+ * @param led Pointer to the led_state_t structure containing LED configuration
+ */
+void set_led_magenta( led_state_t *led );
+
+/**
+ * @brief Sets the LED color to yellow.
+ *
+ * This function configures the LED to display a red color by setting
+ * the green and red component to quarter max intensity and other components to zero.
+ *
+ * @param led Pointer to the led_state_t structure containing LED configuration
+ */
+void set_led_yellow( led_state_t *led );
 
 #endif /* MAIN_STATUS_CONTROL_TASK_HELPER_H_ */

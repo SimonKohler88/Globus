@@ -154,8 +154,7 @@ void status_control_task( void* pvParameter )
     uint32_t ulNotifyValueHTTP;
     uint32_t ulNotifyValueWIFI;
 
-    setup_led_color( &status->led, 0, 0, 128 );
-    update_led( &status->led );
+    set_led_cyan( &status->led );
 
 #ifdef DEVELOPMENT_SET_QSPI_ON_PIN_OUT
     TickType_t xLastWakeTime    = xTaskGetTickCount();
@@ -172,7 +171,9 @@ void status_control_task( void* pvParameter )
     while ( status->task_handles->http_task_handle == NULL || status->task_handles->FPGA_QSPI_task_handle == NULL ||
             status->task_handles->JPEG_task_handle == NULL || status->task_handles->WIFI_task_handle == NULL )
     {
+        void set_led_cyan( led_state_t *led );
         vTaskDelay( 10 );
+
     }
 #ifndef DEVELOPMENT_SET_QSPI_ON_PIN_OUT
     uint64_t time_us_start = 0;
@@ -230,8 +231,7 @@ void status_control_task( void* pvParameter )
             }
             else
             {
-                setup_led_color( &status->led, 128, 0, 0 );
-                update_led( &status->led );
+                set_led_red( &status->led );
             }
         }
 
