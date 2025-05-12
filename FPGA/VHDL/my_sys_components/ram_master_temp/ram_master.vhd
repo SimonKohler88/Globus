@@ -147,7 +147,7 @@ architecture rtl of ram_master is
 	constant C_ACCEPT_EOP_CNT		: integer:= G_IMAGE_ROWS*C_IMAGE_COLS-100;
 	signal incoming_transfer_ongoing :std_logic;
 
-	type state_test_t is (none, t1,t2, t_fifo_check, t_col_nr, t_read_0);
+	type state_test_t is (none, t1,t2, t_fifo_check, t_col_nr, t_read_0, t_read_1);
 	signal test_state         : state_test_t;
 
 	signal test_pack_sig_stretch   :std_logic_vector(2 downto 0);
@@ -173,7 +173,7 @@ architecture rtl of ram_master is
 
 
 begin
-	test_state <= t_fifo_check;
+	test_state <= t_read_1;
 	p_test: process(all)
 	begin
 		case test_state is
@@ -259,7 +259,31 @@ begin
 				conduit_debug_ram_out_2(26) <= avm_m0_waitrequest;
 				conduit_debug_ram_out_2(27) <= avm_m0_readdatavalid;
 				conduit_debug_ram_out_2(31 downto 28) <= conduit_col_info_col_nr(3 downto 0);
-
+				
+			when t_read_1 =>
+				conduit_debug_ram_out_2(31 downto 0) <= (others=>'0');
+				
+				if conduit_col_info_col_nr="000000000" then
+					conduit_debug_ram_out_2(0) <= '1';
+				else
+					conduit_debug_ram_out_2(0) <= '0';
+				end if;
+				
+				conduit_debug_ram_out(15 downto 0) <= avm_m0_readdata ;
+				conduit_debug_ram_out(31 downto 16) <= avm_m0_address( 15 downto 0) ;
+				
+				conduit_debug_ram_out_2(9 downto 1) <= std_logic_vector(aso_send_count);
+				conduit_debug_ram_out_2(10) <= avm_m0_waitrequest;
+				conduit_debug_ram_out_2(11) <= avm_m0_readdatavalid;
+				conduit_debug_ram_out_2(12) <= active_aso_valid;
+				conduit_debug_ram_out_2(13) <= avm_m0_read_n;
+				conduit_debug_ram_out_2(14) <= addr_ready;
+				
+				
+				
+				
+				
+			
 			when others =>
 				conduit_debug_ram_out(31 downto 0) <= (others => '0');
 				conduit_debug_ram_out_2(31 downto 0) <= (others => '0');
@@ -503,7 +527,7 @@ begin
 
 			read_data_count <= read_data_count + 1;
 
-		elsif addr_ready = '1' then
+		elsif addr_ready = '1' and read_n='1' then
 			read_data_count <= (others=>'0');
 			read_address <= addr_a_preload;
 		end if;
@@ -565,7 +589,7 @@ begin
 
 	case read_state is
 		when idle =>
-				read_n <= '1';
+			read_n <= '1';
 		when set_addr =>
 			read_n <= '0';
 		when wait_waitrequest  =>

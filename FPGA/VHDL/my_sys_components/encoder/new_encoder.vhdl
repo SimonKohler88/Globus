@@ -71,37 +71,61 @@ architecture rtl of new_encoder is
 	signal column_counter :unsigned(8 downto 0);
 	signal debounce_counter :integer range 0 to debounce_cycles;
 	signal debounce_counter_index :integer range 0 to debounce_cycles;
+	
+	signal dbg_led_firepulse: std_logic;
 
 
-	type state_test is (none, t1);
+	type state_test is (none, t1, t2);
 	signal test_state         : state_test;
 
 
 begin
-	test_state <= t1;
+	test_state <= t2;
 	p_test: process(all)
 	begin
 		case test_state is
 			when none =>
-				conduit_debug_enc_enc_dbg_out(2 downto 0) <= std_logic_vector(column_counter(4 downto 2));
+				conduit_debug_enc_enc_dbg_out(2 downto 0) <= conduit_intern_col_nr(4 downto 2);
 				conduit_debug_enc_enc_dbg_out(3) <= conduit_intern_col_fire;
 				conduit_debug_enc_enc_dbg_out(31 downto 4) <= (others => '0');
 				conduit_debug_enc_enc_dbg_out_2(31 downto 0) <= (others => '0');
 
 			when t1 =>
 				conduit_debug_enc_enc_dbg_out <= (others => '0');
-				conduit_debug_enc_enc_dbg_out(2 downto 0) <= std_logic_vector(column_counter(4 downto 2));
-				conduit_debug_enc_enc_dbg_out_2 <= (
-					0 => conduit_intern_col_fire,
-					1 => sync_a,
-					others => '0');
-
-
+				conduit_debug_enc_enc_dbg_out(9 downto 1) <= conduit_intern_col_nr(8 downto 0);
+				conduit_debug_enc_enc_dbg_out(0) <= conduit_intern_col_fire;
+				--conduit_debug_enc_enc_dbg_out(10) <= dbg_led_firepulse;
+			when t2 =>
+				conduit_debug_enc_enc_dbg_out <= (others => '0');
+				conduit_debug_enc_enc_dbg_out(0) <= conduit_intern_col_fire;
+				conduit_debug_enc_enc_dbg_out(9 downto 1) <= conduit_intern_col_nr(8 downto 0);
+				conduit_debug_enc_enc_dbg_out(10) <= enc_clk;
+				conduit_debug_enc_enc_dbg_out(11) <= sync_a;
+				conduit_debug_enc_enc_dbg_out(12) <= sync_a_reg(2);
+				conduit_debug_enc_enc_dbg_out(13) <= sync_sim_sw_reg(2);
+				conduit_debug_enc_enc_dbg_out(14) <= sync_sim_pulse_reg(2);
+				--sync_a_reg(2) when sync_sim_sw_reg(2)='0' else sync_sim_pulse_reg(2);
+				
+				
 			when others =>
 				conduit_debug_enc_enc_dbg_out(31 downto 0) <= (others => '0');
 				conduit_debug_enc_enc_dbg_out_2(31 downto 0) <= (others => '0');
 
 		end case;
+	end process;
+	
+	dbg_fp_proc: process(all)
+	begin
+		if reset_reset = '1' then
+			dbg_led_firepulse <= '0';
+		elsif rising_edge(clock_clk) then
+			if debounce_counter > 0 and column_counter(0)='1' then
+				dbg_led_firepulse <= '1';
+			else
+				dbg_led_firepulse <= '0';
+			end if;
+		end if;
+		
 	end process;
 
 	-- sync in encoder inputs
