@@ -39,7 +39,8 @@ def reconstruct_csv(path):
     imgCD = None
     for each in os.listdir(path):
         if each.endswith('.csv'):
-            with open(each, 'r') as f:
+            each_file = os.path.join(path, each)
+            with open(each_file, 'r') as f:
                 lines = f.readlines()
             print(each)
             # print(len(lines))
@@ -61,12 +62,21 @@ def reconstruct_csv(path):
 
             imgCD = reconstruct_line_append(spi_3, spi_4, imgCD)
 
-    fig, ax = plt.subplot_mosaic("A\nC", sharex=True)
+    fig, ax = plt.subplot_mosaic("A\nC")
     axAB = ax['A']
     axCD = ax['C']
+
     axAB.imshow(imgAB)
+    axAB.set_ylabel('Pixel 0, 2, 4, ...')
+    axAB.set_xlabel('Encoder kolonne (t)')
+    axAB.set_title('Vorderseite')
+
     axCD.imshow(imgCD)
-    plt.imsave('aquire_plot.png')
+    axCD.set_ylabel('Pixel 1, 3, 5, ...')
+    axCD.set_xlabel('Encoder kolonne (t)')
+    axCD.set_title('Rückseite')
+
+    # plt.imsave('aquire_plot.png')
     plt.show()
 
 

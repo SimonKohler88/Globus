@@ -35,10 +35,12 @@ if __name__ == '__main__':
     # nSPI2 = np.reshape(npSPI2, (-1, 1, 3))
     # nSPI2 = nSPI2[::-1]
     # print(nSPI2)
-
-    for each in os.listdir('.'):
+    path = './aquire'
+    for each in os.listdir(path):
         if each.endswith('.csv'):
-            with open(each, 'r') as f:
+
+            each_file = os.path.join(path, each)
+            with open(each_file, 'r') as f:
                 lines = f.readlines()
             print(each)
             # print(len(lines))

@@ -105,7 +105,7 @@
 #define HTTP_PATH           "/frame"
 #define WIFI_CONN_MAX_RETRY ( 6 )
 
-#define WHERE               ( 1 )
+#define WHERE               ( 3 )
 #if ( WHERE == 1 )
     #define CONFIG_WIFI_SSID      "UPCF611258"
     #define CONFIG_WIFI_PASSWORD  "Fs4nzkzne4tu"
