@@ -1,0 +1,29 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+hide time-axis
+
+binary "Highside FET" as HF
+binary "LowSide FET" as LF
+
+HF is low
+LF is high
+
+@50
+LF is high
+@100
+LF is low
+@110
+HF is high
+@160
+HF is low
+@170
+LF is high
+@220
+LF is low
+@230
+HF is high
+
+highlight 100 to 110 #lightgreen: Deadtime
+HF@110 <-> @170 : Frequenz
+@enduml

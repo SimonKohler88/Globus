@@ -16,16 +16,16 @@ extern "C"
 
 #define MOT_CTRL_TIMER_INPUT_CLOCK_HZ ( 8000000 )
 #define MOT_CTRL_PWM_FREQUENCY        ( 10000 )
-#define MOT_CTRL_TIMER_RESOLUTION     ( 100 )
+#define MOT_CTRL_TIMER_RESOLUTION     ( 1000 )
 #if MOT_CTRL_TIMER_RESOLUTION > ( 0xFFFF )
     #define MOT_CTRL_TIMER_RESOLUTION ( 0xFFFF )
 #endif
 
     typedef struct
     {
-        uint32_t current_speed_duty_cycle;  // pwm
-        uint32_t target_speed_duty_cycle;
-        uint32_t slope_duty_cycle_per_s;
+        uint16_t current_speed_duty_cycle;  // pwm
+        uint16_t target_speed_duty_cycle;
+        uint16_t slope_duty_cycle_per_s;
 
     } MOT_CTRL_I2C_IF_t;
 

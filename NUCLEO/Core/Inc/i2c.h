@@ -41,6 +41,7 @@ extern I2C_HandleTypeDef hi2c1;
         I2C_ADDR_MOT_DUTY_CYCLE_SET,
         I2C_ADDR_MOT_DUTY_CYCLE_IS,
         I2C_ADDR_MOT_DUTY_CYCLE_SLOPE_PER_S,
+		I2C_ADDR_TEST_REGISTER_4,  // neu hinzugefügt Thomas
         I2C_ADDR_ENUM_END
     }; typedef uint8_t I2C_ADDR_e;
 
@@ -58,7 +59,7 @@ void MX_I2C1_Init(void);
 
     typedef struct
     {
-        uint32_t *val_ptr;
+        uint16_t *val_ptr;
         ENTRY_TYPE_e type;
     } I2C_DATA_ENTRY_t;
 

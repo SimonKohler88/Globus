@@ -1,28 +1,31 @@
 @startuml
+participant Control as "Status Control Task"
+participant WiFi as "WiFi Task"
+participant HTTP as "HTTP Task"
+participant JPEG as "JPEG Task"
 
-participant "status_ctrl_task" as T
-participant "UDP tx Task" as Wifi
-participant "FrameFIFO" as FIFO
-participant "CommandQueue" as CQ
-participant "LED" as LED
+Note over Control: Initialize LED & Check Handles
 
+Control->>WiFi: Notify Start (TASK_NOTIFY_WIFI_START_BIT)
+WiFi-->>Control: Notify Finished (WIFI_FINISHED_BIT)
 
-group loop every 10 ms
-    alt wifi is connected
-        T -> Wifi: check connection
-        T -> FIFO: get free frame
-        alt free frame is available
-            T -> Wifi: request frame
-        end
+loop Main Control Loop
+    alt WiFi not connected
+        Control->>Control: Wait for WiFi Connection
     end
 
-    T -> CQ: Check command queue
-    loop for each command
-        T -> CQ: Receive command
-        ... handle commands ...
-    end
+    alt Free Frames Available
+        Control->>HTTP: Notify Start (HTTP_START_BIT)
+        Note over Control: Set GPIO Reserve
 
-    T -> LED: Update LED state every 100ms
+        HTTP-->>Control: Notify Finished (HTTP_FINISHED_BIT)
+        Note over Control: Update LED State
+
+        JPEG-->>Control: Notify Finished (JPEG_FINISHED_BIT)
+        Note over Control: Clear GPIO Reserve
+    else No Free Frames
+        Control->>Control: Delay 10ms
+    end
 end
 
 

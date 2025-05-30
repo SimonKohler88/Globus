@@ -77,6 +77,18 @@ class Quaternion(object):
 
 
 def img_to_pos_col(img):
+    """
+    Convert a 2D image into positional and color data arrays based on its pixel values.
+    The function processes an image represented as a 2D array, normalizing its coordinates
+    to spherical coordinates and extracting its pixel intensity as normalized color values.
+
+    :param img: 2D array-like
+        The input image as a 2D NumPy array containing pixel values.
+    :return: np.ndarray
+        A 2D NumPy array containing two elements:
+            - Positional data of each pixel normalized to spherical coordinates.
+            - Normalized color data for each pixel.
+    """
     pos = []
     col = []
 
@@ -180,6 +192,24 @@ def convert_pic_and_rotate(img, theta, phi, alpha):
 
 
 def rotate_converted(pos, col, axis, alpha):
+    """
+    Rotates a set of 3D positions and their associated colors around a specified axis
+    by a given angle using quaternion operations.
+
+    :param pos: List of tuples representing the 3D positions to rotate.
+                Each tuple contains three float values corresponding to
+                the x, y, and z coordinates of a point.
+    :param col: List of values corresponding to the colors associated with
+                each position. Must have the same length as `pos`.
+    :param axis: Tuple representing the rotation axis in 3D space. Contains
+                 three float values corresponding to the x, y, and z components
+                 of the axis.
+    :param alpha: Float representing the rotation angle in radians.
+    :return: A numpy array containing the transformed 3D positions as well as
+             their associated colors. The output is a 2D numpy array where the
+             first element contains the transformed positions as a list of tuples
+             and the second element contains the associated colors as a list.
+    """
     xA = axis[0]
     yA = axis[1]
     zA = axis[2]
@@ -215,6 +245,22 @@ def rotate_converted(pos, col, axis, alpha):
 
 
 def pos_col_to_img(pos, col, size_x, size_y):
+    """
+    Converts 3D positions and corresponding colors into a 2D image representation.
+    Maps spherical coordinates derived from the input positions to a 2D flat
+    projection, assigning colors to pixels based on their corresponding input.
+
+    :param pos: List of 3D points represented as tuples (x, y, z).
+    :type pos: list[tuple[float, float, float]]
+    :param col: List of color values corresponding to each 3D point.
+    :type col: list[float]
+    :param size_x: Horizontal size of the output image in pixels.
+    :type size_x: int
+    :param size_y: Vertical size of the output image in pixels.
+    :type size_y: int
+    :return: 2D image array where each pixel color is determined by its corresponding 3D point.
+    :rtype: numpy.ndarray
+    """
     y_max = size_y
     x_half = size_x / 2
 
@@ -232,6 +278,23 @@ def pos_col_to_img(pos, col, size_x, size_y):
 
 
 def interpolate_colors(col1, col2, span):
+    """
+    Generates a list of interpolated colors between two given RGB colors over a specified
+    number of steps (span). The interpolation is performed in the HLS (Hue, Lightness,
+    Saturation) color model space, and the resulting colors are converted back to the RGB
+    space. The function returns an array of interpolated RGB colors, excluding the start
+    color.
+
+    :param col1: The starting RGB color as a tuple of three float values, where each value
+        ranges from 0 to 1 (e.g., (R, G, B)).
+    :param col2: The ending RGB color as a tuple of three float values, where each value
+        ranges from 0 to 1 (e.g., (R, G, B)).
+    :param span: An integer specifying the number of intermediate colors to generate, not
+        including the starting and ending colors.
+    :return: A NumPy ndarray containing the interpolated colors as RGB tuples, where each
+        tuple consists of three float values ranging from 0 to 1. The array includes the
+        final interpolated colors but excludes the starting color.
+    """
     col1_hls = rgb_to_hls(*col1)
     col2_hls = rgb_to_hls(*col2)
     hue1 = col1_hls[0]

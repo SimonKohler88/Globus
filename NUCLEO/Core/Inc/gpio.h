@@ -36,7 +36,7 @@ extern "C" {
     typedef struct
     {
         uint32_t last_tick;
-        uint32_t interval_ticks;
+        uint16_t interval_ticks;
     } GPIO_BLINK_PIN_t;
 /* USER CODE END Private defines */
 

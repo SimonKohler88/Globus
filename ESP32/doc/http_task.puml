@@ -1,0 +1,37 @@
+@startuml
+'stateDiagram-v2
+    [*] --> WaitForNotification
+    WaitForNotification --> LookupDNS: Notification Received
+
+    LookupDNS --> GetBuffer: Success
+    LookupDNS --> Delay1: Failure
+    Delay1 --> WaitForNotification
+
+    GetBuffer --> NotifyJPEGTask
+    NotifyJPEGTask --> CreateSocket
+
+    CreateSocket --> ConnectSocket: Success
+    CreateSocket --> Delay2: Failure
+    Delay2 --> WaitForNotification
+
+    ConnectSocket --> SendRequest: Success
+    ConnectSocket --> Delay3: Failure
+    Delay3 --> WaitForNotification
+
+    SendRequest --> SetSocketTimeout: Success
+    SendRequest --> Delay4: Failure
+    Delay4 --> WaitForNotification
+
+    SetSocketTimeout --> ReceiveFrame: Success
+    SetSocketTimeout --> Delay5: Failure
+    Delay5 --> WaitForNotification
+
+    ReceiveFrame --> CloseSocket: Success
+    ReceiveFrame --> Delay6: Failure
+    Delay6 --> WaitForNotification
+
+    CloseSocket --> UpdateBufferStatus
+    UpdateBufferStatus --> NotifyControlTask
+    NotifyControlTask --> WaitForNotification
+
+@enduml

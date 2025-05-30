@@ -102,7 +102,7 @@ class Video:
     """
     Represents a video object.
 
-    This class preprocesses given .gif ready for esp. Does not store preprocessed images
+    This class preprocesses given .gif ready for esp.
 
     :param: video_path: absolute Path to the video.
     """
@@ -138,14 +138,14 @@ class Video:
         self.__total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         print(f'Frames: {self.__total_frames}')
 
-        # ********* testing part
-        test_directory = os.path.join(os.path.dirname(__file__), 'test', self.__name)
-        if os.path.exists(test_directory):
-            shutil.rmtree(test_directory)
-        if not os.path.exists('test'):
-            os.mkdir('test')
-        os.mkdir(test_directory)
-        # ********************
+        # # ********* testing part
+        # test_directory = os.path.join(os.path.dirname(__file__), 'test', self.__name)
+        # if os.path.exists(test_directory):
+        #     shutil.rmtree(test_directory)
+        # if not os.path.exists('test'):
+        #     os.mkdir('test')
+        # os.mkdir(test_directory)
+        # # ********************
 
         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 80]
 
