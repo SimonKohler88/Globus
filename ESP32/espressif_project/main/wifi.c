@@ -25,7 +25,6 @@
 #include "lwip/sockets.h"
 #include "lwip/sys.h"
 #include "portmacro.h"
-#include "rpi_interface.h"
 #include "sdkconfig.h"
 
 // optimization purposes

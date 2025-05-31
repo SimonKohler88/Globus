@@ -3,9 +3,17 @@ from flask import Flask, Response, jsonify, render_template
 # from PIL import Image
 # import numpy as np
 import time
-
+import os
 
 import cv2
+
+import globus_video_utils.video_processor as video_processor
+
+gif_path = os.path.join(os.path.dirname(__file__), 'gifs')
+
+vids = video_processor.VideoPlayer(gif_path)
+vids.play()
+
 app = Flask(__name__, static_url_path='/static')
 
 FRAME_SIZE = (120, 256)
@@ -25,14 +33,15 @@ img = cv2.imread(pic_bmp)
 # img = cv2.cvtColor(img, cv2.IMREAD_COLOR_RGB)
 # esp_jpeg decompressor in ESP only takes YCrCb Color Space
 # img = cv2.cvtColor(img, cv2.COLOR_RGB2YCrCb)
-img = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
+# img = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
 # Compress, 90% quality
 encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
 _, buffer = cv2.imencode(".jpg", img, encode_param)
 pic3 = buffer.tobytes()
 
+
 # plt.imshow(img, cmap='gray')
-    # we don't need more than the framerate
+# we don't need more than the framerate
 #     encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 50]
 #     _, buffer = cv2.imencode(".jpg", frame, encode_param)
 #     video_jpegs.append((frame_ms, buffer.tobytes()))
@@ -83,11 +92,15 @@ pic3 = buffer.tobytes()
 def home():
     return render_template('index.html')
 
+
+# DEV_MODE = 0  # static pic
+DEV_MODE = 1  # video
+
+
 @app.route('/frame/<int:delta_t_ms>')
 def get_frame(delta_t_ms):
     global t_last
     t_now = time.time()
-    
     if t_last is not None:
         t_delta = t_now - t_last
         if t_delta > 4:
@@ -95,11 +108,16 @@ def get_frame(delta_t_ms):
                 pass
             print('missed')
     t_last = t_now
-    
-    return Response(pic3, mimetype='image/jpeg')
+
+    if DEV_MODE == 0:
+        return Response(pic3, mimetype='image/jpeg')
+    else:
+        pic = vids.get_frame(1)
+        return Response(pic, mimetype='image/jpeg')
 
 
 if __name__ == '__main__':
     # app.run(host='0.0.0.0', port=8123)
-    app.run(host = '192.168.3.1', port=1234)
+    # app.run(host = '192.168.3.1', port=1234)
+    app.run(host='192.168.0.22', port=80)
     # app.run(host = '192.168.137.1', port=8123)

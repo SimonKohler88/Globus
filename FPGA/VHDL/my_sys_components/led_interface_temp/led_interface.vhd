@@ -119,7 +119,7 @@ architecture rtl of led_interface is
 
 
 begin
-	test_state <= t_fifo_check;
+	test_state <= t_data_in;
 	p_test: process(all)
 	begin
 		case test_state is
@@ -138,13 +138,19 @@ begin
 				conduit_debug_led_led_dbg_out(31 downto 8) <= pix_out_A(spi_pix_count_A)(23 downto 0);
 				
 				
-				conduit_debug_led_led_dbg_out_2 <= (
-                    0 => conduit_fire,
-                    1 => spi_in_progress,
-                    27 => asi_in0_valid,
-                    others=>'0'
-                );
-                conduit_debug_led_led_dbg_out_2(26 downto 3) <= asi_in0_data;
+				-- conduit_debug_led_led_dbg_out_2 <= (
+    --                 --0 => conduit_fire,
+    --                 1 => spi_in_progress,
+    --                 27 => asi_in0_valid,
+    --                 others=>'0'
+    --             );
+                conduit_debug_led_led_dbg_out_2(24 downto 1) <= asi_in0_data;
+                
+				if conduit_col_info="000000000" then
+					conduit_debug_led_led_dbg_out_2(0) <= '1';
+				else
+					conduit_debug_led_led_dbg_out_2(0) <= '0';
+				end if;
 
 			when t_fp =>
 				conduit_debug_led_led_dbg_out <= (others => '0');

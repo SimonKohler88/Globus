@@ -12,7 +12,6 @@
 #include "esp_log.h"
 #include "sdkconfig.h"
 
-#include "fpga_ctrl_task.h"
 #include "http_task.h"
 #include "jpeg2raw.h"
 #include "pic_buffer.h"
@@ -26,9 +25,6 @@ void vApplicationIdleHook( void );
 /* Static Allocations for Freertos task instead of dynamic */
 StaticTask_t xHttpTaskBuffer;
 StackType_t xHttpTaskStack[ FREERTOS_STACK_SIZE_HTTP ];
-
-StaticTask_t xFPGACtrlTaskBuffer;
-StackType_t xFPGACtrlStack[ FREERTOS_STACK_SIZE_FPGA_CTRL ];
 
 StaticTask_t xStatusControlTaskBuffer;
 StackType_t xStatusControlStack[ FREERTOS_STACK_SIZE_STATUS_CTRL ];
@@ -49,8 +45,6 @@ static buff_status_t buff_status;
 static fifo_status_t fifo_status;
 static buffer_control_t buff_ctrl;
 static qspi_status_t qspi_status;
-static fpga_status_t fpga_status;
-static fpga_task_status_t fpga_task_status;
 static status_control_status_t status_control_status;
 static command_control_task_t command_ctrl_task;
 
@@ -75,7 +69,7 @@ void init_system()
     qspi_init( &qspi_status, &task_handles );
     // register_status_struct( ( void* ) &qspi_status, sizeof( qspi_status ) );
 
-    fpga_ctrl_init( &fpga_status, &fpga_task_status );
+    // fpga_ctrl_init( &fpga_status, &fpga_task_status );
     // register_status_struct( ( void* ) &fpga_status, sizeof( fpga_status ) );
 
     status_control_init( &status_control_status, &command_ctrl_task, &task_handles );

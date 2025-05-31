@@ -25,13 +25,13 @@ static I2C_DATA_MEM_t* data_storage = NULL;
 static uint8_t RxData[ 5 ];
 union conv
 {
-    uint32_t tx_val;
-    uint8_t bytes[ 4 ];
+    uint16_t tx_val;
+    uint8_t bytes[ 2 ];
 };
 volatile union conv conv_val;
 volatile uint8_t next_frame_flag;
 
-static void i2c_set_value( uint8_t addr, uint32_t value );
+//static void i2c_set_value( uint8_t addr, uint32_t value );
 /* USER CODE END 0 */
 
 I2C_HandleTypeDef hi2c1;
@@ -48,7 +48,7 @@ void MX_I2C1_Init(void)
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
   hi2c1.Init.Timing = 0x00201D2B;
-  hi2c1.Init.OwnAddress1 = 36;
+  hi2c1.Init.OwnAddress1 = 0x24; //
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
   hi2c1.Init.OwnAddress2 = 0;
@@ -180,7 +180,7 @@ extern void HAL_I2C_AddrCallback( I2C_HandleTypeDef* hi2c, uint8_t TransferDirec
         if ( addr < data_storage->num_entries )
         {
             conv_val.tx_val = *( data_storage->data[ addr ].val_ptr );
-            HAL_I2C_Slave_Sequential_Transmit_IT( hi2c, ( uint8_t* ) conv_val.bytes, 4, I2C_LAST_FRAME );
+            HAL_I2C_Slave_Sequential_Transmit_IT( hi2c, ( uint8_t* ) conv_val.bytes, 2, I2C_LAST_FRAME );
         }
     }
     else
@@ -199,22 +199,25 @@ extern void HAL_I2C_SlaveRxCpltCallback( I2C_HandleTypeDef* hi2c )
     if ( next_frame_flag )
     {
         /* Write Req: receive more data */
-        HAL_I2C_Slave_Sequential_Receive_IT( hi2c, &RxData[ 1 ], 4, I2C_FIRST_AND_LAST_FRAME );
+        HAL_I2C_Slave_Sequential_Receive_IT( hi2c, &RxData[ 1 ], 2, I2C_FIRST_AND_LAST_FRAME );
     }
-    else
-    {
-        uint8_t addr = RxData[ 0 ];
 
-        if ( addr < data_storage->num_entries )
-        {
-            if ( data_storage->data[ addr ].type == I2C_ENTRY_TYPE_WRITE || data_storage->data[ addr ].type == I2C_ENTRY_TYPE_READ_WRITE )
-            {
-                uint32_t val                        = RxData[ 1 ] << 24 | RxData[ 2 ] << 16 | RxData[ 3 ] << 8 | RxData[ 4 ];
-                *data_storage->data[ addr ].val_ptr = val;
-                data_storage->has_update            = 1;
-            }
-        }
-    }
+	else
+	{
+		uint8_t addr = RxData[ 0 ];
+
+		if ( addr < data_storage->num_entries )
+		{
+			if ( data_storage->data[ addr ].type == I2C_ENTRY_TYPE_WRITE || data_storage->data[ addr ].type == I2C_ENTRY_TYPE_READ_WRITE )
+			{
+				uint16_t val                        = RxData[ 2 ] << 8 | RxData[ 1 ];
+
+				//uint32_t val                        = RxData[ 1 ] << 24 | RxData[ 2 ] << 16 | RxData[ 3 ] << 8 | RxData[ 4 ];
+				*data_storage->data[ addr ].val_ptr = val;
+				data_storage->has_update            = 1;
+			}
+		}
+	}
     next_frame_flag = 0;
 }
 
