@@ -299,12 +299,12 @@ begin
 
 			if conduit_fire = '1' then -- todo: BGR, gamma
 
-				for a in 0 to (pix_out_A'length -1) loop
+				for a in 0 to (pix_out_A'length - 1) loop
 					if use_bgr='1' then
 						--BGR
-						pix_out_A(a)(7 downto 0)   <= in_buffer_stream_A(a)(23 downto 16);
-						pix_out_A(a)(15 downto 8)  <= in_buffer_stream_A(a)(15 downto 8) ;
-						pix_out_A(a)(23 downto 16) <= in_buffer_stream_A(a)(7 downto 0)  ;
+						pix_out_A(a)(7 downto 0)   <= in_buffer_stream_A(pix_out_A'length - 1 - a)(23 downto 16);
+						pix_out_A(a)(15 downto 8)  <= in_buffer_stream_A(pix_out_A'length - 1 - a)(15 downto 8) ;
+						pix_out_A(a)(23 downto 16) <= in_buffer_stream_A(pix_out_A'length - 1 - a)(7 downto 0)  ;
 					else
 						--RGB
 						pix_out_A(a)(23 downto 0) <= in_buffer_stream_A(a);
@@ -314,7 +314,7 @@ begin
 					pix_out_A(a)(28 downto 24)  <= BRIGHTNESS;
 				end loop;
 
-				for b in 0 to (pix_out_B'length -1) loop -- change direction
+				for b in 0 to (pix_out_B'length - 1) loop -- change direction
 					if use_bgr='1' then
 						--BGR
 						pix_out_B(b)(7 downto 0)   <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b)(23 downto 16);
@@ -329,12 +329,12 @@ begin
 					pix_out_B(b)(28 downto 24) <= BRIGHTNESS;
 				end loop;
 
-				for c in 0 to (pix_out_C'length -1) loop
+				for c in 0 to (pix_out_C'length - 1) loop
 					if use_bgr='1' then
 						--BGR
-						pix_out_C(c)(7 downto 0)   <= in_buffer_stream_B(c)(23 downto 16);
-						pix_out_C(c)(15 downto 8)  <= in_buffer_stream_B(c)(15 downto 8) ;
-						pix_out_C(c)(23 downto 16) <= in_buffer_stream_B(c)(7 downto 0)  ;
+						pix_out_C(c)(7 downto 0)   <= in_buffer_stream_B(pix_out_C'length - 1 - c)(23 downto 16);
+						pix_out_C(c)(15 downto 8)  <= in_buffer_stream_B(pix_out_C'length - 1 - c)(15 downto 8) ;
+						pix_out_C(c)(23 downto 16) <= in_buffer_stream_B(pix_out_C'length - 1 - c)(7 downto 0)  ;
 					else
 						--RGB
 						pix_out_C(c)(23 downto 0)<= in_buffer_stream_B(c);
@@ -344,7 +344,7 @@ begin
 					pix_out_C(c)(28 downto 24)  <= BRIGHTNESS;
 				end loop;
 
-				for d in 0 to (pix_out_D'length -1) loop -- change direction
+				for d in 0 to (pix_out_D'length - 1) loop -- change direction
 					if use_bgr='1' then
 						--BGR
 						pix_out_D(d)(7 downto 0)   <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d)(23 downto 16);

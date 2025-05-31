@@ -97,7 +97,8 @@ begin
 				--conduit_debug_enc_enc_dbg_out(10) <= dbg_led_firepulse;
 			when t2 =>
 				conduit_debug_enc_enc_dbg_out <= (others => '0');
-				conduit_debug_enc_enc_dbg_out(0) <= conduit_intern_col_fire;
+				-- conduit_debug_enc_enc_dbg_out(0) <= conduit_intern_col_fire;
+				conduit_debug_enc_enc_dbg_out(0) <= sync_i;
 				conduit_debug_enc_enc_dbg_out(9 downto 1) <= conduit_intern_col_nr(8 downto 0);
 				conduit_debug_enc_enc_dbg_out(10) <= enc_clk;
 				conduit_debug_enc_enc_dbg_out(11) <= sync_a;
