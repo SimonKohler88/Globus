@@ -148,10 +148,17 @@ begin
         end if;
 	end process sync_proc;
 	-- feed in simulation signals
-	sync_a <= sync_a_reg(2) when sync_sim_sw_reg(2)='0' else sync_sim_pulse_reg(2);
-	sync_b <= sync_b_reg(2) when sync_sim_sw_reg(2)='0' else '0';
-	sync_i <= not sync_i_reg(2); -- TODO: hall sensor pulls signal down when triggered
+	sync_i <= not sync_i_reg(2);
 	sync_sim_switch <= sync_sim_sw_reg(2);
+
+	-- for ignoring index + use sim pulse by switch
+	sync_a <= sync_a_reg(2) when sync_sim_switch='0' else sync_sim_pulse_reg(2);
+	sync_b <= sync_b_reg(2) when sync_sim_switch='0' else '0';
+	-- for ignoring only index by switch
+	-- sync_a <= sync_a_reg(2);
+	-- sync_b <= sync_b_reg(2);
+
+
 
 	-- determing direction and rising edge of a and i
 	rising_edge_proc: process(all)

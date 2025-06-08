@@ -22,7 +22,16 @@ class CanvasWrapper:
         self.scatter = visuals.Markers()
         self.globe_axis = visuals.Line()
         self.view.add(self.scatter)
-        # self.view.add(self.globe_axis)
+
+        self.cube = visuals.Box(2, 2, 2, color=(1, 1, 1, 0), edge_color="white")
+        self.view.add(self.cube)
+
+        # self.z_axis = visuals.Line([[0, 0, -1], [0, 0, 1]])
+        # self.view.add(self.z_axis)
+        angle_rad = np.deg2rad(23.4)
+        self.spin_axis = visuals.Line([[0, 0, 0], [2*np.sin(angle_rad),0, 2*np.cos(angle_rad)]])
+        self.view.add(self.spin_axis)
+
 
     def update_data(self, new_data_dict):
         col = new_data_dict['col']
@@ -60,8 +69,8 @@ class DataSource(QtCore.QObject):
         # arr_file = 'globe_world_blue_marble_nov2004.gif'  # for .gif
         # self.pics = imageio.get_reader(arr_file)  #for gif
 
-        arr_file = 'pic_world_blue_marble_nov2004.npy' # for img npy
-        self.pics = np.load(arr_file) # for npy files
+        arr_file = 'pic_world_blue_marble_nov2004.npy'  # for img npy
+        self.pics = np.load(arr_file)  # for npy files
 
     def run_data_creation(self, timer_event):
         i = self._count
