@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPi Steuerung</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: url('https://www.fhnw.ch/de/die-fhnw/standorte/brugg-windisch/media/impressionen-cbw/cbw_architektur_001.jpg/@@images/image/f_middle') no-repeat center center fixed;
+            background-size: cover;
+            text-align: center;
+            padding: 20px;
+            margin-top: 50px;
+        }
+        .top-bar {
+            background-color: #F7E600; /* FHNW Gelb */
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 32px;
+            height: 80px; /* Höhe des Balkens auf 80px gesetzt */
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+            margin-top: 60px; /* adjust for the yellow bar */
+        }
+        h1, h2 {
+            color: #333;
+        }
+        button {
+            background-color: #0074D9;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056a3;
+        }
+        img {
+            width: 90px; /
+            margin-bottom: 20px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        Fachhochschule Nordwestschweiz
+    </div>
+
+    <img src="https://www.fhnw.ch/plattformen/soziale-arbeit-geschichte/wp-content/uploads/sites/266/fhnw-social-media-sharing-gelb-1920x1440-c-default.jpg" alt="FHNW Logo">
+
+    <div class="container">
+        <h1>Globus Steuerung</h1>
+
+        <h2>Motor steuern</h2>
+        <form action="{{ url_for('motor_control') }}" method="post">
+            <button type="submit" name="motor" value="start">Motor START</button>
+            <button type="submit" name="motor" value="stop">Motor STOP</button>
+            <button type="submit" name="speed" value="up">speed up</button>
+            <button type="submit" name="speed" value="down">speed down</button>
+        </form>
+
+        <h2>Bild hochladen</h2>
+        <form action="{{ url_for('image_upload') }}" method="post" enctype="multipart/form-data">
+            <input type="file" name="fileToUpload" id="fileToUpload">
+            <input type="submit" value="Upload Image" name="submit">
+        </form>
+
+		
+		<h2>zurück zum Globus</h2>
+        <form action="{{ url_for('back_to_video') }}" method="post">
+            <button type="submit" name="globe" value="refresh">Refresh</button>
+        </form>
+    </div>
+
+</body>
+</html>

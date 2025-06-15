@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="./static/main.js"></script>
+    <title>RPi Steuerung</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            {#background: url('https://www.fhnw.ch/de/die-fhnw/standorte/brugg-windisch/media/impressionen-cbw/cbw_architektur_001.jpg/@@images/image/f_middle') no-repeat center center fixed;#}
+            background-size: cover;
+            text-align: center;
+            padding: 20px;
+            margin-top: 50px;
+        }
+
+        .top-bar {
+            background-color: #F7E600; /* FHNW Gelb */
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 32px;
+            height: 80px; /* Höhe des Balkens auf 80px gesetzt */
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+            margin-top: 60px; /* adjust for the yellow bar */
+        }
+
+        h1, h2 {
+            color: #333;
+        }
+
+        button {
+            background-color: #0074D9;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #0056a3;
+        }
+
+        input {
+            background-color: #0074D9;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        input:hover {
+            background-color: #0056a3;
+        }
+
+        img {
+            width: 90px;
+        / margin-bottom: 20 px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    Fachhochschule Nordwestschweiz
+</div>
+
+
+
+<div class="container">
+    <h1>Globus Steuerung</h1>
+
+    <h2>Motor steuern</h2>
+    <form id="id_mot_ctrl_form" action="/motor_control" method="post">
+        <button type="button" name="motor" value="start" onclick="return submit_motor_control('start');">Motor START</button>
+        <button type="button" name="motor" value="start" onclick="return submit_motor_control('stop');">Motor STOP</button>
+        <button type="button" name="speed" value="up"    onclick="return submit_motor_control('up');">speed up</button>
+        <button type="button" name="speed" value="down"  onclick="return submit_motor_control('down');">speed down</button>
+    </form>
+
+    <h2>Bild hochladen</h2>
+    <form id="id_jpeg_upload_form" action="/upload" method="POST" onsubmit="return submit_jpeg();"
+          enctype="multipart/form-data">
+        <input type="file" name="file" accept=".jpg,.jpeg,.png,.bmp"/>
+        <input type="submit" value="Upload Image"/>
+    </form>
+
+    <h2>Globe</h2>
+    <form id="id_globe_selector" action="/show_globe_video" method="POST" onsubmit="return submit_globe_view();">
+        <input type="radio" name="option" value="globe"> Relief <br>
+        <input type="radio" name="option" value="globe_world_blue_marble_nov2004" checked="checked"> Blue Marble <br>
+        <input type=submit value="show globe" id="radio_submit" />
+    </form>
+</div>
+
+</body>
+</html>
