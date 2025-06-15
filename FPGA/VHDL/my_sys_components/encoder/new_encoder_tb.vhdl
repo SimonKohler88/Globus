@@ -70,9 +70,16 @@ architecture rtl of new_encoder_tb is
 	constant c_enc_t_per_u :time := 100 us;
 	constant c_enc_index_time : time := 195 ns; --c_enc_t_per_u/512;
 	constant c_enc_S_time : time := 49 ns; --c_enc_index_time/4;
-	constant c_enc_sim_17kHz_pulse_half : time := 29400 ns; --2.94e-5
+	constant c_enc_sim_17kHz_pulse_half : time := 25000 ns; --2.94e-5
+
+	-- real encoder:29,29 us pulse width
+	-- calc: 1/33 = 0.03 s/u --> T = 0.03/512 = 0.00005859 s period
+	-- --> P = T/2 = 0.00005859/2 = 29.3 us pulse width
+	-- S = T/4 = 0.0000146s = 14.6 us Versatz A zu B @ 2000 u/min
+	constant c_enc_S_2 : time := 14600 ns;
 
 	signal enable         : boolean := true;
+	signal enable_ext_enc : boolean := true;
 	signal enable_a_b         : std_ulogic := '1';
 	signal A :std_ulogic_vector(3 downto 0) := "1100";
 	signal B :std_ulogic_vector(3 downto 0) := "0110";
@@ -154,33 +161,33 @@ begin
 		-- S = P/2 = 0.0106 s
 		indexCount <= "000000000";
 		--indexCount  <= indexCount + 1;
-		while enable loop
+		while enable_ext_enc loop
 			if enable_a_b='1' then
-				wait for c_enc_S_time;
+				wait for c_enc_S_2;
 				A <= A(2 downto 0) & A(3);
 				B <= B(2 downto 0) & B(3);
-				wait for c_enc_S_time;
+				wait for c_enc_S_2;
 				A <= A(2 downto 0) & A(3);
 				B <= B(2 downto 0) & B(3);
-				wait for c_enc_S_time;
+				wait for c_enc_S_2;
 				A <= A(2 downto 0) & A(3);
 				B <= B(2 downto 0) & B(3);
-				wait for c_enc_S_time;
+				wait for c_enc_S_2;
 				A <= A(2 downto 0) & A(3);
 				B <= B(2 downto 0) & B(3);
 				indexCount   <= indexCount + 1;
 
 			else
-				wait for c_enc_S_time;
+				wait for c_enc_S_2;
 				A <= A(0) & A(3 downto 1);
 				B <= B(0) & B(3 downto 1);
-				wait for c_enc_S_time;
+				wait for c_enc_S_2;
 				A <= A(0) & A(3 downto 1);
 				B <= B(0) & B(3 downto 1);
-				wait for c_enc_S_time;
+				wait for c_enc_S_2;
 				A <= A(0) & A(3 downto 1);
 				B <= B(0) & B(3 downto 1);
-				wait for c_enc_S_time;
+				wait for c_enc_S_2;
 				A <= A(0) & A(3 downto 1);
 				B <= B(0) & B(3 downto 1);
 				indexCount   <= indexCount - 1;
@@ -188,11 +195,40 @@ begin
 			end if;
 
 		end loop;
-		report "encoder testbench finished";
+
+		for i in 0 to 20 loop
+			wait for c_enc_S_2;
+			A <= A(2 downto 0) & A(3);
+			B <= B(2 downto 0) & B(3);
+			wait for 10 ns;
+			A(0) <='0';
+			wait for 20 ns;
+			A(0) <='1';
+			wait for 10 ns;
+			A(0) <='0';
+			wait for 20 ns;
+			A(0) <='1';
+			wait for 10 ns;
+			A(0) <='0';
+			wait for 20 ns;
+			A(0) <='1';
+			wait for c_enc_S_2;
+			A <= A(2 downto 0) & A(3);
+			B <= B(2 downto 0) & B(3);
+			wait for c_enc_S_2;
+			A <= A(2 downto 0) & A(3);
+			B <= B(2 downto 0) & B(3);
+			wait for c_enc_S_2;
+			A <= A(2 downto 0) & A(3);
+			B <= B(2 downto 0) & B(3);
+		end loop;
+
+		report "encoder done";
+
         wait;
     end process stim_proc_encoder;
 
-	s_conduit_encoder_index <= '0' when indexCount = 15 else '1';
+	s_conduit_encoder_index <= '0' when indexCount = 1 else '1';
 
 	s_conduit_encoder_sim_pulse <= s_conduit_encoder_sim_pulse_A when test_case = 2 else
 									s_conduit_encoder_sim_pulse_17k when test_case = 3 else
@@ -201,7 +237,8 @@ begin
 
     stim_main_proc: process
     begin
-      test_case <= 0;
+		enable_ext_enc <= true;
+		test_case <= 0;
 		reset <= '1';
 		enable_a_b<='1';
 		s_conduit_encoder_sim_switch <= '0';
@@ -215,7 +252,7 @@ begin
 		test_case <= 1;
 		enable_a_b <= '0';
 
-		wait for 50 us;
+		wait for 250 us;
 		test_case <= 2;
 		--setup for sim
 		s_conduit_encoder_sim_switch <= '1';
@@ -232,7 +269,15 @@ begin
 
 		-- reset <= '0';
 		wait for 300 us;
+		test_case <= 4;
+		s_conduit_encoder_sim_switch <= '0';
+		enable_ext_enc <= false;
+		-- testing debounce
+		wait for 100 us;
+
 		enable <= false;
+		report "encoder testbench finished";
+
 		wait;
 
     end process stim_main_proc;

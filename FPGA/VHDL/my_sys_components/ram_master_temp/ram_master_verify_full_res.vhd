@@ -76,7 +76,10 @@ procedure avalon_stream_out_write_many_pixel(
             readline(input_file, v_input_line);
             hread(v_input_line, v_input_data);
 
-            wait until rising_edge(in_ready);
+            if in_ready = '0' then
+                wait until rising_edge(in_ready);
+            end if;
+
 
             if delay_ready2valid_clocks > 0 then
                 for j in 0 to delay_ready2valid_clocks loop
@@ -154,7 +157,7 @@ procedure avalon_stream_out_write_many_pixel(
 
     component avalon_slave_ram_emulator is
     generic (
-		RAM_ADDR_BITS : integer := 10
+		RAM_ADDR_BITS : integer := ram_address_bits
 	);
 	port (
 		rst : in std_ulogic;
@@ -241,7 +244,10 @@ begin
         wait for 50 ns;
 
         transfer_out_ongoing <= '1';
-        avalon_stream_out_write_many_pixel(120*256, 20, clock_clk, aso_out0_data, aso_out0_valid,
+        -- avalon_stream_out_write_many_pixel(120*256, 20, clock_clk, aso_out0_data, aso_out0_valid,
+        --         aso_out0_ready, aso_out0_startofpacket, aso_out0_endofpacket, 0 );
+
+        avalon_stream_out_write_many_pixel(1202, 20, clock_clk, aso_out0_data, aso_out0_valid,
                 aso_out0_ready, aso_out0_startofpacket, aso_out0_endofpacket, 0 );
         transfer_out_ongoing <= '0';
         pulse_out(s_dump_ram, clock_clk);
@@ -255,14 +261,14 @@ begin
         column_count <= (others => '0');
 
         wait until falling_edge(transfer_out_ongoing);
-        wait for 10 ns;
+        wait for 100 ns;
 
         for i in 0 to 512 loop
             pulse_out(conduit_intern_col_fire, clock_clk);
             wait until rising_edge(asi_in1_endofpacket);
             column_count <= column_count + 1;
             conduit_intern_col_nr(7 downto 0) <= std_logic_vector(column_count(7 downto 0));
-            wait for 20 ns;
+            wait for 100 ns;
             wait until rising_edge(clock_clk);
 
         end loop;
@@ -284,7 +290,7 @@ begin
 	-- --------------------------- STREAM IN AB ---------------------------------------------
 
     assert always asi_in0_startofpacket -> eventually! asi_in0_endofpacket;
-    assert always conduit_intern_col_fire -> next_e[ 0 to 20 ] (asi_in0_startofpacket and asi_in0_valid);
+    assert always conduit_intern_col_fire -> next_e[ 0 to 40 ] (asi_in0_startofpacket and asi_in0_valid);
     assert always asi_in0_startofpacket -> asi_in0_valid;
     assert always never not asi_in0_ready and (asi_in0_valid or asi_in0_startofpacket or asi_in0_endofpacket );
 

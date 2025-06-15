@@ -1,0 +1,39 @@
+[*]
+[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
+[*] Sat Mar 22 11:29:47 2025
+[*]
+[dumpfile] "D:\GitHub\Globus\FPGA\VHDL\other_dev\func_ghw.ghw"
+[dumpfile_mtime] "Sat Mar 22 11:27:18 2025"
+[dumpfile_size] 4883
+[savefile] "D:\GitHub\Globus\FPGA\VHDL\other_dev\wave_save_ghw.gtkw"
+[timestart] 0
+[size] 1920 1017
+[pos] -1 -1
+*-7.000000 138 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.diverses_tb.
+[treeopen] top.diverses_tb.dut.
+[sst_width] 197
+[signals_width] 273
+[sst_expanded] 1
+[sst_vpaned_height] 300
+@28
+top.diverses_tb.dut.clock_clk
+top.diverses_tb.dut.reset_reset
+top.diverses_tb.dut.addr_ready
+top.diverses_tb.dut.valid
+top.diverses_tb.dut.wait_request
+@200
+-
+@420
+top.diverses_tb.dut.read_state
+@22
+#{top.diverses_tb.dut.read_address[23:0]} top.diverses_tb.dut.read_address[23] top.diverses_tb.dut.read_address[22] top.diverses_tb.dut.read_address[21] top.diverses_tb.dut.read_address[20] top.diverses_tb.dut.read_address[19] top.diverses_tb.dut.read_address[18] top.diverses_tb.dut.read_address[17] top.diverses_tb.dut.read_address[16] top.diverses_tb.dut.read_address[15] top.diverses_tb.dut.read_address[14] top.diverses_tb.dut.read_address[13] top.diverses_tb.dut.read_address[12] top.diverses_tb.dut.read_address[11] top.diverses_tb.dut.read_address[10] top.diverses_tb.dut.read_address[9] top.diverses_tb.dut.read_address[8] top.diverses_tb.dut.read_address[7] top.diverses_tb.dut.read_address[6] top.diverses_tb.dut.read_address[5] top.diverses_tb.dut.read_address[4] top.diverses_tb.dut.read_address[3] top.diverses_tb.dut.read_address[2] top.diverses_tb.dut.read_address[1] top.diverses_tb.dut.read_address[0]
+@28
+top.diverses_tb.dut.read_n
+@22
+#{top.diverses_tb.dut.read_data_count[8:0]} top.diverses_tb.dut.read_data_count[8] top.diverses_tb.dut.read_data_count[7] top.diverses_tb.dut.read_data_count[6] top.diverses_tb.dut.read_data_count[5] top.diverses_tb.dut.read_data_count[4] top.diverses_tb.dut.read_data_count[3] top.diverses_tb.dut.read_data_count[2] top.diverses_tb.dut.read_data_count[1] top.diverses_tb.dut.read_data_count[0]
+@28
+#{top.diverses_tb.dut.valid_ff[1:0]} top.diverses_tb.dut.valid_ff[1] top.diverses_tb.dut.valid_ff[0]
+[pattern_trace] 1
+[pattern_trace] 0

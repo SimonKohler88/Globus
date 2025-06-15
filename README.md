@@ -7,6 +7,7 @@ Beinhaltet:
 - Python Flask Server
 - ESP32 Projekt des Rotors
 - FPGA des Rotors
+- Nucleo für Motorensteuerung und Induktive Energieübertragung
 - Testscripts
 
 

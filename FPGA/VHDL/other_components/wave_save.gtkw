@@ -1,20 +1,20 @@
 [*]
-[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Sat Mar 15 11:21:57 2025
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Mon Apr 21 08:04:19 2025
 [*]
-[dumpfile] "D:\GitHub\Globus\FPGA\VHDL\other_components\func.vcd"
-[dumpfile_mtime] "Sat Mar 15 11:20:56 2025"
-[dumpfile_size] 338021
-[savefile] "D:\GitHub\Globus\FPGA\VHDL\other_components\wave_save.gtkw"
-[timestart] 0
+[dumpfile] "/home/simon/Documents/GitHub/Globus/FPGA/VHDL/other_components/func.vcd"
+[dumpfile_mtime] "Mon Apr 21 08:00:04 2025"
+[dumpfile_size] 390389
+[savefile] "/home/simon/Documents/GitHub/Globus/FPGA/VHDL/other_components/wave_save.gtkw"
+[timestart] 391510000000
 [size] 1792 941
-[pos] -1 -1
-*-17.000000 388600 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[pos] -1950 51
+*-34.099998 451720000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] frame_request_generator_tb.
-[sst_width] 323
-[signals_width] 415
+[sst_width] 239
+[signals_width] 248
 [sst_expanded] 1
-[sst_vpaned_height] 374
+[sst_vpaned_height] 205
 @28
 frame_request_generator_tb.dut.clock_clk
 frame_request_generator_tb.s_reset
@@ -25,7 +25,12 @@ frame_request_generator_tb.s_pin
 frame_request_generator_tb.dut.counter[7:0]
 @28
 frame_request_generator_tb.dut.pulse_out_counter_intern
-@29
 frame_request_generator_tb.dut.pulse_out_pin_in_intern
+@420
+frame_request_generator_tb.dut.dbg_enc_counter
+@28
+frame_request_generator_tb.dut.enable_pin_input
+@29
+frame_request_generator_tb.dut.dbg_enc_out
 [pattern_trace] 1
 [pattern_trace] 0

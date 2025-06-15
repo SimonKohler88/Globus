@@ -36,6 +36,7 @@ generic (
 		asi_in1_valid               : in  std_logic                     := '0';             --                     .valid
 		asi_in1_startofpacket       : in  std_logic                     := '0';             --                     .startofpacket
 		asi_in1_endofpacket         : in  std_logic                     := '0';             --                     .endofpacket
+
 		asi_in0_data                : in  std_logic_vector(23 downto 0) := (others => '0'); --            asi_in0_A.data
 		asi_in0_ready               : out std_logic;                                        --                     .ready
 		asi_in0_valid               : in  std_logic                     := '0';             --                     .valid
@@ -100,6 +101,15 @@ procedure avalon_stream_out_write_many_pixel(
                 packet_end <= '1';
             end if;
 
+
+            -- testing lock of sop/eop
+            if i=50 then
+                packet_end <= '1';
+            end if;
+            if i = 51 then
+                packet_start <= '1';
+            end if;
+
             data <= v_input_data;
             valid <= '1';
             pix_count := pix_count +1;
@@ -110,7 +120,6 @@ procedure avalon_stream_out_write_many_pixel(
             packet_end <= '0';
 
             wait for 10 ns;
-            --qspi_write_pixel(v_input_data, clk, qspi_clk, data );
         end loop;
         write(output, "Pixel Sent: " & to_string(pix_count) & lf);
     end procedure avalon_stream_out_write_many_pixel;
@@ -244,21 +253,22 @@ begin
     -- check : must be a endofpacket after startofpacket
     assert always aso_out0_startofpacket -> eventually! aso_out0_endofpacket;
 	p_stimuli_avs_out: process
-        alias dut_const_row2row_offset is <<constant .ram_master_tb.dut_ram_master.addr_row_to_row_offset:integer>>;
-        alias addr_b_col_shift_offset is <<constant .ram_master_tb.dut_ram_master.addr_b_col_shift_offset:integer>>;
-        alias image_cols is <<constant .ram_master_tb.dut_ram_master.image_cols:integer>>;
+        -- alias dut_const_row2row_offset is <<constant .ram_master_tb.dut_ram_master.C_ADDR_ROW_TO_ROW_OFFSET:integer>>;
+        -- alias addr_b_col_shift_offset is <<constant .ram_master_tb.dut_ram_master.C_ADDR_B_COL_SHIFT_OFFSET:integer>>;
+        -- alias image_cols is <<constant .ram_master_tb.dut_ram_master.C_IMAGE_COLS:integer>>;
 
 	begin
         aso_out0_data <= (others => '0');
-        aso_out0_Valid <= '0';
+        aso_out0_valid <= '0';
         aso_out0_endofpacket <= '0';
         aso_out0_startofpacket <= '0';
         transfer_out_ongoing <= '0';
         s_dump_ram <= '0';
         input_file <= '0';
-        write(output, "addr row2row off: " & to_string(dut_const_row2row_offset) & lf);
-        write(output, "addr_b_col_shift_offset: " & to_string(addr_b_col_shift_offset) & lf);
-        write(output, "image_cols: " & to_string(image_cols) & lf);
+        -- write(output, "addr row2row off: " & to_string(dut_const_row2row_offset) & lf);
+        -- write(output, "addr_b_col_shift_offset: " & to_string(addr_b_col_shift_offset) & lf);
+        -- write(output, "image_cols: " & to_string(image_cols) & lf);
+        write(output, "------------------------------------------------" & lf);
 
         wait for 50 ns;
 
@@ -266,7 +276,7 @@ begin
         avalon_stream_out_write_many_pixel(960, 20, clock_clk, aso_out0_data, aso_out0_valid,
                 aso_out0_ready, aso_out0_startofpacket, aso_out0_endofpacket, 0, input_file );
         transfer_out_ongoing <= '0';
-        -- pulse_out(s_dump_ram, clock_clk);
+        pulse_out(s_dump_ram, clock_clk);
 
         wait on test_case_nr;
 
@@ -277,10 +287,22 @@ begin
         write(output, "testcase 1 sending " & lf);
         avalon_stream_out_write_many_pixel(960, 20, clock_clk, aso_out0_data, aso_out0_valid,
                 aso_out0_ready, aso_out0_startofpacket, aso_out0_endofpacket, 2, input_file );
+        transfer_out_ongoing <= '0';
+
+        wait on test_case_nr;
+        input_file <= '0';
+        transfer_out_ongoing <= '1';
+        wait for 50 ns;
+        wait until rising_edge(clock_clk);
+        write(output, "testcase 2 sending " & lf);
+        avalon_stream_out_write_many_pixel(960, 20, clock_clk, aso_out0_data, aso_out0_valid,
+                aso_out0_ready, aso_out0_startofpacket, aso_out0_endofpacket, 1, input_file );
+        transfer_out_ongoing <= '0';
 
         wait;
 
 	end process p_stimuli_avs_out;
+
 	p_stimuli_fire: process
 	begin
         conduit_intern_col_fire <= '0';
@@ -291,35 +313,42 @@ begin
         -- test case 0: Check if pixels are correctly written and read
         wait until falling_edge(transfer_out_ongoing);
 
-        wait for 10 ns;
+        wait for 1 us;
         pulse_out(conduit_intern_col_fire, clock_clk);
-        wait until rising_edge(asi_in1_endofpacket);
-        wait for 20 ns;
+        wait for 3 us;
+        wait on asi_in1_endofpacket;
+        wait for 10 us;
         conduit_intern_col_nr(3 downto 0) <= X"1";
         pulse_out(conduit_intern_col_fire, clock_clk);
 
         wait until rising_edge(asi_in1_endofpacket);
-        wait for 20 ns;
+        wait for 10 us;
         conduit_intern_col_nr(3 downto 0) <= X"6";
         pulse_out(conduit_intern_col_fire, clock_clk);
 
         wait until falling_edge(asi_in1_endofpacket);
 
         test_ongoing <= '0';
-        wait for 10 ns;
+        wait for 10 us;
 
         -- test case 1: check if write works with delayed ready->valid, correct memory-space swap
         test_case_nr <= 1;
         wait for 10 ns;
         test_ongoing <= '1';
-        wait until rising_edge(aso_out0_endofpacket);
+        -- wait until rising_edge(aso_out0_endofpacket);
+        wait until falling_edge(transfer_out_ongoing);
         wait for 10 ns;
         conduit_intern_col_nr(3 downto 0) <= X"2";
         pulse_out(conduit_intern_col_fire, clock_clk);
         wait until falling_edge(asi_in1_endofpacket);
         test_ongoing <= '0';
-        wait for 10 ns;
+        wait for 1 us;
 
+        test_case_nr <= 2;
+        wait for 100 us;
+        -- wait until falling_edge(transfer_out_ongoing);
+
+        -- enable <= false;
         wait;
 
 	end process p_stimuli_fire;
@@ -329,16 +358,17 @@ begin
 	-- --------------------------- STREAM IN AB ---------------------------------------------
 
     assert always asi_in0_startofpacket -> eventually! asi_in0_endofpacket;
-    assert always conduit_intern_col_fire -> next_e[ 0 to 20 ] (asi_in0_startofpacket and asi_in0_valid);
+    assert always conduit_intern_col_fire -> next_e[ 0 to 40 ] (asi_in0_startofpacket and asi_in0_valid);
     assert always asi_in0_startofpacket -> asi_in0_valid;
     assert always never not asi_in0_ready and (asi_in0_valid or asi_in0_startofpacket or asi_in0_endofpacket );
 
 	p_stimuli_avs_in_AB: process
 	begin
         asi_in0_ready <= '1';
-        wait for 10 ns;
+        wait for 20 ns;
 
-        wait until rising_edge(asi_in0_startofpacket);
+        -- wait until rising_edge(asi_in0_startofpacket);
+        wait on asi_in0_startofpacket;
         save_stream('0', test_case_nr, 60, conduit_intern_col_nr, asi_in0_valid, asi_in0_data, asi_in0_endofpacket, clock_clk, asi_in0_ready, asi_in0_startofpacket);
         wait until rising_edge(asi_in0_startofpacket);
         save_stream('0', test_case_nr, 60, conduit_intern_col_nr, asi_in0_valid, asi_in0_data, asi_in0_endofpacket, clock_clk, asi_in0_ready, asi_in0_startofpacket );
@@ -363,9 +393,10 @@ begin
 	p_stimuli_avs_in_CD: process
 	begin
         asi_in1_ready <= '1';
-        wait for 10 ns;
+        wait for 20 ns;
 
         wait until rising_edge(asi_in1_startofpacket);
+        -- wait on asi_in1_startofpacket;
         save_stream('1', test_case_nr, 60, conduit_intern_col_nr, asi_in1_valid, asi_in1_data, asi_in1_endofpacket, clock_clk, asi_in1_ready, asi_in1_startofpacket );
         wait until rising_edge(asi_in1_startofpacket);
         save_stream('1', test_case_nr, 60, conduit_intern_col_nr, asi_in1_valid, asi_in1_data, asi_in1_endofpacket, clock_clk, asi_in1_ready, asi_in1_startofpacket );

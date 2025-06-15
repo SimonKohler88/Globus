@@ -53,3 +53,6 @@ dkms.conf
 
 # Pycharm directories
 *.idea
+
+/PythonServer/video_server/__pycache__
+/PythonServer/globus_video_utils/__pycache__

@@ -41,10 +41,11 @@ if __name__ == '__main__':
             file_ = os.path.join(this_file_path, file)
 
             with open(file_) as f:
-                file_lines = f.readlines()
-            file_lines = file_lines[1:]
-            file_lines = [a.split() for a in file_lines]
-            file_lines = [a[1] for a in file_lines]
+                file_ = f.readlines()
+            file_ = file_[1:]
+            file_ = [a.split() for a in file_]
+            file_lines = [a[1] for a in file_]
+            file_lines_num = [a[0] for a in file_]
 
             if stream_no == 'in1':
                 col_nr += int(COLUMNS / 2)
@@ -60,11 +61,12 @@ if __name__ == '__main__':
 
                 try:
                     num_soll = all_lines[pix_num][col_nr] if testcase == 0 else all_lines_inv[pix_num][col_nr]
+                    in_pix_num = file_lines_num[i]
 
                     if num_soll != num:
                         has_error = True
                         errors += 1
-                        print(f'Error in {file}, pix {pix_num}, num_soll {num_soll}, num {num}')
+                        print(f'Error in {file}, in pix {in_pix_num}, num_soll {num_soll}, soll_pix {pix_num}, num {num}, col {col_nr}')
 
                 except IndexError:
                     has_error = True

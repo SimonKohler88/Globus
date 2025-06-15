@@ -11,6 +11,8 @@
 #include "stdint.h"
 #include "freertos/FreeRTOS.h"
 
+#include"status_control_task.h"
+
 
 struct 
 {
@@ -29,7 +31,7 @@ struct
  * @param status_ptr Pointer to a qspi_status_t structure where the status of the
  *                   QSPI initialization will be stored.
  */
-void qspi_init( qspi_status_t *status_ptr );
+void qspi_init( qspi_status_t* status_ptr , task_handles_t* task_handles);
 
 /**
  * @brief Initiates a QSPI frame request signal from an ISR.

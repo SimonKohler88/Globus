@@ -1,0 +1,47 @@
+[*]
+[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
+[*] Sat Mar 22 14:10:29 2025
+[*]
+[dumpfile] "D:\GitHub\Globus\FPGA\VHDL\other_dev\write_ram\func_ghw.ghw"
+[dumpfile_mtime] "Sat Mar 22 14:09:48 2025"
+[dumpfile_size] 23446
+[savefile] "D:\GitHub\Globus\FPGA\VHDL\other_dev\write_ram\wave_save_ghw.gtkw"
+[timestart] 0
+[size] 1920 1017
+[pos] -1 -1
+*-8.000000 349 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.diverses_tb.
+[treeopen] top.diverses_tb.dut.
+[sst_width] 334
+[signals_width] 273
+[sst_expanded] 1
+[sst_vpaned_height] 397
+@28
+top.diverses_tb.dut.clock_clk
+top.diverses_tb.dut.reset_reset
+@200
+-
+@22
+#{top.diverses_tb.dut.asi_in0_data[23:0]} top.diverses_tb.dut.asi_in0_data[23] top.diverses_tb.dut.asi_in0_data[22] top.diverses_tb.dut.asi_in0_data[21] top.diverses_tb.dut.asi_in0_data[20] top.diverses_tb.dut.asi_in0_data[19] top.diverses_tb.dut.asi_in0_data[18] top.diverses_tb.dut.asi_in0_data[17] top.diverses_tb.dut.asi_in0_data[16] top.diverses_tb.dut.asi_in0_data[15] top.diverses_tb.dut.asi_in0_data[14] top.diverses_tb.dut.asi_in0_data[13] top.diverses_tb.dut.asi_in0_data[12] top.diverses_tb.dut.asi_in0_data[11] top.diverses_tb.dut.asi_in0_data[10] top.diverses_tb.dut.asi_in0_data[9] top.diverses_tb.dut.asi_in0_data[8] top.diverses_tb.dut.asi_in0_data[7] top.diverses_tb.dut.asi_in0_data[6] top.diverses_tb.dut.asi_in0_data[5] top.diverses_tb.dut.asi_in0_data[4] top.diverses_tb.dut.asi_in0_data[3] top.diverses_tb.dut.asi_in0_data[2] top.diverses_tb.dut.asi_in0_data[1] top.diverses_tb.dut.asi_in0_data[0]
+@28
+top.diverses_tb.dut.asi_in0_startofpacket
+top.diverses_tb.dut.asi_in0_endofpacket
+top.diverses_tb.dut.asi_in0_valid
+top.diverses_tb.dut.asi_in0_ready
+@200
+-
+@22
+#{top.diverses_tb.dut.avm_m0_writedata[15:0]} top.diverses_tb.dut.avm_m0_writedata[15] top.diverses_tb.dut.avm_m0_writedata[14] top.diverses_tb.dut.avm_m0_writedata[13] top.diverses_tb.dut.avm_m0_writedata[12] top.diverses_tb.dut.avm_m0_writedata[11] top.diverses_tb.dut.avm_m0_writedata[10] top.diverses_tb.dut.avm_m0_writedata[9] top.diverses_tb.dut.avm_m0_writedata[8] top.diverses_tb.dut.avm_m0_writedata[7] top.diverses_tb.dut.avm_m0_writedata[6] top.diverses_tb.dut.avm_m0_writedata[5] top.diverses_tb.dut.avm_m0_writedata[4] top.diverses_tb.dut.avm_m0_writedata[3] top.diverses_tb.dut.avm_m0_writedata[2] top.diverses_tb.dut.avm_m0_writedata[1] top.diverses_tb.dut.avm_m0_writedata[0]
+@28
+top.diverses_tb.dut.avm_m0_waitrequest
+@23
+#{top.diverses_tb.dut.current_address_write[23:0]} top.diverses_tb.dut.current_address_write[23] top.diverses_tb.dut.current_address_write[22] top.diverses_tb.dut.current_address_write[21] top.diverses_tb.dut.current_address_write[20] top.diverses_tb.dut.current_address_write[19] top.diverses_tb.dut.current_address_write[18] top.diverses_tb.dut.current_address_write[17] top.diverses_tb.dut.current_address_write[16] top.diverses_tb.dut.current_address_write[15] top.diverses_tb.dut.current_address_write[14] top.diverses_tb.dut.current_address_write[13] top.diverses_tb.dut.current_address_write[12] top.diverses_tb.dut.current_address_write[11] top.diverses_tb.dut.current_address_write[10] top.diverses_tb.dut.current_address_write[9] top.diverses_tb.dut.current_address_write[8] top.diverses_tb.dut.current_address_write[7] top.diverses_tb.dut.current_address_write[6] top.diverses_tb.dut.current_address_write[5] top.diverses_tb.dut.current_address_write[4] top.diverses_tb.dut.current_address_write[3] top.diverses_tb.dut.current_address_write[2] top.diverses_tb.dut.current_address_write[1] top.diverses_tb.dut.current_address_write[0]
+@22
+#{top.diverses_tb.dut.incoming_pix_count[15:0]} top.diverses_tb.dut.incoming_pix_count[15] top.diverses_tb.dut.incoming_pix_count[14] top.diverses_tb.dut.incoming_pix_count[13] top.diverses_tb.dut.incoming_pix_count[12] top.diverses_tb.dut.incoming_pix_count[11] top.diverses_tb.dut.incoming_pix_count[10] top.diverses_tb.dut.incoming_pix_count[9] top.diverses_tb.dut.incoming_pix_count[8] top.diverses_tb.dut.incoming_pix_count[7] top.diverses_tb.dut.incoming_pix_count[6] top.diverses_tb.dut.incoming_pix_count[5] top.diverses_tb.dut.incoming_pix_count[4] top.diverses_tb.dut.incoming_pix_count[3] top.diverses_tb.dut.incoming_pix_count[2] top.diverses_tb.dut.incoming_pix_count[1] top.diverses_tb.dut.incoming_pix_count[0]
+@420
+top.diverses_tb.dut.write_state
+@28
+top.diverses_tb.dut.avm_m0_write_n
+[pattern_trace] 1
+[pattern_trace] 0

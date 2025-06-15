@@ -1,31 +1,34 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Mon Mar 10 09:58:54 2025
+[*] Sat Apr 05 20:35:19 2025
 [*]
 [dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\encoder\func.ghw"
-[dumpfile_mtime] "Mon Mar 10 09:55:07 2025"
-[dumpfile_size] 765725
+[dumpfile_mtime] "Sat Apr 05 20:22:52 2025"
+[dumpfile_size] 726395
 [savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\encoder\wave_save.gtkw"
-[timestart] 352200
+[timestart] 205200
 [size] 1920 1017
 [pos] -1 -1
-*-15.000000 239820 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-16.000000 351600 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.new_encoder_tb.
+[treeopen] top.new_encoder_tb.dut.
 [sst_width] 348
 [signals_width] 395
 [sst_expanded] 1
-[sst_vpaned_height] 300
+[sst_vpaned_height] 449
 @28
 top.new_encoder_tb.dut.reset_reset
 top.new_encoder_tb.dut.clock_clk
+top.new_encoder_tb.dut.conduit_encoder_a
+top.new_encoder_tb.dut.conduit_encoder_b
 top.new_encoder_tb.dut.sync_a
+@29
 top.new_encoder_tb.dut.sync_b
+@28
 top.new_encoder_tb.dut.sync_i
 top.new_encoder_tb.dut.conduit_encoder_index
-@29
 top.new_encoder_tb.dut.i_valid
-@28
 top.new_encoder_tb.dut.conduit_intern_col_fire
 @22
 #{top.new_encoder_tb.s_conduit_intern_col_nr[8:0]} top.new_encoder_tb.s_conduit_intern_col_nr[8] top.new_encoder_tb.s_conduit_intern_col_nr[7] top.new_encoder_tb.s_conduit_intern_col_nr[6] top.new_encoder_tb.s_conduit_intern_col_nr[5] top.new_encoder_tb.s_conduit_intern_col_nr[4] top.new_encoder_tb.s_conduit_intern_col_nr[3] top.new_encoder_tb.s_conduit_intern_col_nr[2] top.new_encoder_tb.s_conduit_intern_col_nr[1] top.new_encoder_tb.s_conduit_intern_col_nr[0]

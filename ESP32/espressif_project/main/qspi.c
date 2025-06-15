@@ -6,29 +6,28 @@
  */
 
 #include "qspi.h"
-#include "PSRAM_FIFO.h"
+
+#include <string.h>
 #include "driver/gpio.h"
 #include "driver/spi_master.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/projdefs.h"
+
 #include "hw_settings.h"
 #include "portmacro.h"
+#include "psram_fifo.h"
 #include <limits.h>
-#include <string.h>
 
 void qspi_post_transaction_cb( spi_transaction_t* trans );
 void set_cs_gpio( uint8_t state );
 
-#define QSPI_TAG                            "QSPI"
-#define TASK_NOTIFY_QSPI_START_FRAME_BIT    0x01
-#define TASK_NOTIFY_QSPI_FRAME_FINISHED_BIT 0x02
-
-#define QSPI_MAX_TRANSFER_SIZE              32768   // 2**18 / 8
-#define QSPI_MAX_TRANSFER_SIZE_BITS         262143  // 2**18 -1
+static const char* TAG = "QSPI";
+#define QSPI_MAX_TRANSFER_SIZE       ( 32768 )   // 2**18 / 8
+#define QSPI_MAX_TRANSFER_SIZE_BITS  ( 262143 )  // 2**18 -1
 
 static spi_device_handle_t qspi_handle;
-fifo_frame_t* qspi_frame_info = NULL;
+fifo_frame_t* qspi_frame = NULL;
 
 static spi_device_interface_config_t FPGA_device_interface_config;
 static spi_bus_config_t qspi_buscfg;
@@ -40,37 +39,27 @@ static spi_transaction_t FPGA_transaction = {
     .flags     = SPI_TRANS_MODE_QIO | SPI_TRANS_DMA_BUFFER_ALIGN_MANUAL,
 };
 
-static qspi_status_t* status;
+struct
+{
+    task_handles_t* task_handles;
+    qspi_status_t* status;
+} typedef qspi_ctrl_t;
+static qspi_ctrl_t qspi_ctrl;
 
 TaskHandle_t internal_qspi_task_handle = NULL;
 
 static uint8_t dma_buffer[ QSPI_MAX_TRANSFER_SIZE ];
 
-// static uint8_t test_data[ 259 ] = {
-//     0x21, 0x93, 0xd8, 0x22, 0x93, 0xda, 0x22, 0x93, 0xdc, 0x24, 0x94, 0xdf, 0x25, 0x94, 0xe1, 0x25, 0x93, 0xe2, 0x21, 0x94, 0xe2, 0x1e, 0x93, 0xe0,
-//     0x1f, 0x96, 0xe0, 0x21, 0x98, 0xdf, 0x20, 0x98, 0xdd, 0x20, 0x98, 0xdc, 0x20, 0x96, 0xda, 0x21, 0x94, 0xdb, 0x20, 0x92, 0xda, 0x1f, 0x92, 0xd9,
-//     0x1f, 0x91, 0xd9, 0x20, 0x93, 0xda, 0x1f, 0x92, 0xd9, 0x1e, 0x94, 0xd9, 0x20, 0x96, 0xd9, 0x1e, 0x93, 0xd7, 0x1d, 0x93, 0xd6, 0x1d, 0x93, 0xd6,
-//     0x1b, 0x91, 0xd5, 0x1a, 0x8f, 0xd1, 0x19, 0x8f, 0xcf, 0x1a, 0x8f, 0xcf, 0x19, 0x8d, 0xcd, 0x18, 0x8d, 0xcc, 0x17, 0x8c, 0xcb, 0x17, 0x8c, 0xca,
-//     0x17, 0x8d, 0xc8, 0x1c, 0x92, 0xcc, 0x20, 0x96, 0xd0, 0x22, 0x98, 0xd2, 0x22, 0x98, 0xd2, 0x21, 0x97, 0xd1, 0x1e, 0x98, 0xd6, 0x1b, 0x96, 0xd9,
-//     0x1b, 0x95, 0xd8, 0x1e, 0x98, 0xd9, 0x21, 0x99, 0xd9, 0x21, 0x98, 0xd7, 0x23, 0x97, 0xd5, 0x23, 0x95, 0xd2, 0x23, 0x94, 0xd1, 0x23, 0x94, 0xd1,
-//     0x26, 0x96, 0xd3, 0x27, 0x97, 0xd3, 0x27, 0x97, 0xd4, 0x28, 0x99, 0xd7, 0x29, 0x99, 0xd8, 0x2a, 0x9a, 0xd8, 0x29, 0x99, 0xd6, 0x27, 0x96, 0xd2,
-//     0x27, 0x95, 0xd1, 0x26, 0x97, 0xd3, 0x23, 0x99, 0xd4, 0x23, 0x99, 0xd5, 0x25, 0x9a, 0xd7, 0x24, 0x9a, 0xd6, 0x27, 0x9d, 0xd9, 0x28, 0x9e, 0xda,
-//     0x27, 0xa0, 0xde, 0x28, 0xa1, 0xdf, 0x27, 0xa1, 0xe0, 0x28, 0xa0, 0xe1, 0x2c, 0xa4, 0xe5, 0x30, 0xa7, 0xe9, 0x32, 0xa9, 0xed, 0x31, 0xa8, 0xee,
-//     0x2e, 0xa5, 0xec, 0x2d, 0xa3, 0xea, 0x2e, 0xa4, 0xea, 0x2e, 0xa3, 0xe8, 0x2f, 0xa3, 0xe7, 0x2d, 0xa2, 0xdf, 0x29, 0xa1, 0xe2, 0x25, 0x9f, 0xe3,
-//     0x23, 0x9c, 0xdf, 0x23, 0x98, 0xd9, 0x22, 0x93, 0xd1, 0x24, 0x8f, 0xd3, 0x24, 0x8f, 0xd6, 0x20, 0x90, 0xd6, 0x1d };
-
-void qspi_init( qspi_status_t* status_ptr )
+void qspi_init( qspi_status_t* status_ptr, task_handles_t* task_handles )
 {
-    status = status_ptr;
+    qspi_ctrl.status       = status_ptr;
+    qspi_ctrl.task_handles = task_handles;
 
     esp_err_t ret;
-    ESP_LOGI( QSPI_TAG, "Initializing bus QSPI2..." );
+    ESP_LOGI( TAG, "Initializing bus QSPI2..." );
 
     /* Need to set CS by hand, because DMA transfer only supports 32kB writes, we
      * need ~100kB */
-    ESP_ERROR_CHECK( gpio_set_direction( QSPI_PIN_CS0, GPIO_MODE_OUTPUT ) );
-    set_cs_gpio( 0 );
-
     FPGA_device_interface_config.command_bits   = 0;
     FPGA_device_interface_config.address_bits   = 0;
     FPGA_device_interface_config.dummy_bits     = 0;
@@ -79,8 +68,6 @@ void qspi_init( qspi_status_t* status_ptr )
     FPGA_device_interface_config.clock_speed_hz = QSPI_BUS_FREQ;
     FPGA_device_interface_config.input_delay_ns = 0;
     FPGA_device_interface_config.spics_io_num   = -1;
-    // FPGA_device_interface_config.spics_io_num    = QSPI_PIN_CS0;
-    // FPGA_device_interface_config.cs_ena_pretrans = 5;
     FPGA_device_interface_config.queue_size     = 1;
     FPGA_device_interface_config.post_cb        = qspi_post_transaction_cb;
     FPGA_device_interface_config.flags          = SPI_DEVICE_NO_DUMMY | SPI_DEVICE_HALFDUPLEX;
@@ -106,7 +93,7 @@ void qspi_init( qspi_status_t* status_ptr )
     ret = spi_bus_add_device( QSPI_HOST, &FPGA_device_interface_config, &qspi_handle );
     ESP_ERROR_CHECK( ret );
     ESP_ERROR_CHECK( gpio_set_direction( QSPI_PIN_CS0, GPIO_MODE_OUTPUT ) );
-    set_cs_gpio( 0 );
+    set_cs_gpio( 1 );
 }
 
 BaseType_t qspi_request_frame( void )
@@ -116,7 +103,7 @@ BaseType_t qspi_request_frame( void )
 
     if ( internal_qspi_task_handle != NULL )
     {
-        xTaskNotifyIndexedFromISR( internal_qspi_task_handle, TASK_NOTIFY_QSPI_START_FRAME_BIT, 0, eSetBits, &xHigherPriorityTaskWoken );
+        xTaskNotifyIndexedFromISR( internal_qspi_task_handle, TASK_NOTIFY_QSPI_START_BIT, 0, eSetBits, &xHigherPriorityTaskWoken );
     }
     return xHigherPriorityTaskWoken;
 }
@@ -130,17 +117,14 @@ void qspi_DMA_write_debug_test( uint8_t* buffer, uint32_t size )
     FPGA_transaction.tx_buffer = buffer;
     FPGA_transaction.length    = size * 8;
 
-    // ESP_LOGI( "QSPI", "sending QSPI" );
+    // ESP_LOGI( TAG, "sending QSPI" );
     spi_ret = spi_device_queue_trans( qspi_handle, &FPGA_transaction, 0 );
 
     if ( spi_ret != ESP_OK )
     {
         /* Count misses, but no action required */
-        if ( spi_ret != ESP_OK )
-        {
-            status->missed_spi_transfers++;
-            ESP_LOGI( "QSPI", "QSPI transfer missed" );
-        }
+        qspi_ctrl.status->missed_spi_transfers++;
+        ESP_LOGI( TAG, "QSPI transfer missed" );
     }
 }
 
@@ -156,14 +140,14 @@ static esp_err_t qspi_DMA_write( uint8_t* buffer, uint32_t size )
     if ( spi_ret != ESP_OK )
     {
         /* Count misses, but no action required */
-        status->missed_spi_transfers++;
+        qspi_ctrl.status->missed_spi_transfers++;
     }
     return spi_ret;
 }
 
 void qspi_post_transaction_cb( spi_transaction_t* trans )
 {
-    /* From ISR: QSPI Transaction done */
+    /* From DMA-ISR: QSPI Transaction done */
 
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     if ( internal_qspi_task_handle != NULL )
@@ -178,13 +162,15 @@ static esp_err_t copy_and_send_bulk()
     esp_err_t spi_ret  = ESP_OK;
     uint32_t size2send = 0;
 
-    if ( qspi_frame_info->size > QSPI_MAX_TRANSFER_SIZE ) size2send = QSPI_MAX_TRANSFER_SIZE;
-    else if ( qspi_frame_info->size > 0 ) size2send = qspi_frame_info->size;
+    if ( qspi_frame->size > QSPI_MAX_TRANSFER_SIZE ) size2send = QSPI_MAX_TRANSFER_SIZE;
+    else if ( qspi_frame->size > 0 ) size2send = qspi_frame->size;
     else return spi_ret;
-    fifo_copy_mem_protected( dma_buffer, ( const void* ) qspi_frame_info->current_ptr, size2send );
+
+    fifo_copy_mem_protected( dma_buffer, ( const void* ) qspi_frame->current_ptr, size2send );
     spi_ret = qspi_DMA_write( dma_buffer, size2send );
-    qspi_frame_info->current_ptr += size2send;
-    qspi_frame_info->size -= size2send;
+
+    qspi_frame->current_ptr += size2send;
+    qspi_frame->size -= size2send;
 
     return spi_ret;
 }
@@ -193,88 +179,74 @@ void set_cs_gpio( uint8_t state )
 {
     esp_err_t ret;
     ret = gpio_set_level( QSPI_PIN_CS0, state );
-    if ( ret != ESP_OK ) ESP_LOGE( "QSPI", "Err Set CS: %d", ret );
+    if ( ret != ESP_OK ) ESP_LOGE( TAG, "Err Set CS: %d", ret );
 }
 
-#define TEST 1
+#ifndef DEVELOPMENT_SET_QSPI_ON_PIN_OUT
+    #define QSPI_TEST 0
+#else
+    #define QSPI_TEST 1
+#endif
+
 void fpga_qspi_task( void* pvParameter )
 {
-
     uint32_t ulNotifiedValue;
+    uint32_t ulNotifiedValuefromHTTP;
     BaseType_t xResult;
+
     internal_qspi_task_handle = xTaskGetCurrentTaskHandle();
-    if ( internal_qspi_task_handle == NULL ) ESP_LOGE( "QSPI", "No Task Handle" );
-    // gpio_set_level( QSPI_PIN_CS0, 1 );
+    if ( internal_qspi_task_handle == NULL ) ESP_LOGE( TAG, "No Task Handle" );
+
     ESP_ERROR_CHECK( gpio_set_direction( QSPI_PIN_CS0, GPIO_MODE_OUTPUT ) );
     set_cs_gpio( 1 );
+
+    if ( QSPI_TASK_VERBOSE ) ESP_LOGI( TAG, "Enter Loop" );
     while ( 1 )
     {
-        // wait for ISR to notify us
-        xTaskNotifyWaitIndexed( TASK_NOTIFY_QSPI_START_FRAME_BIT, ULONG_MAX, ULONG_MAX, &ulNotifiedValue, portMAX_DELAY );
+
+        /* wait for Timer (or Pin in DevMode) to notify us
+         * clear on Entry, clear on exit
+         */
+        xTaskNotifyWaitIndexed( TASK_NOTIFY_QSPI_START_BIT, ULONG_MAX, ULONG_MAX, &ulNotifiedValuefromHTTP, portMAX_DELAY );
+        if ( QSPI_TASK_VERBOSE ) ESP_LOGI( TAG, "Start" );
+
         uint8_t frame_sent = 0;
         esp_err_t spi_ret  = ESP_OK;
 
-#if ( TEST == 0 ) /* No test, Running hot. */
-        /* FPGA Requests a frame */
-        if ( !fifo_is_frame_2_fpga_in_progress() )
+#if ( QSPI_TEST == 0 ) /* No test, Running hot. */
+
+        qspi_frame = fifo_get_frame_4_fpga();
+        if ( qspi_frame != NULL )
         {
-            if ( fifo_has_frame_4_fpga() )
-            {
-                //ESP_LOGI( "QSPI", "Send Frame" );
-                fifo_mark_frame_4_fpga_done();
-                qspi_frame_info = fifo_get_frame_4_fpga();
-                if ( qspi_frame_info != NULL )
-                {
-                    set_cs_gpio( 0 );
-                    spi_ret = copy_and_send_bulk();
-                    if ( spi_ret == ESP_OK ) frame_sent = 1;
-                    else
-                        ESP_LOGE( "QSPI", "Err Send: %d \nptr: %" PRIx32 "\nsize: %" PRIu32, spi_ret, ( uint32_t ) qspi_frame_info->current_ptr,
-                                  ( uint32_t ) qspi_frame_info->size );
-                }  // 3C0D 7104     0x3FC88000  0x3FD00000
-            }
-            else if ( qspi_frame_info != NULL )
-            {
-                /* resend last frame */
-                //ESP_LOGI( "QSPI", "Resend Last Frame" );
-                qspi_frame_info->current_ptr = qspi_frame_info->frame_start_ptr;
-                qspi_frame_info->size        = qspi_frame_info->total_size;
+            qspi_frame->current_ptr = qspi_frame->frame_start_ptr;
+            qspi_frame->size        = qspi_frame->total_size;
+            set_cs_gpio( 0 );
+            spi_ret = copy_and_send_bulk();
+            if ( spi_ret == ESP_OK ) frame_sent = 1;
+            else fifo_mark_frame_4_fpga_done();
 
-                set_cs_gpio( 0 );
-                spi_ret = copy_and_send_bulk();
-                if ( spi_ret == ESP_OK ) frame_sent = 1;
-                else
-                    ESP_LOGE( "QSPI", "Err Resend: %d \nptr: %" PRIx32 "\nsize: %" PRIu32, spi_ret, ( uint32_t ) qspi_frame_info->current_ptr,
-                              ( uint32_t ) qspi_frame_info->size );
-            }
-            // cant do anything...
-            // TODO: maybe send static Frame?
-            else ESP_LOGI( "QSPI", "NoFrame, NoSend" );
+            if ( QSPI_TASK_VERBOSE ) ESP_LOGI( TAG, "sending Frame started totalsize: %" PRIu32 "  size %" PRIu32, qspi_frame->total_size, qspi_frame->size );
         }
-        else ESP_LOGI( "QSPI", "Already in Progress" );
-
-#elif ( TEST == 1 ) /* Testing with big Buffer in PSRAM */
-        if ( qspi_frame_info == NULL ) qspi_frame_info = fifo_get_static_frame();
-        // else if ( qspi_frame_info->size == 0 )
         else
         {
-            qspi_frame_info->size        = qspi_frame_info->total_size;
-            qspi_frame_info->current_ptr = qspi_frame_info->frame_start_ptr;
-
-            set_cs_gpio( 0 );
-            spi_ret = copy_and_send_bulk( qspi_frame_info );
-            ESP_LOGI( "QSPI", "sending Frame started totalsize: %" PRIu32 "  size %" PRIu32, qspi_frame_info->total_size, qspi_frame_info->size );
-            if ( spi_ret == ESP_OK ) frame_sent = 1;
-            else
-                ESP_LOGE( "QSPI", "Err Send Test Pic: %d \nptr: %" PRIx32 "\nsize: %" PRIu32, spi_ret, ( uint32_t ) qspi_frame_info->current_ptr,
-                          ( uint32_t ) qspi_frame_info->size );
+            ESP_LOGW( TAG, "Invalid Frame" );
         }
 
-#elif ( TEST == 2 ) /* Testwise sending small buffer. uncomment the static memory on top of the file */
-        set_cs_gpio( 0 );
-        qspi_DMA_write_debug_test( test_data, 256 );
-        xTaskNotifyWaitIndexed( TASK_NOTIFY_QSPI_FRAME_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifiedValue, 5 );
-        set_cs_gpio( 1 );
+#elif ( QSPI_TEST == 1 ) /* Testing with static picture in PSRAM */
+        if ( qspi_frame == NULL ) qspi_frame = fifo_get_static_frame();
+        else
+        {
+            qspi_frame->size        = qspi_frame->total_size;
+            qspi_frame->current_ptr = qspi_frame->frame_start_ptr;
+
+            set_cs_gpio( 0 );
+            spi_ret = copy_and_send_bulk( qspi_frame );
+            ESP_LOGI( TAG, "sending Frame started totalsize: %" PRIu32 "  size %" PRIu32, qspi_frame->total_size, qspi_frame->size );
+            if ( spi_ret == ESP_OK ) frame_sent = 1;
+            else
+                ESP_LOGE( TAG, "Err Send Test Pic: %d \nptr: %" PRIx32 "\nsize: %" PRIu32, spi_ret, ( uint32_t ) qspi_frame->current_ptr,
+                          ( uint32_t ) qspi_frame->size );
+        }
 
 #endif
 
@@ -282,45 +254,50 @@ void fpga_qspi_task( void* pvParameter )
         {
             // gpio_dump_io_configuration(stdout, 1<<QSPI_PIN_CS0 );
             uint8_t success = 0;
-            for ( uint8_t i = 0; i < ( uint8_t ) ( qspi_frame_info->total_size / QSPI_MAX_TRANSFER_SIZE + 1 ); i++ )
+            for ( uint8_t i = 0; i < ( uint8_t ) ( qspi_frame->total_size / QSPI_MAX_TRANSFER_SIZE + 1 ); i++ )
             {
-                // set_cs_gpio( 0 );
-                // ESP_LOGI( "QSPI", "waiting for finishing transfer" );
+                if ( QSPI_TASK_VERBOSE ) ESP_LOGI( TAG, "waiting for finishing transfer" );
                 //  wait for Post-DMA-ISR to notify us
                 xResult = xTaskNotifyWaitIndexed( TASK_NOTIFY_QSPI_FRAME_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifiedValue, 5 );
                 if ( xResult == pdTRUE )
                 {
-                    if ( qspi_frame_info->size == 0 )
+                    if ( qspi_frame->size == 0 )
                     {
                         success = 1;
                         break;
                     }
 
                     spi_ret = copy_and_send_bulk();
-                    // ESP_LOGI( "QSPI", "next piece totalsize: %" PRIu32 "  size %" PRIu32, qspi_frame_info->total_size, qspi_frame_info->size );
                     if ( spi_ret != ESP_OK )
                     {
                         success = 0;
+                        if ( QSPI_TASK_VERBOSE ) ESP_LOGW( TAG, "no success: spi_ret" );
                         break;
                     }
                 }
-                else success = 0;  // timed out
+                else
+                {
+                    success = 0;  // timed out
+                    if ( QSPI_TASK_VERBOSE ) ESP_LOGW( TAG, "no success: timeout" );
+                }
             }
             set_cs_gpio( 1 );
 
             if ( success )
             {
-                // ESP_LOGI( "QSPI", "success" );
-
+                if ( QSPI_TASK_VERBOSE ) ESP_LOGI( TAG, "success" );
             }
             else
             {
-                ESP_LOGW( "QSPI", "no success" );
+                ESP_LOGW( TAG, "no success" );
             }
+            fifo_mark_frame_4_fpga_done();
         }
         else
         {
-            status->missed_spi_transfers++;
+            qspi_ctrl.status->missed_spi_transfers++;
         }
+
+        if ( QSPI_TASK_VERBOSE ) ESP_LOGI( TAG, "Done" );
     }
 }

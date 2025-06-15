@@ -67,10 +67,16 @@ architecture rtl of led_interface is
 	constant BIT_PER_SPI_START_END_FRAME: integer:= 32;
 	constant BRIGHTNESS : std_logic_vector(4 downto 0) := "01000";
 	-- constant BRIGHTNESS : std_logic_vector(4 downto 0) := "01111";
+	-- 01000: 8 out of 32 == 1/4
+	-- 10000: 16 == 1/2
+	-- 11111: 31 == full throttle
+	-- 00100: 4 == 1/8
+	
 	-- 0100 0000 == 0x40
 	-- 00001000 == 0x08
 	-- from protocol: 1110 1000 = 0xE8
 
+	signal use_bgr: std_logic:= '1';
 
 	type t_pixel_buffer_in_array is array (0 to PIX_PER_STREAM_IN-1) of std_logic_vector(23 downto 0);
 	type t_pixel_buffer_out_array is array (0 to PIX_OUT_PER_SPI-1) of std_logic_vector(31 downto 0);
@@ -84,37 +90,36 @@ architecture rtl of led_interface is
 	signal pix_out_D :t_pixel_buffer_out_array := (others =>(others => '0'));
 
 	signal start_spi_pulse :std_logic;
-	signal spi_pulse_stretch :std_logic_vector(6 downto 0);
+	signal spi_pulse_stretch :std_logic_vector(12 downto 0);
 	signal sync_start_spi_pulse_ff :std_logic_vector(1 downto 0);
 	signal sync_start_spi_pulse  :std_logic;
 
 	signal fire_delay_ff: std_logic_vector(2 downto 0);
 	signal fire_out :std_logic;
+	signal conduit_fire_signal : std_logic;
 
 	signal pix_in_counter_A : natural range 0 to 70 := 0;
 	signal pix_in_counter_B : natural range 0 to 70 := 0;
 
-	-- signal sync_spi_clk_ff:std_logic_vector(1 downto 0);
-	-- signal sync_spi_clk:std_logic;
-
-	-- signal sync_reset_ff:std_logic_vector(1 downto 0);
-	-- signal sync_reset:std_logic;
-
 	signal spi_out_enable :std_logic;
-	signal spi_bit_count_A: natural range 0 to 32;
-	signal spi_pix_count_A: natural range 0 to PIX_OUT_PER_SPI; -- need one more
+	signal spi_bit_count_A: natural range 0 to 32 := 0;
+	signal spi_pix_count_A: natural range 0 to PIX_OUT_PER_SPI := 0;
 
 	type t_spi_state is (idle, send_start_frame, send_buffer, send_end_frame, end_send);
 	signal spi_state : t_spi_state;
 	signal next_spi_state : t_spi_state;
 	signal spi_in_progress: std_logic;
+	signal spi_in_progress_ff: std_logic_vector(12 downto 0);
+	signal spi_fake_cs: std_logic;
 
-	type state_test is (none, t1);
+	signal ram_to_buff_in_progress :std_logic;
+
+	type state_test is (none, t1, t_data_in, t_fp, t_fifo_check);
 	signal test_state         : state_test;
 
 
 begin
-	test_state <= t1;
+	test_state <= t_data_in;
 	p_test: process(all)
 	begin
 		case test_state is
@@ -126,6 +131,49 @@ begin
 				conduit_debug_led_led_dbg_out(0) <= spi_in_progress;
 				conduit_debug_led_led_dbg_out(31 downto 1) <= (others=>'0');
 				conduit_debug_led_led_dbg_out_2 <= (others=>'0');
+				
+            when t_data_in =>
+				conduit_debug_led_led_dbg_out <= (others => '0');
+				conduit_debug_led_led_dbg_out(7 downto 0) <= conduit_col_info(7 downto 0);
+				conduit_debug_led_led_dbg_out(31 downto 8) <= pix_out_A(spi_pix_count_A)(23 downto 0);
+				
+				
+				-- conduit_debug_led_led_dbg_out_2 <= (
+    --                 --0 => conduit_fire,
+    --                 1 => spi_in_progress,
+    --                 27 => asi_in0_valid,
+    --                 others=>'0'
+    --             );
+                conduit_debug_led_led_dbg_out_2(24 downto 1) <= asi_in0_data;
+                
+				if conduit_col_info="000000000" then
+					conduit_debug_led_led_dbg_out_2(0) <= '1';
+				else
+					conduit_debug_led_led_dbg_out_2(0) <= '0';
+				end if;
+
+			when t_fp =>
+				conduit_debug_led_led_dbg_out <= (others => '0');
+
+				conduit_debug_led_led_dbg_out_2 <= (
+                    0 => conduit_fire,
+                    1 => spi_in_progress,
+                    2 => conduit_LED_A_CLK,
+                    3 => spi_fake_cs,
+                    others=>'0'
+                );
+
+			when t_fifo_check=>
+				-- Must enable redirection of fp-input. Check commented line below (ca line 182)
+				conduit_debug_led_led_dbg_out <= (others => '0');
+				conduit_debug_led_led_dbg_out_2 <= (
+                    0 => conduit_fire,
+                    1 => ram_to_buff_in_progress,
+                    2 => asi_in0_valid or asi_in1_valid,
+                    3 => spi_fake_cs,
+                    others=>'0'
+                );
+
 
 			when others =>
 				conduit_debug_led_led_dbg_out <= (others=>'0');
@@ -137,17 +185,24 @@ begin
 
 	avs_s0_readdata <= "00000000000000000000000000000000";
 	avs_s0_waitrequest <= '0';
-
+    
+    use_bgr <= '1';
+    
 	conduit_col_info_out_fire <= fire_out;
+	
+	-- dangerous line: discards real fp, takes debug fp instead when in t_fifo_check
+	-- conduit_fire_signal <= conduit_debug_led_led_dbg_in(0) when test_state=t_fifo_check else conduit_fire;
+	conduit_fire_signal <= conduit_fire; -- good line
 
+	-- delay fp to RAM Master a few clk for no real reason.
 	p_fire_delay : process(all)
 	begin
 		if reset_reset ='1' then
 			fire_delay_ff <= (others => '0');
 			conduit_col_info_out_col_nr <= (others => '0');
 		elsif rising_edge(clock_clk) then
-			fire_delay_ff <= fire_delay_ff(1 downto 0) & conduit_fire;
-
+			fire_delay_ff <= fire_delay_ff(1 downto 0) & conduit_fire_signal;
+			
 			if fire_delay_ff(2 downto 1) = "01" then
 				fire_out <= '1';
 				conduit_col_info_out_col_nr <= conduit_col_info;
@@ -157,7 +212,39 @@ begin
 		end if;
 	end process p_fire_delay;
 
+	-- debug purpose
+	p_ram_to_buff_in_progress: process(all)
+	begin
 
+	if reset_reset='1' then
+		ram_to_buff_in_progress <= '0';
+	elsif rising_edge(clock_clk) then
+
+		if asi_in0_startofpacket = '1' then
+			ram_to_buff_in_progress <= '1';
+		elsif asi_in1_endofpacket = '1' then
+			ram_to_buff_in_progress<= '0';
+		end if;
+	end if;
+	end process;
+
+	-- verify purpose: make a chip select for SPI- transfer:
+	-- Will be read by second ESP over QSPI and sent to server
+	p_dbg_fake_cs: process(all)
+	begin
+	if reset_reset='1' then
+		spi_fake_cs <= '1';
+		spi_in_progress_ff <= (others=>'0');
+	elsif rising_edge(clock_clk) then
+		spi_in_progress_ff <= spi_in_progress_ff(spi_in_progress_ff'length-2 downto 0) & spi_in_progress;
+
+		if fire_delay_ff(1 downto 0) = "01" then -- rising edge of firepulse
+			spi_fake_cs <= '0';
+		elsif spi_in_progress_ff(spi_in_progress_ff'length-1 downto spi_in_progress_ff'length-2) = "10" then -- falling edge, delayed
+			spi_fake_cs <= '1';
+		end if;
+	end if;
+	end process;
 
 	--receiving streams to buffer
 	p_receive_stream_A: process(all)
@@ -210,42 +297,78 @@ begin
 
 		elsif rising_edge(clock_clk) then
 
-			if conduit_fire = '1' then -- todo: BRG, gamma
+			if conduit_fire = '1' then -- todo: BGR, gamma
 
-				for a in 0 to (pix_out_A'length -1) loop
-					pix_out_A(a)(23 downto 0) <= in_buffer_stream_A(a);
+				for a in 0 to (pix_out_A'length - 1) loop
+					if use_bgr='1' then
+						--BGR
+						pix_out_A(a)(7 downto 0)   <= in_buffer_stream_A(pix_out_A'length - 1 - a)(23 downto 16);
+						pix_out_A(a)(15 downto 8)  <= in_buffer_stream_A(pix_out_A'length - 1 - a)(15 downto 8) ;
+						pix_out_A(a)(23 downto 16) <= in_buffer_stream_A(pix_out_A'length - 1 - a)(7 downto 0)  ;
+					else
+						--RGB
+						pix_out_A(a)(23 downto 0) <= in_buffer_stream_A(a);
+					end if;
+
 					pix_out_A(a)(31 downto 29) <= "111";
 					pix_out_A(a)(28 downto 24)  <= BRIGHTNESS;
 				end loop;
 
-				for b in 0 to (pix_out_B'length -1) loop -- change direction
-					pix_out_B(b)(23 downto 0) <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b);
+				for b in 0 to (pix_out_B'length - 1) loop -- change direction
+					if use_bgr='1' then
+						--BGR
+						pix_out_B(b)(7 downto 0)   <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b)(23 downto 16);
+						pix_out_B(b)(15 downto 8)  <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b)(15 downto 8) ;
+						pix_out_B(b)(23 downto 16) <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b)(7 downto 0)  ;
+					else
+						--RGB
+						pix_out_B(b)(23 downto 0) <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b);
+					end if;
+
 					pix_out_B(b)(31 downto 29)  <= "111";
 					pix_out_B(b)(28 downto 24) <= BRIGHTNESS;
 				end loop;
 
-				for c in 0 to (pix_out_C'length -1) loop
-					pix_out_C(c)(23 downto 0)<= in_buffer_stream_B(c);
+				for c in 0 to (pix_out_C'length - 1) loop
+					if use_bgr='1' then
+						--BGR
+						pix_out_C(c)(7 downto 0)   <= in_buffer_stream_B(pix_out_C'length - 1 - c)(23 downto 16);
+						pix_out_C(c)(15 downto 8)  <= in_buffer_stream_B(pix_out_C'length - 1 - c)(15 downto 8) ;
+						pix_out_C(c)(23 downto 16) <= in_buffer_stream_B(pix_out_C'length - 1 - c)(7 downto 0)  ;
+					else
+						--RGB
+						pix_out_C(c)(23 downto 0)<= in_buffer_stream_B(c);
+					end if;
+
 					pix_out_C(c)(31 downto 29) <= "111";
 					pix_out_C(c)(28 downto 24)  <= BRIGHTNESS;
 				end loop;
 
-				for d in 0 to (pix_out_D'length -1) loop -- change direction
-					pix_out_D(d)(23 downto 0) <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d);
+				for d in 0 to (pix_out_D'length - 1) loop -- change direction
+					if use_bgr='1' then
+						--BGR
+						pix_out_D(d)(7 downto 0)   <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d)(23 downto 16);
+						pix_out_D(d)(15 downto 8)  <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d)(15 downto 8) ;
+						pix_out_D(d)(23 downto 16) <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d)(7 downto 0)  ;
+					else
+						--RGB
+						pix_out_D(d)(23 downto 0) <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d);
+					end if;
 					pix_out_D(d)(31 downto 29)  <= "111";
 					pix_out_D(d)(28 downto 24)  <= BRIGHTNESS;
 				end loop;
 
-				spi_pulse_stretch <= spi_pulse_stretch(5 downto 0) & "1";
+				spi_pulse_stretch <= spi_pulse_stretch(11 downto 0) & "1";
 			else
-				spi_pulse_stretch <= spi_pulse_stretch(5 downto 0) & "0";
+				spi_pulse_stretch <= spi_pulse_stretch(11 downto 0) & "0";
 			end if;
 		end if;
 	end process;
 
 	-- stretch spi start pulse for clock domain crossing
-	start_spi_pulse <= spi_pulse_stretch(6) or spi_pulse_stretch(5) or spi_pulse_stretch(4) or spi_pulse_stretch(3) or
-					   spi_pulse_stretch(2) or spi_pulse_stretch(1) or spi_pulse_stretch(0);
+	start_spi_pulse <= spi_pulse_stretch(11) or spi_pulse_stretch(10) or spi_pulse_stretch(9) or spi_pulse_stretch(8) 
+					or spi_pulse_stretch(7)  or spi_pulse_stretch(6) or spi_pulse_stretch(5) or spi_pulse_stretch(4) 
+					or spi_pulse_stretch(3) or spi_pulse_stretch(2) or spi_pulse_stretch(1) or spi_pulse_stretch(0);
 
 	-- generate start pulse in spi clock domain
 	p_spi_sync: process(all)

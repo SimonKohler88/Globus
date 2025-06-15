@@ -1,0 +1,48 @@
+@echo off
+REM Build script for a vhdl module using ghdl
+REM set MODULE with your module name
+Set MODULE=ram_master
+
+ghdl -v
+echo ---------------------------------------------
+
+
+REM Don't touch following:
+Set FILES=%MODULE%_tb.vhd  %MODULE%.vhd  %MODULE%_verify.vhd ram_emulator.vhdl
+ghdl -a  --std=08 %FILES% 
+if %ERRORLEVEL%==1 (
+	PAUSE
+	goto end
+)
+
+echo ---------------------------------------------
+ghdl -e --std=08 ram_master_tb
+if %ERRORLEVEL%==1 (
+	PAUSE
+	goto end
+)
+
+echo ---------------------------------------------
+ghdl -r --std=08 --time-resolution=ns %MODULE%_tb --vcd=func.vcd --stop-time=400us --psl-report=PSL_REP.json --psl-report-uncovered
+if %ERRORLEVEL%==1 (
+	PAUSE
+	goto end
+)
+
+echo:
+echo --------------------COVERAGE-------------------------
+del coverage.json
+ren coverage-* coverage.json
+ghdl coverage  coverage.json
+echo ------------------
+
+python .\stream_120x8\check_data_120x8.py
+
+if %ERRORLEVEL%==1 (
+	PAUSE
+) else (
+	gtkwave func.vcd wave_save_vcd.gtkw ../../gtkrcfile.gtkwaverc
+)
+:end
+
+

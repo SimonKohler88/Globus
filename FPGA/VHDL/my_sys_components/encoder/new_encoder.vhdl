@@ -19,7 +19,8 @@ use IEEE.numeric_std.all;
 entity new_encoder is
 	generic (
 		input_pulse_per_rev : integer := 512;
-		output_pulse_div    : integer := 2
+		output_pulse_div    : integer := 2;
+		debounce_cycles     : integer := 1000
 	);
 	port (
 		avs_s0_address             : in  std_logic_vector(7 downto 0)  := (others => '0'); --                  avs_s0.address
@@ -68,31 +69,64 @@ architecture rtl of new_encoder is
 
 	signal rising_edge_fire_reg : std_logic_vector(1 downto 0);
 	signal column_counter :unsigned(8 downto 0);
+	signal debounce_counter :integer range 0 to debounce_cycles;
+	signal debounce_counter_index :integer range 0 to debounce_cycles;
+	
+	signal dbg_led_firepulse: std_logic;
 
-	type state_test is (none, t1);
+
+	type state_test is (none, t1, t2);
 	signal test_state         : state_test;
 
 
 begin
-	test_state <= none;
+	test_state <= t2;
 	p_test: process(all)
 	begin
 		case test_state is
 			when none =>
-				conduit_debug_enc_enc_dbg_out(2 downto 0) <= std_logic_vector(column_counter(4 downto 2));
+				conduit_debug_enc_enc_dbg_out(2 downto 0) <= conduit_intern_col_nr(4 downto 2);
 				conduit_debug_enc_enc_dbg_out(3) <= conduit_intern_col_fire;
 				conduit_debug_enc_enc_dbg_out(31 downto 4) <= (others => '0');
 				conduit_debug_enc_enc_dbg_out_2(31 downto 0) <= (others => '0');
 
 			when t1 =>
-				conduit_debug_enc_enc_dbg_out(31 downto 0) <= (others => '0');
-				conduit_debug_enc_enc_dbg_out_2(31 downto 0) <= (others => '0');
-
+				conduit_debug_enc_enc_dbg_out <= (others => '0');
+				conduit_debug_enc_enc_dbg_out(9 downto 1) <= conduit_intern_col_nr(8 downto 0);
+				conduit_debug_enc_enc_dbg_out(0) <= conduit_intern_col_fire;
+				--conduit_debug_enc_enc_dbg_out(10) <= dbg_led_firepulse;
+			when t2 =>
+				conduit_debug_enc_enc_dbg_out <= (others => '0');
+				-- conduit_debug_enc_enc_dbg_out(0) <= conduit_intern_col_fire;
+				conduit_debug_enc_enc_dbg_out(0) <= sync_i;
+				conduit_debug_enc_enc_dbg_out(9 downto 1) <= conduit_intern_col_nr(8 downto 0);
+				conduit_debug_enc_enc_dbg_out(10) <= enc_clk;
+				conduit_debug_enc_enc_dbg_out(11) <= sync_a;
+				conduit_debug_enc_enc_dbg_out(12) <= sync_a_reg(2);
+				conduit_debug_enc_enc_dbg_out(13) <= sync_sim_sw_reg(2);
+				conduit_debug_enc_enc_dbg_out(14) <= sync_sim_pulse_reg(2);
+				--sync_a_reg(2) when sync_sim_sw_reg(2)='0' else sync_sim_pulse_reg(2);
+				
+				
 			when others =>
 				conduit_debug_enc_enc_dbg_out(31 downto 0) <= (others => '0');
 				conduit_debug_enc_enc_dbg_out_2(31 downto 0) <= (others => '0');
 
 		end case;
+	end process;
+	
+	dbg_fp_proc: process(all)
+	begin
+		if reset_reset = '1' then
+			dbg_led_firepulse <= '0';
+		elsif rising_edge(clock_clk) then
+			if debounce_counter > 0 and column_counter(0)='1' then
+				dbg_led_firepulse <= '1';
+			else
+				dbg_led_firepulse <= '0';
+			end if;
+		end if;
+		
 	end process;
 
 	-- sync in encoder inputs
@@ -114,10 +148,17 @@ begin
         end if;
 	end process sync_proc;
 	-- feed in simulation signals
-	sync_a <= sync_a_reg(2) when sync_sim_sw_reg(2)='0' else sync_sim_pulse_reg(2);
-	sync_b <= sync_b_reg(2) when sync_sim_sw_reg(2)='0' else '0';
-	sync_i <= not sync_i_reg(2); -- TODO: hall sensor pulls signal down when triggered
+	sync_i <= not sync_i_reg(2);
 	sync_sim_switch <= sync_sim_sw_reg(2);
+
+	-- for ignoring index + use sim pulse by switch
+	sync_a <= sync_a_reg(2) when sync_sim_switch='0' else sync_sim_pulse_reg(2);
+	sync_b <= sync_b_reg(2) when sync_sim_switch='0' else '0';
+	-- for ignoring only index by switch
+	-- sync_a <= sync_a_reg(2);
+	-- sync_b <= sync_b_reg(2);
+
+
 
 	-- determing direction and rising edge of a and i
 	rising_edge_proc: process(all)
@@ -128,10 +169,20 @@ begin
 			enc_direction <= '0';
 			enc_clk <= '0';
 		elsif rising_edge(clock_clk) then
-			rising_edge_a_reg <= rising_edge_a_reg(0) & sync_a;
+			if debounce_counter = 0 then
+				rising_edge_a_reg <= rising_edge_a_reg(0) & sync_a;
+			else
+				debounce_counter <= debounce_counter + 1;
+				if debounce_counter = debounce_cycles-1 then
+					debounce_counter <= 0;
+				end if;
+			end if;
+
 			rising_edge_i_reg <= rising_edge_i_reg(0) & sync_i;
 
 			if rising_edge_a_reg="01" then
+				debounce_counter <= 1;
+				rising_edge_a_reg <= "11";
 				enc_clk <= '1';
 				if sync_a='1' and sync_b ='0' then
 					enc_direction <= '1';

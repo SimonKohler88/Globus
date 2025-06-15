@@ -56,7 +56,7 @@ static MOT_CTRL_t motor_control = {
     .i2c_if =
         {
                  .target_speed_duty_cycle = 10,
-                 .slope_duty_cycle_per_s  = 5,
+                 .slope_duty_cycle_per_s  = 10,
                  },
 };
 

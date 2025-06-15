@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Tue Mar 11 07:16:55 2025
+[*] Mon Apr 28 05:41:21 2025
 [*]
 [dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\led_interface_temp\func.ghw"
-[dumpfile_mtime] "Tue Mar 11 06:37:17 2025"
-[dumpfile_size] 1014623
+[dumpfile_mtime] "Mon Apr 28 05:40:33 2025"
+[dumpfile_size] 1024885
 [savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\led_interface_temp\wave_save.gtkw"
-[timestart] 139951
+[timestart] 0
 [size] 1792 941
 [pos] -1 -1
-*-8.000000 140389 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-14.000000 140389 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.led_interface_tb.
 [treeopen] top.led_interface_tb.verify_led_if.
@@ -58,7 +58,7 @@ top.led_interface_tb.dut.spi_bit_count_a
 @28
 top.led_interface_tb.dut.conduit_led_a_clk
 top.led_interface_tb.dut.conduit_led_a_data
-@23
+@22
 #{top.led_interface_tb.verify_led_if.rec_a[7:0]} top.led_interface_tb.verify_led_if.rec_a[7] top.led_interface_tb.verify_led_if.rec_a[6] top.led_interface_tb.verify_led_if.rec_a[5] top.led_interface_tb.verify_led_if.rec_a[4] top.led_interface_tb.verify_led_if.rec_a[3] top.led_interface_tb.verify_led_if.rec_a[2] top.led_interface_tb.verify_led_if.rec_a[1] top.led_interface_tb.verify_led_if.rec_a[0]
 @200
 -
@@ -66,5 +66,6 @@ top.led_interface_tb.dut.conduit_led_a_data
 top.led_interface_tb.dut.spi_state
 @28
 top.led_interface_tb.dut.spi_in_progress
+top.led_interface_tb.dut.spi_fake_cs
 [pattern_trace] 1
 [pattern_trace] 0

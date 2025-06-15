@@ -1,22 +1,22 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Sat Mar 15 16:06:16 2025
+[*] Thu Apr 03 14:13:26 2025
 [*]
 [dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\ram_master_temp\func.ghw"
-[dumpfile_mtime] "Sat Mar 15 16:03:35 2025"
-[dumpfile_size] 2033493
+[dumpfile_mtime] "Thu Apr 03 14:13:04 2025"
+[dumpfile_size] 2714071
 [savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\ram_master_temp\wave_save.gtkw"
-[timestart] 77618
-[size] 1920 1017
+[timestart] 221196
+[size] 1920 1008
 [pos] -1 -1
-*-8.000000 78148 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-10.000000 226890 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.ram_master_tb.
 [treeopen] top.ram_master_tb.dut_ram_master.
 [sst_width] 246
-[signals_width] 294
+[signals_width] 308
 [sst_expanded] 1
-[sst_vpaned_height] 360
+[sst_vpaned_height] 356
 @28
 top.ram_master_tb.verify_ram_master.clock_clk
 top.ram_master_tb.verify_ram_master.reset_reset
@@ -51,11 +51,11 @@ top.ram_master_tb.verify_ram_master.helper_ram_emulator.waitrequest
 top.ram_master_tb.verify_ram_master.helper_ram_emulator.readdatavalid
 @200
 -
-@201
 -avalon_mm
 @28
 top.ram_master_tb.s_avm_m0_write
 top.ram_master_tb.s_avm_m0_readdatavalid
+top.ram_master_tb.dut_ram_master.avm_m0_readdatavalid
 top.ram_master_tb.s_avm_m0_read
 @22
 #{top.ram_master_tb.s_avm_m0_writedata[15:0]} top.ram_master_tb.s_avm_m0_writedata[15] top.ram_master_tb.s_avm_m0_writedata[14] top.ram_master_tb.s_avm_m0_writedata[13] top.ram_master_tb.s_avm_m0_writedata[12] top.ram_master_tb.s_avm_m0_writedata[11] top.ram_master_tb.s_avm_m0_writedata[10] top.ram_master_tb.s_avm_m0_writedata[9] top.ram_master_tb.s_avm_m0_writedata[8] top.ram_master_tb.s_avm_m0_writedata[7] top.ram_master_tb.s_avm_m0_writedata[6] top.ram_master_tb.s_avm_m0_writedata[5] top.ram_master_tb.s_avm_m0_writedata[4] top.ram_master_tb.s_avm_m0_writedata[3] top.ram_master_tb.s_avm_m0_writedata[2] top.ram_master_tb.s_avm_m0_writedata[1] top.ram_master_tb.s_avm_m0_writedata[0]
@@ -63,6 +63,7 @@ top.ram_master_tb.s_avm_m0_read
 #{top.ram_master_tb.s_avm_m0_address[23:0]} top.ram_master_tb.s_avm_m0_address[23] top.ram_master_tb.s_avm_m0_address[22] top.ram_master_tb.s_avm_m0_address[21] top.ram_master_tb.s_avm_m0_address[20] top.ram_master_tb.s_avm_m0_address[19] top.ram_master_tb.s_avm_m0_address[18] top.ram_master_tb.s_avm_m0_address[17] top.ram_master_tb.s_avm_m0_address[16] top.ram_master_tb.s_avm_m0_address[15] top.ram_master_tb.s_avm_m0_address[14] top.ram_master_tb.s_avm_m0_address[13] top.ram_master_tb.s_avm_m0_address[12] top.ram_master_tb.s_avm_m0_address[11] top.ram_master_tb.s_avm_m0_address[10] top.ram_master_tb.s_avm_m0_address[9] top.ram_master_tb.s_avm_m0_address[8] top.ram_master_tb.s_avm_m0_address[7] top.ram_master_tb.s_avm_m0_address[6] top.ram_master_tb.s_avm_m0_address[5] top.ram_master_tb.s_avm_m0_address[4] top.ram_master_tb.s_avm_m0_address[3] top.ram_master_tb.s_avm_m0_address[2] top.ram_master_tb.s_avm_m0_address[1] top.ram_master_tb.s_avm_m0_address[0]
 @28
 top.ram_master_tb.s_avm_m0_waitrequest
+top.ram_master_tb.s_avm_m0_chipselect
 @200
 -
 -Fire
@@ -82,12 +83,14 @@ top.ram_master_tb.dut_ram_master.conduit_col_info_fire
 @420
 top.ram_master_tb.dut_ram_master.main_state
 top.ram_master_tb.dut_ram_master.read_state
+top.ram_master_tb.dut_ram_master.write_state
 top.ram_master_tb.dut_ram_master.next_write_state
 @22
-#{top.ram_master_tb.dut_ram_master.current_address_read[23:0]} top.ram_master_tb.dut_ram_master.current_address_read[23] top.ram_master_tb.dut_ram_master.current_address_read[22] top.ram_master_tb.dut_ram_master.current_address_read[21] top.ram_master_tb.dut_ram_master.current_address_read[20] top.ram_master_tb.dut_ram_master.current_address_read[19] top.ram_master_tb.dut_ram_master.current_address_read[18] top.ram_master_tb.dut_ram_master.current_address_read[17] top.ram_master_tb.dut_ram_master.current_address_read[16] top.ram_master_tb.dut_ram_master.current_address_read[15] top.ram_master_tb.dut_ram_master.current_address_read[14] top.ram_master_tb.dut_ram_master.current_address_read[13] top.ram_master_tb.dut_ram_master.current_address_read[12] top.ram_master_tb.dut_ram_master.current_address_read[11] top.ram_master_tb.dut_ram_master.current_address_read[10] top.ram_master_tb.dut_ram_master.current_address_read[9] top.ram_master_tb.dut_ram_master.current_address_read[8] top.ram_master_tb.dut_ram_master.current_address_read[7] top.ram_master_tb.dut_ram_master.current_address_read[6] top.ram_master_tb.dut_ram_master.current_address_read[5] top.ram_master_tb.dut_ram_master.current_address_read[4] top.ram_master_tb.dut_ram_master.current_address_read[3] top.ram_master_tb.dut_ram_master.current_address_read[2] top.ram_master_tb.dut_ram_master.current_address_read[1] top.ram_master_tb.dut_ram_master.current_address_read[0]
 #{top.ram_master_tb.dut_ram_master.addr_b_preload[23:0]} top.ram_master_tb.dut_ram_master.addr_b_preload[23] top.ram_master_tb.dut_ram_master.addr_b_preload[22] top.ram_master_tb.dut_ram_master.addr_b_preload[21] top.ram_master_tb.dut_ram_master.addr_b_preload[20] top.ram_master_tb.dut_ram_master.addr_b_preload[19] top.ram_master_tb.dut_ram_master.addr_b_preload[18] top.ram_master_tb.dut_ram_master.addr_b_preload[17] top.ram_master_tb.dut_ram_master.addr_b_preload[16] top.ram_master_tb.dut_ram_master.addr_b_preload[15] top.ram_master_tb.dut_ram_master.addr_b_preload[14] top.ram_master_tb.dut_ram_master.addr_b_preload[13] top.ram_master_tb.dut_ram_master.addr_b_preload[12] top.ram_master_tb.dut_ram_master.addr_b_preload[11] top.ram_master_tb.dut_ram_master.addr_b_preload[10] top.ram_master_tb.dut_ram_master.addr_b_preload[9] top.ram_master_tb.dut_ram_master.addr_b_preload[8] top.ram_master_tb.dut_ram_master.addr_b_preload[7] top.ram_master_tb.dut_ram_master.addr_b_preload[6] top.ram_master_tb.dut_ram_master.addr_b_preload[5] top.ram_master_tb.dut_ram_master.addr_b_preload[4] top.ram_master_tb.dut_ram_master.addr_b_preload[3] top.ram_master_tb.dut_ram_master.addr_b_preload[2] top.ram_master_tb.dut_ram_master.addr_b_preload[1] top.ram_master_tb.dut_ram_master.addr_b_preload[0]
-@24
-#{top.ram_master_tb.dut_ram_master.pix_count[7:0]} top.ram_master_tb.dut_ram_master.pix_count[7] top.ram_master_tb.dut_ram_master.pix_count[6] top.ram_master_tb.dut_ram_master.pix_count[5] top.ram_master_tb.dut_ram_master.pix_count[4] top.ram_master_tb.dut_ram_master.pix_count[3] top.ram_master_tb.dut_ram_master.pix_count[2] top.ram_master_tb.dut_ram_master.pix_count[1] top.ram_master_tb.dut_ram_master.pix_count[0]
+@29
+top.ram_master_tb.dut_ram_master.active_base_addr
+@28
+top.ram_master_tb.dut_ram_master.addr_ready
 @200
 -
 -streamFromRam
