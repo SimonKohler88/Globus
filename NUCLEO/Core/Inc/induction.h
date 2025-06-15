@@ -26,7 +26,7 @@ extern "C"
     } INDUCTION_t;
 
     void ind_init( INDUCTION_t* inst, TIM_HandleTypeDef* htim );
-    void ind_update( INDUCTION_t* inst, uint32_t tick );
+    void ind_update(INDUCTION_t* inst, uint32_t tick);
 #ifdef __cplusplus
 }
 #endif

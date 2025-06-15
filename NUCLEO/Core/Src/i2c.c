@@ -196,6 +196,8 @@ extern void HAL_I2C_SlaveTxCpltCallback( I2C_HandleTypeDef* hi2c ) { HAL_I2C_Ena
 
 extern void HAL_I2C_SlaveRxCpltCallback( I2C_HandleTypeDef* hi2c )
 {
+
+
     if ( next_frame_flag )
     {
         /* Write Req: receive more data */
