@@ -102,7 +102,7 @@ class Video:
     """
     Represents a video object.
 
-    This class preprocesses given .gif ready for esp.
+    This class preprocesses given .gif ready for esp. Does not store preprocessed images
 
     :param: video_path: absolute Path to the video.
     """
@@ -138,14 +138,10 @@ class Video:
         self.__total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         print(f'Frames: {self.__total_frames}')
 
-        # # ********* testing part
-        # test_directory = os.path.join(os.path.dirname(__file__), 'test', self.__name)
-        # if os.path.exists(test_directory):
-        #     shutil.rmtree(test_directory)
-        # if not os.path.exists('test'):
-        #     os.mkdir('test')
-        # os.mkdir(test_directory)
-        # # ********************
+        height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+        if height != 120 or width != 256:
+            raise ValueError(f'Image size is not 120x256, w:{width}, h:{height}')
 
         encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 80]
 
@@ -154,18 +150,12 @@ class Video:
             if frame_exists:
                 # img = cv2.imread(frame)
                 img = frame
-                # img = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
+                # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
                 # Compress, 90% quality
                 _, buffer = cv2.imencode(".jpg", img, encode_param)
                 self.__frames.append(buffer.tobytes())
 
-                # ********************* testing
-                # self.__frames.append(buffer)
-                # test_file_name = f'{self.__name}_{i}.jpg'
-                #
-                # cv2.imwrite(os.path.join(test_directory, test_file_name), img, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
-                # *********************
                 print('.', end='')
         print('done')
 
@@ -204,11 +194,7 @@ if __name__ == '__main__':
         pic = vid.get_frame(1)
         print(f'-------- {i:03} --------')
         print(type(pic), len(pic))
-        # open_jpeg = cv2.imdecode(pic, cv2.IMREAD_COLOR)
         open_jpeg = cv2.imdecode(pic, cv2.IMREAD_UNCHANGED)
-
-        # open_jpeg = cv2.cvtColor(open_jpeg, cv2.COLOR_YCrCb2RGB)
-        # open_jpeg = cv2.cvtColor(open_jpeg, cv2.COLOR_BGR2RGB)
         print(open_jpeg.shape)
         cv2.imshow('frame', open_jpeg)
         cv2.waitKey(0)
