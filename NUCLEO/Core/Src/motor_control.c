@@ -17,12 +17,13 @@ void mot_ctrl_init( MOT_CTRL_t* mot_ctrl, TIM_HandleTypeDef* htim, uint32_t chan
     /* Timer Input Freq : 8MHz
      * Timer Output Freq: MOT_CTRL_PWM_FREQUENCY (ex: 10000)*/
 
-    int32_t prescale = ( MOT_CTRL_TIMER_INPUT_CLOCK_HZ / ( MOT_CTRL_PWM_FREQUENCY * ( MOT_CTRL_TIMER_RESOLUTION ) ) - 1 );
+    // int32_t prescale = ( MOT_CTRL_TIMER_INPUT_CLOCK_HZ / ( MOT_CTRL_PWM_FREQUENCY * ( MOT_CTRL_TIMER_RESOLUTION ) ) - 1 );
 
 
-    if (prescale < 1) prescale = 0;
+    // if (prescale < 1) prescale = 0;
 
-    htim->Instance->PSC = ( uint32_t ) prescale;
+    // htim->Instance->PSC = ( uint32_t ) prescale;
+    htim->Instance->PSC = ( uint32_t ) 0;
     htim->Instance->ARR = MOT_CTRL_TIMER_RESOLUTION;
 
     mot_ctrl->last_tick        = 0;

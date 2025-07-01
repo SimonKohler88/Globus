@@ -14,9 +14,11 @@ extern "C"
 #include "stm32f3xx_hal_tim.h"
 #include "tim.h"
 
-#define MOT_CTRL_TIMER_INPUT_CLOCK_HZ ( 8000000 )
+// #define MOT_CTRL_TIMER_INPUT_CLOCK_HZ ( 8000000 )
+#define MOT_CTRL_TIMER_INPUT_CLOCK_HZ ( 32000000 )
 #define MOT_CTRL_PWM_FREQUENCY        ( 4000 )
-#define MOT_CTRL_TIMER_RESOLUTION     ( 1000 )
+// #define MOT_CTRL_TIMER_RESOLUTION     ( 1000 )
+#define MOT_CTRL_TIMER_RESOLUTION     ( 1500 )
 #if MOT_CTRL_TIMER_RESOLUTION > ( 0xFFFF )
     #define MOT_CTRL_TIMER_RESOLUTION ( 0xFFFF )
 #endif
