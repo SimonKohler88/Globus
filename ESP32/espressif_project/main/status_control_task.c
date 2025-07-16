@@ -27,27 +27,15 @@ gptimer_handle_t gptimer              = NULL;
 
 volatile uint8_t line_toggle = 0;
 
-#ifdef DEVELOPMENT_SET_QSPI_ON_PIN_OUT
-static void IRAM_ATTR frame_request_isr_cb( void* arg )
-{
-    gpio_set_level( STAT_CTRL_PIN_RESERVE_3, line_toggle );
-    line_toggle = !line_toggle;
-
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    xHigherPriorityTaskWoken            = qspi_request_frame();
-    portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
-}
-#else
 static bool IRAM_ATTR frame_request_timer_isr_cb( gptimer_handle_t timer, const gptimer_alarm_event_data_t* edata, void* user_ctx )
 {
     gpio_set_level( STAT_CTRL_PIN_RESERVE_3, line_toggle );
     line_toggle = !line_toggle;
 
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    xHigherPriorityTaskWoken            = qspi_request_frame();
+    xHigherPriorityTaskWoken            = qspi_request_frame( 1 );
     return xHigherPriorityTaskWoken;
 }
-#endif
 
 void status_control_init( status_control_status_t* status_ptr, command_control_task_t* internal_status_ptr, task_handles_t* task_handles )
 {
@@ -60,12 +48,6 @@ void status_control_init( status_control_status_t* status_ptr, command_control_t
         .intr_type = GPIO_INTR_POSEDGE, .mode = GPIO_MODE_INPUT, .pull_up_en = 1, .pin_bit_mask = 1 << STAT_CTRL_PIN_FRAME_REQUEST };
 
     ESP_ERROR_CHECK( gpio_config( &config ) );
-
-#ifdef DEVELOPMENT_SET_QSPI_ON_PIN_OUT
-    ESP_ERROR_CHECK( gpio_install_isr_service( ESP_INTR_FLAG_IRAM ) );
-    ESP_LOGW( STAT_CTRL_TAG, "Dev State:QSPI triggering on INPUT Interrupt" );
-    ESP_ERROR_CHECK( gpio_isr_handler_add( STAT_CTRL_PIN_FRAME_REQUEST, frame_request_isr_cb, ( void* ) STAT_CTRL_PIN_FRAME_REQUEST ) );
-#endif
 
     /* FPGA Control Lanes */
 
@@ -88,6 +70,7 @@ void status_control_init( status_control_status_t* status_ptr, command_control_t
         .clk_src       = GPTIMER_CLK_SRC_DEFAULT,
         .direction     = GPTIMER_COUNT_UP,
         .resolution_hz = TIMER_RESOLUTION,
+        .intr_priority = 3,
     };
     ESP_ERROR_CHECK( gptimer_new_timer( &timer_config, &gptimer ) );
 
@@ -102,7 +85,11 @@ void status_control_init( status_control_status_t* status_ptr, command_control_t
         .on_alarm = frame_request_timer_isr_cb,  // register user callback
     };
     ESP_ERROR_CHECK( gptimer_register_event_callbacks( gptimer, &cbs, NULL ) );
+
+#ifndef DEVELOPMENT_SET_QSPI_STATIC
+    /* frame triggered from status control in static mode */
     ESP_ERROR_CHECK( gptimer_enable( gptimer ) );
+#endif
 
     /* init led */
     init_led( &internal_status_ptr->led );
@@ -150,13 +137,13 @@ void status_control_task( void* pvParameter )
         ESP_LOGE( STAT_CTRL_TAG, "No status struct initialized" );
         return;
     }
-    uint32_t ulNotifyValueJPEG;
-    uint32_t ulNotifyValueHTTP;
-    uint32_t ulNotifyValueWIFI;
+    uint32_t ulNotifyValueJPEG = 0;
+    uint32_t ulNotifyValueHTTP = 0;
+    uint32_t ulNotifyValueWIFI = 0;
 
     set_led_cyan( &status->led );
 
-#ifdef DEVELOPMENT_SET_QSPI_ON_PIN_OUT
+#ifdef DEVELOPMENT_SET_QSPI_STATIC
     TickType_t xLastWakeTime    = xTaskGetTickCount();
     const TickType_t xPeriod_ms = 60;
 #endif
@@ -171,11 +158,10 @@ void status_control_task( void* pvParameter )
     while ( status->task_handles->http_task_handle == NULL || status->task_handles->FPGA_QSPI_task_handle == NULL ||
             status->task_handles->JPEG_task_handle == NULL || status->task_handles->WIFI_task_handle == NULL )
     {
-        void set_led_cyan( led_state_t *led );
+        void set_led_cyan( led_state_t * led );
         vTaskDelay( 10 );
-
     }
-#ifndef DEVELOPMENT_SET_QSPI_ON_PIN_OUT
+#ifndef DEVELOPMENT_SET_QSPI_STATIC
     uint64_t time_us_start = 0;
     uint64_t time_delta_us = 0;
 
@@ -193,7 +179,7 @@ void status_control_task( void* pvParameter )
     if ( CTRL_TASK_VERBOSE ) ESP_LOGI( STAT_CTRL_TAG, "Enter Loop" );
     while ( 1 )
     {
-#ifndef DEVELOPMENT_SET_QSPI_ON_PIN_OUT
+#ifndef DEVELOPMENT_SET_QSPI_STATIC
 
         if ( CTRL_TASK_VERBOSE ) ESP_LOGI( STAT_CTRL_TAG, "last frame: %" PRIu32, last_frame_time_used );
         while ( !wifi_is_connected() )
@@ -231,11 +217,20 @@ void status_control_task( void* pvParameter )
             }
             else
             {
+
+#ifdef DEVELOPMENT_SET_QSPI_STATIC
+                if ( status->led.toggle_state ) set_led_red( &status->led );
+                else clear_led( &status->led );
+                gpio_set_level( STAT_CTRL_PIN_RESERVE_3, status->led.toggle_state );
+                qspi_request_frame( 0 );
+
+#else
                 set_led_red( &status->led );
+#endif
             }
         }
 
-#ifndef DEVELOPMENT_SET_QSPI_ON_PIN_OUT
+#ifndef DEVELOPMENT_SET_QSPI_STATIC
 
         if ( num_free_frames != 0 )
         {
@@ -267,7 +262,7 @@ void status_control_task( void* pvParameter )
         set_gpio_reserve_1_async( 0 );
 #endif
 
-#ifdef DEVELOPMENT_SET_QSPI_ON_PIN_OUT
+#ifdef DEVELOPMENT_SET_QSPI_STATIC
         vTaskDelayUntil( &xLastWakeTime, pdMS_TO_TICKS( xPeriod_ms ) );
 #endif
     }

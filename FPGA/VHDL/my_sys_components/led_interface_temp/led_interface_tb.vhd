@@ -72,37 +72,38 @@ component led_interface_verify is
 		image_rows : integer := 120
 	);
 	port (
-		clock_clk                   : out  std_logic                     := '0';             --                clock.clk
-		reset_reset                 : out  std_logic                     := '0';             --                reset.reset
-		conduit_LED_A_CLK           : in   std_logic;                                        --        conduit_LED_A.led_a_clk
-		conduit_LED_A_DATA          : in   std_logic;                                        --                     .led_a_data
-		conduit_LED_B_CLK           : in   std_logic;                                        --        conduit_LED_B.led_b_clk
-		conduit_LED_B_DATA          : in   std_logic;                                        --                     .led_b_data
-		conduit_LED_C_CLK           : in   std_logic;                                        --        conduit_LED_C.led_c_clk
-		conduit_LED_C_DATA          : in   std_logic;                                        --                     .led_c_data
-		conduit_LED_D_CLK           : in   std_logic;                                        --        conduit_LED_D.led_d_clk
-		conduit_LED_D_DATA          : in   std_logic;                                        --                     .new_signal_1
-		clock_led_spi_clk           : out  std_logic                     := '0';             --        clock_led_spi.clk
-		conduit_col_info            : out  std_logic_vector(8 downto 0)  := (others => '0'); --     conduit_col_info.col_nr
-		conduit_fire                : out  std_logic                     := '0';             --                     .fire
-		conduit_col_info_out_col_nr : in   std_logic_vector(8 downto 0);                     -- conduit_col_info_out.col_nr
-		conduit_col_info_out_fire   : in   std_logic;                                        --                     .fire
-		avs_s0_address              : out  std_logic_vector(7 downto 0)  := (others => '0'); --               avs_s0.address
-		avs_s0_read                 : out  std_logic                     := '0';             --                     .read
-		avs_s0_readdata             : in   std_logic_vector(31 downto 0);                    --                     .readdata
-		avs_s0_write                : out  std_logic                     := '0';             --                     .write
-		avs_s0_writedata            : out  std_logic_vector(31 downto 0) := (others => '0'); --                     .writedata
-		avs_s0_waitrequest          : in   std_logic;                                        --                     .waitrequest
-		asi_in1_data                : out  std_logic_vector(23 downto 0) := (others => '0'); --            asi_in1_B.data
-		asi_in1_ready               : in   std_logic;                                        --                     .ready
-		asi_in1_valid               : out  std_logic                     := '0';             --                     .valid
-		asi_in1_startofpacket       : out  std_logic                     := '0';             --                     .startofpacket
-		asi_in1_endofpacket         : out  std_logic                     := '0';             --                     .endofpacket
-		asi_in0_data                : out  std_logic_vector(23 downto 0) := (others => '0'); --            asi_in0_A.data
-		asi_in0_ready               : in   std_logic;                                        --                     .ready
-		asi_in0_valid               : out  std_logic                     := '0';             --                     .valid
-		asi_in0_startofpacket       : out  std_logic                     := '0';             --                     .startofpacket
-		asi_in0_endofpacket         : out  std_logic                     := '0'              --                     .endofpacket
+		clock_clk                     : out  std_logic                     := '0';             --                clock.clk
+		reset_reset                   : out  std_logic                     := '0';             --                reset.reset
+		conduit_LED_A_CLK             : in   std_logic;                                        --        conduit_LED_A.led_a_clk
+		conduit_LED_A_DATA            : in   std_logic;                                        --                     .led_a_data
+		conduit_LED_B_CLK             : in   std_logic;                                        --        conduit_LED_B.led_b_clk
+		conduit_LED_B_DATA            : in   std_logic;                                        --                     .led_b_data
+		conduit_LED_C_CLK             : in   std_logic;                                        --        conduit_LED_C.led_c_clk
+		conduit_LED_C_DATA            : in   std_logic;                                        --                     .led_c_data
+		conduit_LED_D_CLK             : in   std_logic;                                        --        conduit_LED_D.led_d_clk
+		conduit_LED_D_DATA            : in   std_logic;                                        --                     .new_signal_1
+		clock_led_spi_clk             : out  std_logic                     := '0';             --        clock_led_spi.clk
+		conduit_col_info              : out  std_logic_vector(8 downto 0)  := (others => '0'); --     conduit_col_info.col_nr
+		conduit_fire                  : out  std_logic                     := '0';             --                     .fire
+		conduit_col_info_out_col_nr   : in   std_logic_vector(8 downto 0);                     -- conduit_col_info_out.col_nr
+		conduit_col_info_out_fire     : in   std_logic;                                        --                     .fire
+		avs_s0_address                : out  std_logic_vector(7 downto 0)  := (others => '0'); --               avs_s0.address
+		avs_s0_read                   : out  std_logic                     := '0';             --                     .read
+		avs_s0_readdata               : in   std_logic_vector(31 downto 0);                    --                     .readdata
+		avs_s0_write                  : out  std_logic                     := '0';             --                     .write
+		avs_s0_writedata              : out  std_logic_vector(31 downto 0) := (others => '0'); --                     .writedata
+		avs_s0_waitrequest            : in   std_logic;                                        --                     .waitrequest
+		asi_in1_data                  : out  std_logic_vector(23 downto 0) := (others => '0'); --            asi_in1_B.data
+		asi_in1_ready                 : in   std_logic;                                        --                     .ready
+		asi_in1_valid                 : out  std_logic                     := '0';             --                     .valid
+		asi_in1_startofpacket         : out  std_logic                     := '0';             --                     .startofpacket
+		asi_in1_endofpacket           : out  std_logic                     := '0';             --                     .endofpacket
+		asi_in0_data                  : out  std_logic_vector(23 downto 0) := (others => '0'); --            asi_in0_A.data
+		asi_in0_ready                 : in   std_logic;                                        --                     .ready
+		asi_in0_valid                 : out  std_logic                     := '0';             --                     .valid
+		asi_in0_startofpacket         : out  std_logic                     := '0';             --                     .startofpacket
+		asi_in0_endofpacket           : out  std_logic                     := '0';              --                     .endofpacket
+		conduit_debug_led_led_dbg_in  : out  std_logic_vector(31 downto 0)
 	);
 end component;
 
@@ -146,74 +147,75 @@ begin
    default clock is rising_edge (s_clock_clk);
 
 	verify_led_if: led_interface_verify port map (
-        clock_clk                   => s_clock_clk                   ,
-        reset_reset                 => s_reset_reset                 ,
-        conduit_LED_A_CLK           => s_conduit_LED_A_CLK           ,
-        conduit_LED_A_DATA          => s_conduit_LED_A_DATA          ,
-        conduit_LED_B_CLK           => s_conduit_LED_B_CLK           ,
-        conduit_LED_B_DATA          => s_conduit_LED_B_DATA          ,
-        conduit_LED_C_CLK           => s_conduit_LED_C_CLK           ,
-        conduit_LED_C_DATA          => s_conduit_LED_C_DATA          ,
-        conduit_LED_D_CLK           => s_conduit_LED_D_CLK           ,
-        conduit_LED_D_DATA          => s_conduit_LED_D_DATA          ,
-        clock_led_spi_clk           => s_clock_led_spi_clk           ,
-        conduit_col_info            => s_conduit_col_info            ,
-        conduit_fire                => s_conduit_fire                ,
-        conduit_col_info_out_col_nr => s_conduit_col_info_out_col_nr ,
-        conduit_col_info_out_fire   => s_conduit_col_info_out_fire   ,
-        avs_s0_address              => s_avs_s0_address              ,
-        avs_s0_read                 => s_avs_s0_read                 ,
-        avs_s0_readdata             => s_avs_s0_readdata             ,
-        avs_s0_write                => s_avs_s0_write                ,
-        avs_s0_writedata            => s_avs_s0_writedata            ,
-	    avs_s0_waitrequest          => s_avs_s0_waitrequest          ,
-        asi_in1_data                => s_asi_in1_data                ,
-        asi_in1_ready               => s_asi_in1_ready               ,
-        asi_in1_valid               => s_asi_in1_valid               ,
-        asi_in1_startofpacket       => s_asi_in1_startofpacket       ,
-        asi_in1_endofpacket         => s_asi_in1_endofpacket         ,
-        asi_in0_data                => s_asi_in0_data                ,
-        asi_in0_ready               => s_asi_in0_ready               ,
-        asi_in0_valid               => s_asi_in0_valid               ,
-        asi_in0_startofpacket       => s_asi_in0_startofpacket       ,
-        asi_in0_endofpacket         => s_asi_in0_endofpacket
+        clock_clk                      => s_clock_clk                   ,
+        reset_reset                    => s_reset_reset                 ,
+        conduit_LED_A_CLK              => s_conduit_LED_A_CLK           ,
+        conduit_LED_A_DATA             => s_conduit_LED_A_DATA          ,
+        conduit_LED_B_CLK              => s_conduit_LED_B_CLK           ,
+        conduit_LED_B_DATA             => s_conduit_LED_B_DATA          ,
+        conduit_LED_C_CLK              => s_conduit_LED_C_CLK           ,
+        conduit_LED_C_DATA             => s_conduit_LED_C_DATA          ,
+        conduit_LED_D_CLK              => s_conduit_LED_D_CLK           ,
+        conduit_LED_D_DATA             => s_conduit_LED_D_DATA          ,
+        clock_led_spi_clk              => s_clock_led_spi_clk           ,
+        conduit_col_info               => s_conduit_col_info            ,
+        conduit_fire                   => s_conduit_fire                ,
+        conduit_col_info_out_col_nr    => s_conduit_col_info_out_col_nr ,
+        conduit_col_info_out_fire      => s_conduit_col_info_out_fire   ,
+        avs_s0_address                 => s_avs_s0_address              ,
+        avs_s0_read                    => s_avs_s0_read                 ,
+        avs_s0_readdata                => s_avs_s0_readdata             ,
+        avs_s0_write                   => s_avs_s0_write                ,
+        avs_s0_writedata               => s_avs_s0_writedata            ,
+	    avs_s0_waitrequest             => s_avs_s0_waitrequest          ,
+        asi_in1_data                   => s_asi_in1_data                ,
+        asi_in1_ready                  => s_asi_in1_ready               ,
+        asi_in1_valid                  => s_asi_in1_valid               ,
+        asi_in1_startofpacket          => s_asi_in1_startofpacket       ,
+        asi_in1_endofpacket            => s_asi_in1_endofpacket         ,
+        asi_in0_data                   => s_asi_in0_data                ,
+        asi_in0_ready                  => s_asi_in0_ready               ,
+        asi_in0_valid                  => s_asi_in0_valid               ,
+        asi_in0_startofpacket          => s_asi_in0_startofpacket       ,
+        asi_in0_endofpacket            => s_asi_in0_endofpacket         ,
+        conduit_debug_led_led_dbg_in   => s_conduit_debug_led_in
      );
 
      dut : led_interface port map(
-        clock_clk                   => s_clock_clk                   ,
-        reset_reset                 => s_reset_reset                 ,
-        conduit_LED_A_CLK           => s_conduit_LED_A_CLK           ,
-        conduit_LED_A_DATA          => s_conduit_LED_A_DATA          ,
-        conduit_LED_B_CLK           => s_conduit_LED_B_CLK           ,
-        conduit_LED_B_DATA          => s_conduit_LED_B_DATA          ,
-        conduit_LED_C_CLK           => s_conduit_LED_C_CLK           ,
-        conduit_LED_C_DATA          => s_conduit_LED_C_DATA          ,
-        conduit_LED_D_CLK           => s_conduit_LED_D_CLK           ,
-        conduit_LED_D_DATA          => s_conduit_LED_D_DATA          ,
-        clock_led_spi_clk           => s_clock_led_spi_clk           ,
-        conduit_col_info            => s_conduit_col_info            ,
-        conduit_fire                => s_conduit_fire                ,
-        conduit_col_info_out_col_nr => s_conduit_col_info_out_col_nr ,
-        conduit_col_info_out_fire   => s_conduit_col_info_out_fire   ,
-        avs_s0_address              => s_avs_s0_address              ,
-        avs_s0_read                 => s_avs_s0_read                 ,
-        avs_s0_readdata             => s_avs_s0_readdata             ,
-        avs_s0_write                => s_avs_s0_write                ,
-        avs_s0_writedata            => s_avs_s0_writedata            ,
-	    avs_s0_waitrequest          => s_avs_s0_waitrequest          ,
-        asi_in1_data                => s_asi_in1_data                ,
-        asi_in1_ready               => s_asi_in1_ready               ,
-        asi_in1_valid               => s_asi_in1_valid               ,
-        asi_in1_startofpacket       => s_asi_in1_startofpacket       ,
-        asi_in1_endofpacket         => s_asi_in1_endofpacket         ,
-        asi_in0_data                => s_asi_in0_data                ,
-        asi_in0_ready               => s_asi_in0_ready               ,
-        asi_in0_valid               => s_asi_in0_valid               ,
-        asi_in0_startofpacket       => s_asi_in0_startofpacket       ,
-        asi_in0_endofpacket         => s_asi_in0_endofpacket         ,
-        conduit_debug_led_led_dbg_out  => s_conduit_debug_led_out       ,
-        conduit_debug_led_led_dbg_out_2  => s_conduit_debug_led_out_2       ,
-        conduit_debug_led_led_dbg_in   => s_conduit_debug_led_in
+        clock_clk                        => s_clock_clk                   ,
+        reset_reset                      => s_reset_reset                 ,
+        conduit_LED_A_CLK                => s_conduit_LED_A_CLK           ,
+        conduit_LED_A_DATA               => s_conduit_LED_A_DATA          ,
+        conduit_LED_B_CLK                => s_conduit_LED_B_CLK           ,
+        conduit_LED_B_DATA               => s_conduit_LED_B_DATA          ,
+        conduit_LED_C_CLK                => s_conduit_LED_C_CLK           ,
+        conduit_LED_C_DATA               => s_conduit_LED_C_DATA          ,
+        conduit_LED_D_CLK                => s_conduit_LED_D_CLK           ,
+        conduit_LED_D_DATA               => s_conduit_LED_D_DATA          ,
+        clock_led_spi_clk                => s_clock_led_spi_clk           ,
+        conduit_col_info                 => s_conduit_col_info            ,
+        conduit_fire                     => s_conduit_fire                ,
+        conduit_col_info_out_col_nr      => s_conduit_col_info_out_col_nr ,
+        conduit_col_info_out_fire        => s_conduit_col_info_out_fire   ,
+        avs_s0_address                   => s_avs_s0_address              ,
+        avs_s0_read                      => s_avs_s0_read                 ,
+        avs_s0_readdata                  => s_avs_s0_readdata             ,
+        avs_s0_write                     => s_avs_s0_write                ,
+        avs_s0_writedata                 => s_avs_s0_writedata            ,
+	    avs_s0_waitrequest               => s_avs_s0_waitrequest          ,
+        asi_in1_data                     => s_asi_in1_data                ,
+        asi_in1_ready                    => s_asi_in1_ready               ,
+        asi_in1_valid                    => s_asi_in1_valid               ,
+        asi_in1_startofpacket            => s_asi_in1_startofpacket       ,
+        asi_in1_endofpacket              => s_asi_in1_endofpacket         ,
+        asi_in0_data                     => s_asi_in0_data                ,
+        asi_in0_ready                    => s_asi_in0_ready               ,
+        asi_in0_valid                    => s_asi_in0_valid               ,
+        asi_in0_startofpacket            => s_asi_in0_startofpacket       ,
+        asi_in0_endofpacket              => s_asi_in0_endofpacket         ,
+        conduit_debug_led_led_dbg_out    => s_conduit_debug_led_out       ,
+        conduit_debug_led_led_dbg_out_2  => s_conduit_debug_led_out_2     ,
+        conduit_debug_led_led_dbg_in     => s_conduit_debug_led_in
      );
 
      -- avalon stream checking

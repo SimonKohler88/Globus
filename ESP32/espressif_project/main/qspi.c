@@ -96,14 +96,15 @@ void qspi_init( qspi_status_t* status_ptr, task_handles_t* task_handles )
     set_cs_gpio( 1 );
 }
 
-BaseType_t qspi_request_frame( void )
+BaseType_t qspi_request_frame( uint8_t from_isr )
 {
     /* called from isr */
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
     if ( internal_qspi_task_handle != NULL )
     {
-        xTaskNotifyIndexedFromISR( internal_qspi_task_handle, TASK_NOTIFY_QSPI_START_BIT, 0, eSetBits, &xHigherPriorityTaskWoken );
+        if (from_isr) xTaskNotifyIndexedFromISR( internal_qspi_task_handle, TASK_NOTIFY_QSPI_START_BIT, 0, eSetBits, &xHigherPriorityTaskWoken );
+        else xTaskNotifyIndexed( internal_qspi_task_handle, TASK_NOTIFY_QSPI_START_BIT, 0, eSetBits );
     }
     return xHigherPriorityTaskWoken;
 }
@@ -182,7 +183,7 @@ void set_cs_gpio( uint8_t state )
     if ( ret != ESP_OK ) ESP_LOGE( TAG, "Err Set CS: %d", ret );
 }
 
-#ifndef DEVELOPMENT_SET_QSPI_ON_PIN_OUT
+#ifndef DEVELOPMENT_SET_QSPI_STATIC
     #define QSPI_TEST 0
 #else
     #define QSPI_TEST 1

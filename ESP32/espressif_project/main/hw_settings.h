@@ -11,12 +11,12 @@
 // #define HW_SETTINGS_DEBUG                  ( 1 )
 
 /* Development:
- * - Let QSPI send static Frame triggered by framerequest-input
+ * - Let QSPI send static Frame
  * - dont connect to network
  *
  * Comment out following line for hot version
  */
-// #define DEVELOPMENT_SET_QSPI_ON_PIN_OUT   ( 1 )
+#define DEVELOPMENT_SET_QSPI_STATIC   ( 1 )
 // #define LWIP_DEBUG 1
 
 /* Freertos */
@@ -92,10 +92,10 @@
 #define ENC_PIN_EXP_3       ( 47 )
 
 /* Task Verbosity */
-#define HTTP_TASK_VERBOSE   ( 1 )
-#define QSPI_TASK_VERBOSE   ( 0 )
-#define CTRL_TASK_VERBOSE   ( 0 )
-#define JPEG_TASK_VERBOSE   ( 1 )
+#define HTTP_TASK_VERBOSE   ( 0 )
+#define QSPI_TASK_VERBOSE   ( 1 )
+#define CTRL_TASK_VERBOSE   ( 1 )
+#define JPEG_TASK_VERBOSE   ( 0 )
 #define FIFO_VERBOSE        ( 0 )
 #define PIC_BUFF_VERBOSE    ( 0 )
 #define RPI_IF_VERBOSE      ( 0 )

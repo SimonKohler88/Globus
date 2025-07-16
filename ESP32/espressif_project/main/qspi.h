@@ -45,7 +45,7 @@ void qspi_init( qspi_status_t* status_ptr , task_handles_t* task_handles);
  * when the ISR exits. The function returns `pdTRUE` if a higher priority
  * task was woken, `pdFALSE` otherwise.
  */
-BaseType_t qspi_request_frame( void );
+BaseType_t qspi_request_frame( uint8_t from_isr );
 
 /**
  * Performs the main task for handling QSPI communication with an FPGA device.

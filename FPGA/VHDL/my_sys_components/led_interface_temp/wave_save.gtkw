@@ -1,22 +1,22 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Mon Apr 28 05:41:21 2025
+[*] Wed Jul 16 18:14:14 2025
 [*]
 [dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\led_interface_temp\func.ghw"
-[dumpfile_mtime] "Mon Apr 28 05:40:33 2025"
-[dumpfile_size] 1024885
+[dumpfile_mtime] "Wed Jul 16 18:13:38 2025"
+[dumpfile_size] 1024892
 [savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\led_interface_temp\wave_save.gtkw"
 [timestart] 0
-[size] 1792 941
-[pos] -1 -1
-*-14.000000 140389 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[size] 1920 1017
+[pos] 1911 -9
+*-8.000000 352 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.led_interface_tb.
-[treeopen] top.led_interface_tb.verify_led_if.
+[treeopen] top.led_interface_tb.dut.
 [sst_width] 323
 [signals_width] 415
 [sst_expanded] 1
-[sst_vpaned_height] 374
+[sst_vpaned_height] 411
 @28
 top.led_interface_tb.verify_led_if.clock_clk
 top.led_interface_tb.s_reset_reset
@@ -47,6 +47,11 @@ top.led_interface_tb.dut.asi_in1_endofpacket
 @28
 top.led_interface_tb.dut.start_spi_pulse
 top.led_interface_tb.s_conduit_fire
+@22
+#{top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[31:0]} top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[31] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[30] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[29] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[28] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[27] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[26] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[25] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[24] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[23] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[22] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[21] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[20] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[19] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[18] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[17] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[16] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[15] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[14] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[13] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[12] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[11] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[10] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[9] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[8] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[7] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[6] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[5] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[4] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[3] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[2] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[1] top.led_interface_tb.verify_led_if.conduit_debug_led_led_dbg_in[0]
+#{top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[31:0]} top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[31] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[30] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[29] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[28] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[27] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[26] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[25] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[24] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[23] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[22] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[21] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[20] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[19] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[18] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[17] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[16] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[15] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[14] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[13] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[12] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[11] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[10] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[9] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[8] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[7] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[6] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[5] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[4] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[3] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[2] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[1] top.led_interface_tb.dut.conduit_debug_led_led_dbg_in[0]
+@29
+top.led_interface_tb.dut.clear_led_pulse
 @200
 -
 @28

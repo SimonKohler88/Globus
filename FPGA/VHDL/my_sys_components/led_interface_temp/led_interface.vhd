@@ -112,6 +112,9 @@ architecture rtl of led_interface is
 	signal spi_in_progress_ff: std_logic_vector(12 downto 0);
 	signal spi_fake_cs: std_logic;
 
+	signal dbg_0_in_ff: std_logic_vector(1 downto 0);
+	signal clear_led_pulse: std_logic;
+
 	signal ram_to_buff_in_progress :std_logic;
 
 	type state_test is (none, t1, t_data_in, t_fp, t_fifo_check);
@@ -191,7 +194,7 @@ begin
 	conduit_col_info_out_fire <= fire_out;
 	
 	-- dangerous line: discards real fp, takes debug fp instead when in t_fifo_check
-	-- conduit_fire_signal <= conduit_debug_led_led_dbg_in(0) when test_state=t_fifo_check else conduit_fire;
+	-- conduit_fire_signal <= conduit_debug_led_led_dbg_in(1) when test_state=t_fifo_check else conduit_fire;
 	conduit_fire_signal <= conduit_fire; -- good line
 
 	-- delay fp to RAM Master a few clk for no real reason.
@@ -246,6 +249,22 @@ begin
 	end if;
 	end process;
 
+	-- read in dbg_in(0). on rising edge, give info to p_data_to_buffer for a LED turning off SPI-Burst
+	p_empty_shot: process(all)
+	begin
+	if reset_reset ='1' then
+		dbg_0_in_ff <= (others=>'0');
+
+	elsif rising_edge(clock_clk) then
+		dbg_0_in_ff <= dbg_0_in_ff(0) & conduit_debug_led_led_dbg_in(0);
+		if dbg_0_in_ff(1) = '0' and dbg_0_in_ff(0) = '1' then
+			clear_led_pulse <= '1';
+		else
+			clear_led_pulse <= '0';
+		end if;
+	end if;
+	end process;
+
 	--receiving streams to buffer
 	p_receive_stream_A: process(all)
 	begin
@@ -286,7 +305,7 @@ begin
 	end process p_receive_stream_B;
 
 	-- buffer to spi out buffers, always when fire pulse is on
-	p_data_to_A_buffer: process(all)
+	p_data_to_buffer: process(all)
 	begin
 		if reset_reset ='1' then
 			pix_out_A           <= (others =>(others => '0'));
@@ -297,17 +316,22 @@ begin
 
 		elsif rising_edge(clock_clk) then
 
-			if conduit_fire = '1' then -- todo: BGR, gamma
+			if conduit_fire = '1' or clear_led_pulse='1' then -- todo: gamma
 
 				for a in 0 to (pix_out_A'length - 1) loop
-					if use_bgr='1' then
-						--BGR
-						pix_out_A(a)(7 downto 0)   <= in_buffer_stream_A(pix_out_A'length - 1 - a)(23 downto 16);
-						pix_out_A(a)(15 downto 8)  <= in_buffer_stream_A(pix_out_A'length - 1 - a)(15 downto 8) ;
-						pix_out_A(a)(23 downto 16) <= in_buffer_stream_A(pix_out_A'length - 1 - a)(7 downto 0)  ;
+
+					if clear_led_pulse='1' then
+						pix_out_A(a) <= (others=>'0');
 					else
-						--RGB
-						pix_out_A(a)(23 downto 0) <= in_buffer_stream_A(a);
+						if use_bgr='1' then
+							--BGR
+							pix_out_A(a)(7 downto 0)   <= in_buffer_stream_A(pix_out_A'length - 1 - a)(23 downto 16);
+							pix_out_A(a)(15 downto 8)  <= in_buffer_stream_A(pix_out_A'length - 1 - a)(15 downto 8) ;
+							pix_out_A(a)(23 downto 16) <= in_buffer_stream_A(pix_out_A'length - 1 - a)(7 downto 0)  ;
+						else
+							--RGB
+							pix_out_A(a)(23 downto 0) <= in_buffer_stream_A(a);
+						end if;
 					end if;
 
 					pix_out_A(a)(31 downto 29) <= "111";
@@ -315,14 +339,18 @@ begin
 				end loop;
 
 				for b in 0 to (pix_out_B'length - 1) loop -- change direction
-					if use_bgr='1' then
-						--BGR
-						pix_out_B(b)(7 downto 0)   <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b)(23 downto 16);
-						pix_out_B(b)(15 downto 8)  <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b)(15 downto 8) ;
-						pix_out_B(b)(23 downto 16) <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b)(7 downto 0)  ;
+					if clear_led_pulse='1' then
+						pix_out_B(b) <= (others=>'0');
 					else
-						--RGB
-						pix_out_B(b)(23 downto 0) <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b);
+						if use_bgr='1' then
+							--BGR
+							pix_out_B(b)(7 downto 0)   <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b)(23 downto 16);
+							pix_out_B(b)(15 downto 8)  <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b)(15 downto 8) ;
+							pix_out_B(b)(23 downto 16) <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b)(7 downto 0)  ;
+						else
+							--RGB
+							pix_out_B(b)(23 downto 0) <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b);
+						end if;
 					end if;
 
 					pix_out_B(b)(31 downto 29)  <= "111";
@@ -330,14 +358,18 @@ begin
 				end loop;
 
 				for c in 0 to (pix_out_C'length - 1) loop
-					if use_bgr='1' then
-						--BGR
-						pix_out_C(c)(7 downto 0)   <= in_buffer_stream_B(pix_out_C'length - 1 - c)(23 downto 16);
-						pix_out_C(c)(15 downto 8)  <= in_buffer_stream_B(pix_out_C'length - 1 - c)(15 downto 8) ;
-						pix_out_C(c)(23 downto 16) <= in_buffer_stream_B(pix_out_C'length - 1 - c)(7 downto 0)  ;
+					if clear_led_pulse='1' then
+						pix_out_C(c) <= (others=>'0');
 					else
-						--RGB
-						pix_out_C(c)(23 downto 0)<= in_buffer_stream_B(c);
+						if use_bgr='1' then
+							--BGR
+							pix_out_C(c)(7 downto 0)   <= in_buffer_stream_B(pix_out_C'length - 1 - c)(23 downto 16);
+							pix_out_C(c)(15 downto 8)  <= in_buffer_stream_B(pix_out_C'length - 1 - c)(15 downto 8) ;
+							pix_out_C(c)(23 downto 16) <= in_buffer_stream_B(pix_out_C'length - 1 - c)(7 downto 0)  ;
+						else
+							--RGB
+							pix_out_C(c)(23 downto 0)<= in_buffer_stream_B(c);
+						end if;
 					end if;
 
 					pix_out_C(c)(31 downto 29) <= "111";
@@ -345,14 +377,18 @@ begin
 				end loop;
 
 				for d in 0 to (pix_out_D'length - 1) loop -- change direction
-					if use_bgr='1' then
-						--BGR
-						pix_out_D(d)(7 downto 0)   <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d)(23 downto 16);
-						pix_out_D(d)(15 downto 8)  <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d)(15 downto 8) ;
-						pix_out_D(d)(23 downto 16) <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d)(7 downto 0)  ;
+					if clear_led_pulse='1' then
+						pix_out_D(d) <= (others=>'0');
 					else
-						--RGB
-						pix_out_D(d)(23 downto 0) <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d);
+						if use_bgr='1' then
+							--BGR
+							pix_out_D(d)(7 downto 0)   <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d)(23 downto 16);
+							pix_out_D(d)(15 downto 8)  <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d)(15 downto 8) ;
+							pix_out_D(d)(23 downto 16) <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d)(7 downto 0)  ;
+						else
+							--RGB
+							pix_out_D(d)(23 downto 0) <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d);
+						end if;
 					end if;
 					pix_out_D(d)(31 downto 29)  <= "111";
 					pix_out_D(d)(28 downto 24)  <= BRIGHTNESS;
