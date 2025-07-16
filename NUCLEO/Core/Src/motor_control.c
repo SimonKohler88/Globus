@@ -57,6 +57,18 @@ void mot_ctrl_update( MOT_CTRL_t* mot_ctrl, uint32_t tick )
     {
         must_set = 1;
     }
+
+    if (mot_vars.reset_duty_cycles)
+    {
+        must_set = 0;
+        mot_ctrl->slope_carry_over = 0;
+        mot_vars.current_speed_duty_cycle = 0;
+        mot_vars.target_speed_duty_cycle = 0;
+        mot_vars.reset_duty_cycles = 0;
+
+        set_timer_duty_cycle( mot_ctrl, 0 );
+    }
+
     if ( must_set )
     {
         /*  (slope / 1000/hw time) * 65535/100 = change per hwcycle

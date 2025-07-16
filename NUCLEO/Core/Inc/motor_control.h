@@ -28,6 +28,7 @@ extern "C"
         uint16_t current_speed_duty_cycle;  // pwm
         uint16_t target_speed_duty_cycle;
         uint16_t slope_duty_cycle_per_s;
+        uint16_t reset_duty_cycles;
 
     } MOT_CTRL_I2C_IF_t;
 

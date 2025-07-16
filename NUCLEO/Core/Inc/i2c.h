@@ -41,7 +41,7 @@ extern I2C_HandleTypeDef hi2c1;
         I2C_ADDR_MOT_DUTY_CYCLE_SET,
         I2C_ADDR_MOT_DUTY_CYCLE_IS,
         I2C_ADDR_MOT_DUTY_CYCLE_SLOPE_PER_S,
-		I2C_ADDR_TEST_REGISTER_4,  // neu hinzugefügt Thomas
+		I2C_ADDR_MOT_DUTY_RESET,  // resets current "Duty Cycle is" and "Duty Cycle set" to 0
         I2C_ADDR_ENUM_END
     }; typedef uint8_t I2C_ADDR_e;
 

@@ -20,12 +20,13 @@ class GlobusServer:
             print("Not existing")
 
         #
-        img = cv2.imread(pic_bmp)
-        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        # Compress, 80% quality
-        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 80]
-        _, buffer = cv2.imencode(".jpg", img, encode_param)
-        self.__pic3 = buffer.tobytes()
+        if USE_STATIC_PIC:
+            img = cv2.imread(pic_bmp)
+            # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            # Compress, 80% quality
+            encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 80]
+            _, buffer = cv2.imencode(".jpg", img, encode_param)
+            self.__pic3 = buffer.tobytes()
 
         self.__vids = video_processor.VideoPlayer(GIF_PATH)
         self.__vids.play()

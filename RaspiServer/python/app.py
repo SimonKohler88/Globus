@@ -9,8 +9,6 @@ import shutil
 
 print(f'Current WD: {os.getcwd()}')
 
-
-
 from GlobusServer import GlobusServer
 import speeddriver
 
@@ -31,21 +29,35 @@ with app.app_context():
 def homepage():
     return render_template("HTML_fuer_Webserver.html")
 
+
 #
 @app.route('/motor_control/<cmd>', methods=['GET'])
 def motor_control(cmd):
-    if cmd in ['start', 'stop', 'up', 'down']:
+    if cmd in ['on', 'off']:
         # pass
-        if cmd == "start":
+        if cmd == "on":
             speed.enable()
-        if cmd == "stop":
+        if cmd == "off":
             speed.disable()
-
-        if cmd == "up":
-            speed.up()
-        if cmd == "down":
-            speed.down()
+    else:
+        try:
+            val = int(cmd)
+            print(f'received speed value: {val}')
+            speed.set_speed(val)
+        except ValueError:
+            # do nothing
+            pass
     return f"mot_ctrl {cmd}"
+
+
+@app.route('/motor_speed', methods=['GET'])
+def get_speed():
+    return str(speed.read_speed())
+
+
+@app.route('/motor_target_speed', methods=['GET'])
+def get_target_speed():
+    return str(speed.read_target_speed())
 
 
 @app.route('/frame/<int:delta_t_ms>')
@@ -98,5 +110,5 @@ def show_globe_video():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run(host='127.0.0.1')
     # app.run(host = '192.168.137.1', port=8123)
