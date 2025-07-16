@@ -1,0 +1,30 @@
+Simon Kohler 
+Time invested after project 4 
+
+
+Item                               Date               time     work done
+------------------------------------------------------------------
+1 4 kHz Pfeifen
+1 Kill motor feep implementation                      3h       reworked timer frequency for motor pwm
+1 Test motor freq feep kill                           0.5h     its ok
+
+2 Anfangsstromproblem
+2 FPGA: shutdown LEDs              16.07.2025
+
+
+3 Optimize Induction
+
+4 Increase Brightness
+
+5 GUI Motor Control
+5 Rework Motor Control GUI         16.07.2025         3h       facelift: slider for set speed, current speed view, emergency btn, emergency ack btn
+5 Test Motor Control GUI
+
+6 Search and destroy PicBug
+
+7 Conn Quality ESP<->Raspi
+
+8 Raspi Os
+
+Setup Rotor PCB Comm 2           15.07.2025         1h       soldered second PCB for communication ESP<->FPGA communication
+
