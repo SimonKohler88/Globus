@@ -1,0 +1,25 @@
+[*]
+[*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
+[*] Wed Jul 16 17:32:32 2025
+[*]
+[dumpfile] "D:\GitHub\Globus\FPGA\VHDL\other_components\clear_led_logic\func.vcd"
+[dumpfile_mtime] "Wed Jul 16 17:32:17 2025"
+[dumpfile_size] 170234
+[savefile] "D:\GitHub\Globus\FPGA\VHDL\other_components\clear_led_logic\wave_save.gtkw"
+[timestart] 0
+[size] 1792 941
+[pos] -1 -1
+*-16.099998 300000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] clear_led_logic_tb.
+[sst_width] 239
+[signals_width] 248
+[sst_expanded] 1
+[sst_vpaned_height] 205
+@28
+clear_led_logic_tb.dut.clock_clk
+clear_led_logic_tb.dut.reset_reset
+clear_led_logic_tb.dut.clear_led_pulse
+@29
+clear_led_logic_tb.dut.qspi_cs
+[pattern_trace] 1
+[pattern_trace] 0
