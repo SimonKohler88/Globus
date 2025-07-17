@@ -1,4 +1,5 @@
 import math
+import traceback
 
 LOCAL = True
 if not LOCAL:
@@ -13,16 +14,15 @@ MAX_SPEED = 3000  # TODO: Whats top speed?
 class SpeedDriver:
     NUCLEO_I2C_ADDRESS = 0x12  # Adresse des Nucleo
 
-    I2C_ADDR_LED_BLINK = 0x00,
-    I2C_ADDR_MOT_DUTY_CYCLE_SET = 0x01,
-    I2C_ADDR_MOT_DUTY_CYCLE_IS = 0x02,
-    I2C_ADDR_MOT_DUTY_CYCLE_SLOPE_PER_S = 0x03,
-    I2C_ADDR_MOT_DUTY_RESET = 0x04,
+    I2C_ADDR_LED_BLINK = 0x00
+    I2C_ADDR_MOT_DUTY_CYCLE_SET = 0x01
+    I2C_ADDR_MOT_DUTY_CYCLE_IS = 0x02
+    I2C_ADDR_MOT_DUTY_CYCLE_SLOPE_PER_S = 0x03
+    I2C_ADDR_MOT_DUTY_RESET = 0x04
 
     def __init__(self):
-        self.mot_enabled = 1
-        self.enable()
 
+        self.mot_enabled = 1
         if not LOCAL:
             GPIO.setmode(GPIO.BCM)
             GPIO.setup(22, GPIO.OUT)
@@ -34,6 +34,8 @@ class SpeedDriver:
         else:
             self.speed_t = 0
             pass
+
+        self.enable()
 
     def read_register(self, register):
         """Lese einen Wert aus einem Register des Nucleo und gib ihn aus"""

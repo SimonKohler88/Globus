@@ -19,7 +19,6 @@ void mot_ctrl_init( MOT_CTRL_t* mot_ctrl, TIM_HandleTypeDef* htim, uint32_t chan
 
     // int32_t prescale = ( MOT_CTRL_TIMER_INPUT_CLOCK_HZ / ( MOT_CTRL_PWM_FREQUENCY * ( MOT_CTRL_TIMER_RESOLUTION ) ) - 1 );
 
-
     // if (prescale < 1) prescale = 0;
 
     // htim->Instance->PSC = ( uint32_t ) prescale;
@@ -44,10 +43,26 @@ void mot_ctrl_update( MOT_CTRL_t* mot_ctrl, uint32_t tick )
 
     /* check input values */
 
-    if ( mot_vars.target_speed_duty_cycle > 100 ) mot_vars.target_speed_duty_cycle = 100;
-    if ( mot_vars.target_speed_duty_cycle < 0 ) mot_vars.target_speed_duty_cycle = 0;
-    if ( mot_vars.slope_duty_cycle_per_s > 10000 ) mot_vars.slope_duty_cycle_per_s = 10000;
-    if ( mot_vars.slope_duty_cycle_per_s < 1 ) mot_vars.slope_duty_cycle_per_s = 1;
+    if ( mot_vars.target_speed_duty_cycle > 100 )
+    {
+        mot_vars.target_speed_duty_cycle = 100;
+        mot_ctrl->i2c_if.target_speed_duty_cycle = 100;
+    }
+    if ( mot_vars.target_speed_duty_cycle < 0 )
+    {
+        mot_vars.target_speed_duty_cycle = 0;
+        mot_ctrl->i2c_if.target_speed_duty_cycle = 0;
+    }
+    if ( mot_vars.slope_duty_cycle_per_s > 10000 )
+    {
+        mot_vars.slope_duty_cycle_per_s = 10000;
+        mot_ctrl->i2c_if.slope_duty_cycle_per_s = 10000;
+    }
+    if ( mot_vars.slope_duty_cycle_per_s < 1 )
+    {
+        mot_vars.slope_duty_cycle_per_s = 1;
+        mot_ctrl->i2c_if.slope_duty_cycle_per_s = 1;
+    }
 
     uint32_t target_speed_duty_cycle_tim = mot_vars.target_speed_duty_cycle * MOT_CTRL_TIMER_RESOLUTION / 100;
 
@@ -58,13 +73,17 @@ void mot_ctrl_update( MOT_CTRL_t* mot_ctrl, uint32_t tick )
         must_set = 1;
     }
 
-    if (mot_vars.reset_duty_cycles)
+    if ( mot_vars.reset_duty_cycles )
     {
-        must_set = 0;
-        mot_ctrl->slope_carry_over = 0;
+        must_set                          = 0;
+        mot_ctrl->slope_carry_over        = 0;
         mot_vars.current_speed_duty_cycle = 0;
-        mot_vars.target_speed_duty_cycle = 0;
-        mot_vars.reset_duty_cycles = 0;
+        mot_ctrl->i2c_if.current_speed_duty_cycle = 0;
+        mot_vars.target_speed_duty_cycle  = 0;
+        mot_ctrl->i2c_if.target_speed_duty_cycle  = 0;
+        mot_vars.reset_duty_cycles        = 0;
+        mot_ctrl->i2c_if.reset_duty_cycles        = 0;
+        target_speed_duty_cycle_tim       = 0;
 
         set_timer_duty_cycle( mot_ctrl, 0 );
     }

@@ -40,3 +40,20 @@ Auf dem Raspberry pi ist ein Samba Server installiert, welcher auf den Python-Or
 
 Username: pi
 PW: pi
+
+SSH
+über putty:
+username: pi
+PW: raspberry
+
+
+Apache2
+
+Logs: var/log/apache2
+tail -n 100 /var/log/apache2/error.log
+Common Apache commands:
+
+sudo service apache2 restart
+
+Networkmanager
+sudo nmcli
