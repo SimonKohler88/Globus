@@ -31,3 +31,12 @@ Beinhaltet:
   * raspi_i2c_readtest.py: Testfile für Kommunikation zw. Raspi und Nucleo
   * raspi_i2c_writetest.py: Testfile für Kommunikation zw. Raspi und Nucleo
   * serialInterface.py: UART Communication for serial Output
+
+
+
+Access
+
+Auf dem Raspberry pi ist ein Samba Server installiert, welcher auf den Python-Ordner des Server zeigt.
+
+Username: pi
+PW: pi
