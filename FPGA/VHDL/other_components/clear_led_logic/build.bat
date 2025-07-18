@@ -11,7 +11,7 @@ if %ERRORLEVEL%==1 (
 	goto end
 )
 REM ghdl -r --std=08 --time-resolution=ns integration_tb --vcd=func.vcd --stop-time=120us
-ghdl -r --std=08 --time-resolution=ns %MODULE%_tb --vcd=func.vcd --stop-time=400us
+ghdl -r --std=08 --time-resolution=ns %MODULE%_tb --vcd=func.vcd --stop-time=1500us
 
 if %ERRORLEVEL%==1 (
 	PAUSE

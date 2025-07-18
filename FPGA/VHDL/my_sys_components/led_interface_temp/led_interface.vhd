@@ -113,7 +113,8 @@ architecture rtl of led_interface is
 	signal spi_fake_cs: std_logic;
 
 	signal dbg_0_in_ff: std_logic_vector(1 downto 0);
-	signal clear_led_pulse: std_logic;
+	signal clear_led_prohibit_fire: std_logic;
+	signal clear_led_fire: std_logic;
 
 	signal ram_to_buff_in_progress :std_logic;
 
@@ -194,8 +195,28 @@ begin
 	conduit_col_info_out_fire <= fire_out;
 	
 	-- dangerous line: discards real fp, takes debug fp instead when in t_fifo_check
-	-- conduit_fire_signal <= conduit_debug_led_led_dbg_in(1) when test_state=t_fifo_check else conduit_fire;
+	-- conduit_fire_signal <= conduit_debug_led_led_dbg_in(2) when test_state=t_fifo_check else conduit_fire;
 	conduit_fire_signal <= conduit_fire; -- good line
+
+
+	-- read in dbg_in(0) and (1). give info to p_data_to_buffer for a LED turning off SPI-Burst.
+	-- clear_led_prohibit_fire: prohibit hot firepulse when 1
+	-- clear_led_fire: make an 000 SPI Burst to turn off all LED's
+	clear_led_prohibit_fire <= conduit_debug_led_led_dbg_in(0);
+	p_empty_shot: process(all)
+	begin
+	if reset_reset ='1' then
+		dbg_0_in_ff <= (others=>'0');
+
+	elsif rising_edge(clock_clk) then
+		dbg_0_in_ff <= dbg_0_in_ff(0) & conduit_debug_led_led_dbg_in(1);
+		if dbg_0_in_ff(1) = '0' and dbg_0_in_ff(0) = '1' then
+			clear_led_fire <= '1';
+		else
+			clear_led_fire <= '0';
+		end if;
+	end if;
+	end process;
 
 	-- delay fp to RAM Master a few clk for no real reason.
 	p_fire_delay : process(all)
@@ -249,21 +270,7 @@ begin
 	end if;
 	end process;
 
-	-- read in dbg_in(0). on rising edge, give info to p_data_to_buffer for a LED turning off SPI-Burst
-	p_empty_shot: process(all)
-	begin
-	if reset_reset ='1' then
-		dbg_0_in_ff <= (others=>'0');
 
-	elsif rising_edge(clock_clk) then
-		dbg_0_in_ff <= dbg_0_in_ff(0) & conduit_debug_led_led_dbg_in(0);
-		if dbg_0_in_ff(1) = '0' and dbg_0_in_ff(0) = '1' then
-			clear_led_pulse <= '1';
-		else
-			clear_led_pulse <= '0';
-		end if;
-	end if;
-	end process;
 
 	--receiving streams to buffer
 	p_receive_stream_A: process(all)
@@ -304,6 +311,9 @@ begin
 		end if;
 	end process p_receive_stream_B;
 
+
+	-- clear_led_prohibit_fire
+-- clear_led_fire
 	-- buffer to spi out buffers, always when fire pulse is on
 	p_data_to_buffer: process(all)
 	begin
@@ -316,16 +326,16 @@ begin
 
 		elsif rising_edge(clock_clk) then
 
-			if conduit_fire = '1' or clear_led_pulse='1' then -- todo: gamma
+			if (clear_led_prohibit_fire='0' and conduit_fire = '1') or (clear_led_prohibit_fire='1' and clear_led_fire='1') then -- todo: gamma
 
 				for a in 0 to (pix_out_A'length - 1) loop
-
-					if clear_led_pulse='1' then
+					if clear_led_fire='1' then
 						pix_out_A(a) <= (others=>'0');
+
 					else
 						if use_bgr='1' then
 							--BGR
-							pix_out_A(a)(7 downto 0)   <= in_buffer_stream_A(pix_out_A'length - 1 - a)(23 downto 16);
+							pix_out_A(a)(7 downto 0)   <= in_buffer_stream_A(pix_out_A'length - 1 - a)(23 downto 16) ;--when conduit_fire = '1' else (others=>'0') ;
 							pix_out_A(a)(15 downto 8)  <= in_buffer_stream_A(pix_out_A'length - 1 - a)(15 downto 8) ;
 							pix_out_A(a)(23 downto 16) <= in_buffer_stream_A(pix_out_A'length - 1 - a)(7 downto 0)  ;
 						else
@@ -339,7 +349,7 @@ begin
 				end loop;
 
 				for b in 0 to (pix_out_B'length - 1) loop -- change direction
-					if clear_led_pulse='1' then
+					if clear_led_fire='1' then
 						pix_out_B(b) <= (others=>'0');
 					else
 						if use_bgr='1' then
@@ -358,7 +368,7 @@ begin
 				end loop;
 
 				for c in 0 to (pix_out_C'length - 1) loop
-					if clear_led_pulse='1' then
+					if clear_led_fire='1' then
 						pix_out_C(c) <= (others=>'0');
 					else
 						if use_bgr='1' then
@@ -377,7 +387,7 @@ begin
 				end loop;
 
 				for d in 0 to (pix_out_D'length - 1) loop -- change direction
-					if clear_led_pulse='1' then
+					if clear_led_fire='1' then
 						pix_out_D(d) <= (others=>'0');
 					else
 						if use_bgr='1' then
@@ -393,6 +403,7 @@ begin
 					pix_out_D(d)(31 downto 29)  <= "111";
 					pix_out_D(d)(28 downto 24)  <= BRIGHTNESS;
 				end loop;
+
 
 				spi_pulse_stretch <= spi_pulse_stretch(11 downto 0) & "1";
 			else

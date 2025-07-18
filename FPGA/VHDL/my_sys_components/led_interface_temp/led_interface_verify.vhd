@@ -183,6 +183,9 @@ procedure avalon_stream_out_write_many_pixel(
 
 	signal test_case : integer;
 
+	signal prohibit_hot_fire :std_logic;
+	signal clear_led_pulse   :std_logic;
+
 
 begin
 
@@ -300,13 +303,23 @@ begin
     begin
 		test_case <= 0;
 		conduit_debug_led_led_dbg_in <= (others=>'0');
-		wait for 200 ns;
 		conduit_debug_led_led_dbg_in(0) <= '1';
+		wait for 500 ns;
+		conduit_debug_led_led_dbg_in(1) <= '1';
 		wait for 100 ns;
+		conduit_debug_led_led_dbg_in(1) <= '0';
+		wait for 20 us;
+		conduit_col_info <= "0" & X"16";
+		pulse_out(conduit_fire, clock_clk);
+
+		wait for 30 us;
+		conduit_col_info <= "0" & X"16";
+		pulse_out(conduit_fire, clock_clk);
+
+		wait for 20 us;
 		conduit_debug_led_led_dbg_in(0) <= '0';
 
-		wait for 100 us;
-		wait for 100 ns;
+		wait for 1 us;
 		-- load first buffer
 		conduit_col_info <= "0" & X"16";
 		pulse_out(conduit_fire, clock_clk);

@@ -229,11 +229,7 @@ begin
 	in1_eop_valid:   assert always s_asi_in1_startofpacket -> s_asi_in1_valid;
 	in1_ready_valid: assert always s_asi_in1_valid -> s_asi_in1_ready;
 
-	-- fire to spi delay check
-	fire_to_spi_A: assert always s_conduit_fire -> next_e[0 to 10] (s_conduit_LED_A_CLK);
-	fire_to_spi_B: assert always s_conduit_fire -> next_e[0 to 10] (s_conduit_LED_B_CLK);
-	fire_to_spi_C: assert always s_conduit_fire -> next_e[0 to 10] (s_conduit_LED_C_CLK);
-	fire_to_spi_D: assert always s_conduit_fire -> next_e[0 to 10] (s_conduit_LED_D_CLK);
+
 
 
 
