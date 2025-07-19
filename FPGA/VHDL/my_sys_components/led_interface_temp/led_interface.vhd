@@ -61,11 +61,48 @@ end entity led_interface;
 
 architecture rtl of led_interface is
 
+	type lookup_t is array (0 to 255) of std_logic_vector(7 downto 0);
+    constant lookup_gamma: lookup_t := (
+    x"00",x"00",x"00",x"00",x"00",x"00",x"00",x"00",
+    x"00",x"00",x"00",x"00",x"01",x"01",x"01",x"01",
+    x"01",x"01",x"01",x"01",x"02",x"02",x"02",x"02",
+    x"02",x"02",x"03",x"03",x"03",x"03",x"04",x"04",
+    x"04",x"04",x"05",x"05",x"05",x"05",x"06",x"06",
+    x"06",x"07",x"07",x"07",x"08",x"08",x"08",x"09",
+    x"09",x"09",x"0A",x"0A",x"0B",x"0B",x"0B",x"0C",
+    x"0C",x"0D",x"0D",x"0E",x"0E",x"0F",x"0F",x"10",
+    x"10",x"11",x"11",x"12",x"12",x"13",x"13",x"14",
+    x"14",x"15",x"15",x"16",x"17",x"17",x"18",x"18",
+    x"19",x"1A",x"1A",x"1B",x"1C",x"1C",x"1D",x"1E",
+    x"1E",x"1F",x"20",x"20",x"21",x"22",x"23",x"23",
+    x"24",x"25",x"26",x"26",x"27",x"28",x"29",x"2A",
+    x"2A",x"2B",x"2C",x"2D",x"2E",x"2F",x"2F",x"30",
+    x"31",x"32",x"33",x"34",x"35",x"36",x"37",x"38",
+    x"38",x"39",x"3A",x"3B",x"3C",x"3D",x"3E",x"3F",
+    x"40",x"41",x"42",x"43",x"44",x"45",x"46",x"47",
+    x"49",x"4A",x"4B",x"4C",x"4D",x"4E",x"4F",x"50",
+    x"51",x"52",x"54",x"55",x"56",x"57",x"58",x"59",
+    x"5B",x"5C",x"5D",x"5E",x"5F",x"61",x"62",x"63",
+    x"64",x"66",x"67",x"68",x"69",x"6B",x"6C",x"6D",
+    x"6F",x"70",x"71",x"73",x"74",x"75",x"77",x"78",
+    x"79",x"7B",x"7C",x"7E",x"7F",x"80",x"82",x"83",
+    x"85",x"86",x"88",x"89",x"8B",x"8C",x"8E",x"8F",
+    x"91",x"92",x"94",x"95",x"97",x"98",x"9A",x"9B",
+    x"9D",x"9E",x"A0",x"A2",x"A3",x"A5",x"A6",x"A8",
+    x"AA",x"AB",x"AD",x"AF",x"B0",x"B2",x"B4",x"B5",
+    x"B7",x"B9",x"BA",x"BC",x"BE",x"C0",x"C1",x"C3",
+    x"C5",x"C7",x"C8",x"CA",x"CC",x"CE",x"CF",x"D1",
+    x"D3",x"D5",x"D7",x"D9",x"DA",x"DC",x"DE",x"E0",
+    x"E2",x"E4",x"E6",x"E8",x"E9",x"EB",x"ED",x"EF",
+    x"F1",x"F3",x"F5",x"F7",x"F9",x"FB",x"FD",x"FF"
+    );
+
 	constant PIX_PER_STREAM_IN: integer:= 60;
 	constant PIX_OUT_PER_SPI: integer:= 30;
 	constant BIT_PER_LED_FRAME :integer := 32;
 	constant BIT_PER_SPI_START_END_FRAME: integer:= 32;
-	constant BRIGHTNESS : std_logic_vector(4 downto 0) := "01000";
+	constant BRIGHTNESS_1  : std_logic_vector(4 downto 0) := "01000";
+	constant BRIGHTNESS_2 : std_logic_vector(4 downto 0) := "10000";
 	-- constant BRIGHTNESS : std_logic_vector(4 downto 0) := "01111";
 	-- 01000: 8 out of 32 == 1/4
 	-- 10000: 16 == 1/2
@@ -75,8 +112,6 @@ architecture rtl of led_interface is
 	-- 0100 0000 == 0x40
 	-- 00001000 == 0x08
 	-- from protocol: 1110 1000 = 0xE8
-
-	signal use_bgr: std_logic:= '1';
 
 	type t_pixel_buffer_in_array is array (0 to PIX_PER_STREAM_IN-1) of std_logic_vector(23 downto 0);
 	type t_pixel_buffer_out_array is array (0 to PIX_OUT_PER_SPI-1) of std_logic_vector(31 downto 0);
@@ -98,8 +133,8 @@ architecture rtl of led_interface is
 	signal fire_out :std_logic;
 	signal conduit_fire_signal : std_logic;
 
-	signal pix_in_counter_A : natural range 0 to 70 := 0;
-	signal pix_in_counter_B : natural range 0 to 70 := 0;
+	signal pix_in_counter_A : natural range 0 to 63 := 0;
+	signal pix_in_counter_B : natural range 0 to 63 := 0;
 
 	signal spi_out_enable :std_logic;
 	signal spi_bit_count_A: natural range 0 to 32 := 0;
@@ -121,8 +156,12 @@ architecture rtl of led_interface is
 	type state_test is (none, t1, t_data_in, t_fp, t_fifo_check);
 	signal test_state         : state_test;
 
+	signal fire_pulse_counter : unsigned(8 downto 0);
+	signal odd_round_count    : std_logic;
+
 
 begin
+
 	test_state <= t_data_in;
 	p_test: process(all)
 	begin
@@ -137,17 +176,11 @@ begin
 				conduit_debug_led_led_dbg_out_2 <= (others=>'0');
 				
             when t_data_in =>
+				conduit_debug_led_led_dbg_out_2 <= (others=>'0');
 				conduit_debug_led_led_dbg_out <= (others => '0');
 				conduit_debug_led_led_dbg_out(7 downto 0) <= conduit_col_info(7 downto 0);
 				conduit_debug_led_led_dbg_out(31 downto 8) <= pix_out_A(spi_pix_count_A)(23 downto 0);
 				
-				
-				-- conduit_debug_led_led_dbg_out_2 <= (
-    --                 --0 => conduit_fire,
-    --                 1 => spi_in_progress,
-    --                 27 => asi_in0_valid,
-    --                 others=>'0'
-    --             );
                 conduit_debug_led_led_dbg_out_2(24 downto 1) <= asi_in0_data;
                 
 				if conduit_col_info="000000000" then
@@ -158,6 +191,7 @@ begin
 
 			when t_fp =>
 				conduit_debug_led_led_dbg_out <= (others => '0');
+				conduit_debug_led_led_dbg_out_2 <= (others=>'0');
 
 				conduit_debug_led_led_dbg_out_2 <= (
                     0 => conduit_fire,
@@ -170,6 +204,7 @@ begin
 			when t_fifo_check=>
 				-- Must enable redirection of fp-input. Check commented line below (ca line 182)
 				conduit_debug_led_led_dbg_out <= (others => '0');
+				conduit_debug_led_led_dbg_out_2 <= (others=>'0');
 				conduit_debug_led_led_dbg_out_2 <= (
                     0 => conduit_fire,
                     1 => ram_to_buff_in_progress,
@@ -177,7 +212,6 @@ begin
                     3 => spi_fake_cs,
                     others=>'0'
                 );
-
 
 			when others =>
 				conduit_debug_led_led_dbg_out <= (others=>'0');
@@ -189,8 +223,6 @@ begin
 
 	avs_s0_readdata <= "00000000000000000000000000000000";
 	avs_s0_waitrequest <= '0';
-    
-    use_bgr <= '1';
     
 	conduit_col_info_out_fire <= fire_out;
 	
@@ -281,8 +313,14 @@ begin
 
 		elsif rising_edge(clock_clk) then
 			if asi_in0_valid = '1' and asi_in0_ready ='1' and pix_in_counter_A < PIX_PER_STREAM_IN then
-				in_buffer_stream_A( pix_in_counter_A ) <= asi_in0_data;
-				-- in_buffer_stream_A( pix_in_counter_A ) <= X"FFFFFF";
+				-- incoming RGB Pixel -> switch Bytes for BGR and gamma correct
+				in_buffer_stream_A( pix_in_counter_A ) <= lookup_gamma( to_integer(unsigned(asi_in0_data(7 downto 0)))) &
+														  lookup_gamma( to_integer(unsigned(asi_in0_data(15 downto 8)))) &
+														  lookup_gamma( to_integer(unsigned(asi_in0_data(23 downto 16))));
+				-- verify purpose
+				-- in_buffer_stream_A( pix_in_counter_A ) <= asi_in0_data(7 downto 0) &
+				-- 										  asi_in0_data(15 downto 8) &
+				-- 										  asi_in0_data(23 downto 16);
 				pix_in_counter_A <= pix_in_counter_A + 1;
 			end if;
 
@@ -300,8 +338,10 @@ begin
 
 		elsif rising_edge(clock_clk) then
 			if asi_in1_valid = '1' and asi_in1_ready ='1' and pix_in_counter_B < PIX_PER_STREAM_IN then
-				in_buffer_stream_B( pix_in_counter_B ) <= asi_in1_data;
-				-- in_buffer_stream_B( pix_in_counter_B ) <= X"FFFFFF";
+				-- incoming RGB Pixel -> switch Bytes for BGR and gamma correct
+				in_buffer_stream_B( pix_in_counter_B ) <= lookup_gamma( to_integer(unsigned(asi_in1_data(7 downto 0)))) &
+														  lookup_gamma( to_integer(unsigned(asi_in1_data(15 downto 8)))) &
+														  lookup_gamma( to_integer(unsigned(asi_in1_data(23 downto 16))));
 				pix_in_counter_B <= pix_in_counter_B + 1;
 			end if;
 
@@ -311,9 +351,21 @@ begin
 		end if;
 	end process p_receive_stream_B;
 
+	-- count firepulses. its 256 per round. count to 512, MSB is alternating each made round.
+	-- This is to use different Brightnesses for AB and CD wings and alternate between them
+	p_fire_pulse_counter:process(all)
+	begin
+		if reset_reset ='1' then
+			fire_pulse_counter  <= (others => '0');
 
-	-- clear_led_prohibit_fire
--- clear_led_fire
+		elsif rising_edge(clock_clk) then
+			if conduit_fire = '1' then
+				fire_pulse_counter<= fire_pulse_counter + 1;
+			end if;
+		end if;
+	end process;
+	odd_round_count <= fire_pulse_counter(8);
+
 	-- buffer to spi out buffers, always when fire pulse is on
 	p_data_to_buffer: process(all)
 	begin
@@ -329,81 +381,52 @@ begin
 			if (clear_led_prohibit_fire='0' and conduit_fire = '1') or (clear_led_prohibit_fire='1' and clear_led_fire='1') then -- todo: gamma
 
 				for a in 0 to (pix_out_A'length - 1) loop
-					if clear_led_fire='1' then
-						pix_out_A(a) <= (others=>'0');
-
-					else
-						if use_bgr='1' then
-							--BGR
-							pix_out_A(a)(7 downto 0)   <= in_buffer_stream_A(pix_out_A'length - 1 - a)(23 downto 16) ;--when conduit_fire = '1' else (others=>'0') ;
-							pix_out_A(a)(15 downto 8)  <= in_buffer_stream_A(pix_out_A'length - 1 - a)(15 downto 8) ;
-							pix_out_A(a)(23 downto 16) <= in_buffer_stream_A(pix_out_A'length - 1 - a)(7 downto 0)  ;
-						else
-							--RGB
-							pix_out_A(a)(23 downto 0) <= in_buffer_stream_A(a);
-						end if;
-					end if;
-
+					-- LED strip is from bottom up -> change direction
+					pix_out_A(a)(23 downto 0) <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - a);
 					pix_out_A(a)(31 downto 29) <= "111";
-					pix_out_A(a)(28 downto 24)  <= BRIGHTNESS;
+
+					if odd_round_count = '1' then
+						pix_out_A(a)(28 downto 24)  <= BRIGHTNESS_1;
+					else
+						pix_out_A(a)(28 downto 24)  <= BRIGHTNESS_2;
+					end if;
 				end loop;
 
-				for b in 0 to (pix_out_B'length - 1) loop -- change direction
-					if clear_led_fire='1' then
-						pix_out_B(b) <= (others=>'0');
-					else
-						if use_bgr='1' then
-							--BGR
-							pix_out_B(b)(7 downto 0)   <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b)(23 downto 16);
-							pix_out_B(b)(15 downto 8)  <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b)(15 downto 8) ;
-							pix_out_B(b)(23 downto 16) <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b)(7 downto 0)  ;
-						else
-							--RGB
-							pix_out_B(b)(23 downto 0) <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b);
-						end if;
-					end if;
-
+				for b in 0 to (pix_out_B'length - 1) loop
+					-- LED strip is from bottom up -> change direction
+					pix_out_B(b)(23 downto 0) <= in_buffer_stream_A(in_buffer_stream_A'length - 1 - b);
 					pix_out_B(b)(31 downto 29)  <= "111";
-					pix_out_B(b)(28 downto 24) <= BRIGHTNESS;
+
+					if odd_round_count = '1' then
+						pix_out_B(b)(28 downto 24)  <= BRIGHTNESS_1;
+					else
+						pix_out_B(b)(28 downto 24)  <= BRIGHTNESS_2;
+					end if;
 				end loop;
 
 				for c in 0 to (pix_out_C'length - 1) loop
-					if clear_led_fire='1' then
-						pix_out_C(c) <= (others=>'0');
-					else
-						if use_bgr='1' then
-							--BGR
-							pix_out_C(c)(7 downto 0)   <= in_buffer_stream_B(pix_out_C'length - 1 - c)(23 downto 16);
-							pix_out_C(c)(15 downto 8)  <= in_buffer_stream_B(pix_out_C'length - 1 - c)(15 downto 8) ;
-							pix_out_C(c)(23 downto 16) <= in_buffer_stream_B(pix_out_C'length - 1 - c)(7 downto 0)  ;
-						else
-							--RGB
-							pix_out_C(c)(23 downto 0)<= in_buffer_stream_B(c);
-						end if;
-					end if;
-
+					-- LED strip is from bottom up -> change direction
+					pix_out_C(c)(23 downto 0)<= in_buffer_stream_B(pix_out_C'length - 1 - c);
 					pix_out_C(c)(31 downto 29) <= "111";
-					pix_out_C(c)(28 downto 24)  <= BRIGHTNESS;
+
+					if odd_round_count = '0' then
+						pix_out_C(c)(28 downto 24)  <= BRIGHTNESS_1;
+					else
+						pix_out_C(c)(28 downto 24)  <= BRIGHTNESS_2;
+					end if;
 				end loop;
 
 				for d in 0 to (pix_out_D'length - 1) loop -- change direction
-					if clear_led_fire='1' then
-						pix_out_D(d) <= (others=>'0');
-					else
-						if use_bgr='1' then
-							--BGR
-							pix_out_D(d)(7 downto 0)   <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d)(23 downto 16);
-							pix_out_D(d)(15 downto 8)  <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d)(15 downto 8) ;
-							pix_out_D(d)(23 downto 16) <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d)(7 downto 0)  ;
-						else
-							--RGB
-							pix_out_D(d)(23 downto 0) <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d);
-						end if;
-					end if;
+					-- LED strip is from bottom up -> change direction
+					pix_out_D(d)(23 downto 0) <= in_buffer_stream_B(in_buffer_stream_B'length - 1 - d);
 					pix_out_D(d)(31 downto 29)  <= "111";
-					pix_out_D(d)(28 downto 24)  <= BRIGHTNESS;
-				end loop;
 
+					if odd_round_count = '0' then
+						pix_out_D(d)(28 downto 24)  <= BRIGHTNESS_1;
+					else
+						pix_out_D(d)(28 downto 24)  <= BRIGHTNESS_2;
+					end if;
+				end loop;
 
 				spi_pulse_stretch <= spi_pulse_stretch(11 downto 0) & "1";
 			else
@@ -517,10 +540,18 @@ begin
 
 			when send_buffer =>
 
-				conduit_LED_A_DATA <= pix_out_A(spi_pix_count_A)(spi_bit_count_A); --todo: change when pixel count differ in A,B,C,D
-				conduit_LED_B_DATA <= pix_out_B(spi_pix_count_A)(spi_bit_count_A);
-				conduit_LED_C_DATA <= pix_out_C(spi_pix_count_A)(spi_bit_count_A);
-				conduit_LED_D_DATA <= pix_out_D(spi_pix_count_A)(spi_bit_count_A);
+				if clear_led_prohibit_fire='0' then
+
+					conduit_LED_A_DATA <= pix_out_A(spi_pix_count_A)(spi_bit_count_A); --todo: change when pixel count differ in A,B,C,D
+					conduit_LED_B_DATA <= pix_out_B(spi_pix_count_A)(spi_bit_count_A);
+					conduit_LED_C_DATA <= pix_out_C(spi_pix_count_A)(spi_bit_count_A);
+					conduit_LED_D_DATA <= pix_out_D(spi_pix_count_A)(spi_bit_count_A);
+				else
+					conduit_LED_A_DATA <= '0';
+					conduit_LED_B_DATA <= '0';
+					conduit_LED_C_DATA <= '0';
+					conduit_LED_D_DATA <= '0';
+				end if;
 
 				spi_out_enable   <= '1';
 

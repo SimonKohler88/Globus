@@ -84,28 +84,27 @@ architecture rtl of ram_master is
 	signal next_read_state    : state_AVM_read_t := idle;
 
 	type state_AVSO_read_to_stream_t is (idle , read_to_stream, end_read);
-	signal aso_state          : state_AVSO_read_to_stream_t := idle;
-	signal next_aso_state     : state_AVSO_read_to_stream_t := idle;
+	signal aso_state            : state_AVSO_read_to_stream_t := idle;
+	signal next_aso_state       : state_AVSO_read_to_stream_t := idle;
 
-	signal write_address      : unsigned(23 downto 0) := (others => '0');
-	signal read_address       : unsigned(23 downto 0) := (others => '0');
+	signal write_address        : unsigned(23 downto 0) := (others => '0');
+	signal read_address         : unsigned(23 downto 0) := (others => '0');
 
-	signal data_in_buffer     : std_logic_vector(23 downto 0) := (others => '0');
-	signal data_out_buffer    : std_logic_vector(23 downto 0) := (others => '0');
+	signal data_in_buffer       : std_logic_vector(23 downto 0) := (others => '0');
+	signal data_out_buffer      : std_logic_vector(23 downto 0) := (others => '0');
 
 	constant C_BASE_ADDR_1      : unsigned(23 downto 0):= (others => '0');
 
 	-- 60'000 pixel need addr range of 120'000          (= 0x01E000)
-	constant C_BASE_ADDR_2: unsigned(23 downto 0):=   G_BASE_ADDR_2_OFFSET;
+	constant C_BASE_ADDR_2           : unsigned(23 downto 0):=   G_BASE_ADDR_2_OFFSET;
 	-- constant C_BASE_ADDR_2      : unsigned(23 downto 0):=  X"001000"; -- only for testing
-	signal active_base_addr   : std_logic;
+	signal active_base_addr          : std_logic;
 
 	constant C_ADDR_ROW_TO_ROW_OFFSET  : integer := 4* 2**G_IMAGE_COLS_BITS;
 	constant C_ADDR_B_COL_SHIFT_OFFSET : integer := 2**G_IMAGE_COLS_BITS/2;
-	constant C_IMAGE_COLS :integer := 2**G_IMAGE_COLS_BITS;
+	constant C_IMAGE_COLS              : integer := 2**G_IMAGE_COLS_BITS;
 
 	signal addr_ab_converter         : unsigned (G_IMAGE_COLS_BITS-1 downto 0);
-	signal addr_ack                  : std_logic;
 	signal addr_valid                : std_logic;
 	signal addr_ready 				 : std_logic;
 	signal addr_a_preload            : unsigned(23 downto 0) := (others => '0');
@@ -117,11 +116,9 @@ architecture rtl of ram_master is
 	signal addr_switch_pending       : std_logic;
 
 	signal current_address_write     : unsigned(23 downto 0) := (others => '0');
-	signal last_address_write     : unsigned(23 downto 0) := (others => '0');
-	signal current_byteenable_write     : std_logic_vector(1 downto 0) := (others => '0');
-	signal current_byteenable_read      : std_logic_vector(1 downto 0) := (others => '0');
-	signal current_byteenable_read_b       : std_logic;
-	signal current_byteenable_write_b      : std_logic;
+	signal current_byteenable_write  : std_logic_vector(1 downto 0) := (others => '0');
+	signal current_byteenable_read   : std_logic_vector(1 downto 0) := (others => '0');
+	signal current_byteenable_read_b : std_logic;
 	signal current_chipselect_read   : std_logic;
 	signal current_chipselect_write  : std_logic;
 
@@ -129,47 +126,43 @@ architecture rtl of ram_master is
 	signal active_aso_startofpacket  : std_logic;
 	signal active_aso_endofpacket    : std_logic;
 	signal active_aso_data           : std_logic_vector(23 downto 0);
-	signal active_aso_ready          : std_logic;
 	signal active_aso_valid          : std_logic;
 
 	signal aso_send_count            : unsigned(8 downto 0):= (others=>'0');
 	signal read_data_count           : unsigned(8 downto 0):= (others=>'0');
 	signal read_addr_count           : unsigned(8 downto 0):= (others=>'0');
-	signal read_n_delay           : std_logic_vector(2 downto 0);
+	signal read_n_delay              : std_logic_vector(2 downto 0);
 
 	signal col_fire_ff               : std_logic_vector(1 downto 0);
 	signal fire_pending              : std_logic;
-	signal read_in_progress			 : std_logic;
 
 	signal ram_read_1_buffer         : std_logic_vector(15 downto 0);
 
-	signal incoming_pix_count     : unsigned(15 downto 0);
-	constant C_ACCEPT_EOP_CNT		: integer:= G_IMAGE_ROWS*C_IMAGE_COLS-100;
-	signal incoming_transfer_ongoing :std_logic;
+	signal incoming_pix_count        : unsigned(15 downto 0);
+	constant C_ACCEPT_EOP_CNT		 : integer:= G_IMAGE_ROWS*C_IMAGE_COLS-100;
+	signal incoming_transfer_ongoing : std_logic;
 
 	type state_test_t is (none, t1,t2, t_fifo_check, t_col_nr, t_read_0, t_read_1);
-	signal test_state         : state_test_t;
+	signal test_state              : state_test_t;
 
-	signal test_pack_sig_stretch   :std_logic_vector(2 downto 0);
-	signal test_pack_sig_stretch_2 :std_logic_vector(2 downto 0);
-	signal test_pack_sig           :std_logic;
-	signal test_pack_sig_2         :std_logic;
+	signal test_pack_sig_stretch   : std_logic_vector(2 downto 0);
+	signal test_pack_sig_stretch_2 : std_logic_vector(2 downto 0);
+	signal test_pack_sig           : std_logic;
+	signal test_pack_sig_2         : std_logic;
 
-	signal valid_ff       : std_logic_vector(1 downto 0);
-	signal clock_counter_set_addr : unsigned(8 downto 0);
-	signal clock_counter_wait_end : unsigned(8 downto 0);
-	signal read_n             : std_logic;
-	signal valid :std_logic;
-	signal wait_request :std_logic;
+	signal valid_ff                : std_logic_vector(1 downto 0);
+	signal clock_counter_set_addr  : unsigned(8 downto 0);
+	signal clock_counter_wait_end  : unsigned(8 downto 0);
+	signal read_n                  : std_logic;
+	signal valid                   : std_logic;
+	signal wait_request            : std_logic;
 
-	signal write_1_ff :std_logic_vector(1 downto 0);
-	signal write_2_ff :std_logic_vector(1 downto 0);
+	signal write_1_ff              : std_logic_vector(1 downto 0);
+	signal write_2_ff              : std_logic_vector(1 downto 0);
 
-	signal aso_pix_send_count            : unsigned(7 downto 0):= (others=>'0');
-
-	signal asi_in0_startofpacket: std_logic;
-	signal asi_in0_endofpacket: std_logic;
-	signal intern_asi_in0_data: std_logic_vector(23 downto 0);
+	signal asi_in0_startofpacket   : std_logic;
+	signal asi_in0_endofpacket     : std_logic;
+	signal intern_asi_in0_data     : std_logic_vector(23 downto 0);
 
 
 begin
@@ -237,13 +230,6 @@ begin
 				conduit_debug_ram_out_2(0) <= conduit_col_info_fire;
 
 			when t_read_0 =>
-				-- if main_state=main_read_A and (avm_m0_address=X"000000" or avm_m0_address=std_logic_vector(C_BASE_ADDR_2)) and avm_m0_read_n='0' then
-				-- 	conduit_debug_ram_out_2(0) <= '1';
-				-- else
-				-- 	conduit_debug_ram_out_2(0) <= '0';
-				-- end if;
-
-				-- conduit_debug_ram_out_2(0) <= fire_pending;
 				conduit_debug_ram_out_2(0) <= fire_pending or test_pack_sig;
 
 				if main_state=main_write then
@@ -278,11 +264,6 @@ begin
 				conduit_debug_ram_out_2(12) <= active_aso_valid;
 				conduit_debug_ram_out_2(13) <= avm_m0_read_n;
 				conduit_debug_ram_out_2(14) <= addr_ready;
-				
-				
-				
-				
-				
 			
 			when others =>
 				conduit_debug_ram_out(31 downto 0) <= (others => '0');
@@ -306,8 +287,6 @@ begin
 	test_pack_sig <=   test_pack_sig_stretch(2) or test_pack_sig_stretch(1) or test_pack_sig_stretch(0);
 	test_pack_sig_2 <= test_pack_sig_stretch_2(2) or test_pack_sig_stretch_2(1) or test_pack_sig_stretch_2(0);
 
-	aso_pix_send_count <= aso_send_count(8 downto 1);
-
 	avs_s1_waitrequest <= '1'; -- not implemented
 	avs_s1_readdata <= (others => '0');
 
@@ -319,14 +298,7 @@ begin
 						 current_chipselect_read when main_state = main_read else
 					     '0';
 
-	-- avm_m0_byteenable <= current_byteenable_write when main_state = main_write else
-	-- 					current_byteenable_read when main_state = main_read else "00";
-
-	-- avm_m0_byteenable <= "11" when ((current_byteenable_write_b='1' and main_state=main_write) or(current_byteenable_read_b='1' and main_state=main_read))
-	-- 					 else "00";
-
 	avm_m0_byteenable <= "11" ;
-	read_in_progress <= '1' when read_state/=idle or aso_state/=idle else '0';
 
 	asi_in0_startofpacket <= asi_in0_data(24);
 	asi_in0_endofpacket <= asi_in0_data(25);
@@ -678,10 +650,8 @@ begin
 			aso_out0_endofpacket_1   <= '0';
 			aso_out1_B_startofpacket <= '0';
 			aso_out1_B_endofpacket <= '0';
-			addr_ack <= '0';
 
 	elsif rising_edge(clock_clk) then
-		addr_ack <= '0';
 
 		aso_out0_startofpacket_1 <= '0';
 		aso_out0_endofpacket_1   <= '0';
@@ -697,7 +667,6 @@ begin
 			elsif aso_send_count = 122 then
 				aso_out1_B_startofpacket <= '1';
 			elsif aso_send_count = 240 then
-				addr_ack <= '1';
 				aso_out1_B_endofpacket <= '1';
 			end if;
 		end if;
@@ -732,13 +701,11 @@ case aso_state is
 		if main_state=main_read and aso_send_count <= G_IMAGE_ROWS then
 			aso_out0_A_data   <= active_aso_data;
 			aso_out0_A_valid  <=  active_aso_valid;
-			active_aso_ready  <= aso_out0_A_ready;
 			aso_out1_B_data   <= (others =>'0');
-			aso_out1_B_valid         <= '0';
+			aso_out1_B_valid  <= '0';
 		else
 			aso_out1_B_data   <= active_aso_data;
 			aso_out1_B_valid  <=  active_aso_valid;
-			active_aso_ready  <= aso_out1_B_ready;
 			aso_out0_A_data   <= (others =>'0');
 			aso_out0_A_valid  <= '0';
 		end if;
@@ -814,17 +781,14 @@ BEGIN
 		if addr_switch_pending='1' and (write_state=idle or write_state=wait_valid) then
 			if active_base_addr='0' then
 				current_address_write <= C_BASE_ADDR_1;
-				last_address_write <= C_BASE_ADDR_1;
 			else
 				current_address_write <= C_BASE_ADDR_2;
-				last_address_write <= C_BASE_ADDR_2;
 			end if;
 			addr_switch_pending <= '0';
 
 		elsif (write_state=write_1 and next_write_state=write_2) or next_write_state=end_write then
 		-- elsif next_write_state=write_2 or next_write_state=end_write then
 			current_address_write <= current_address_write + 1;
-			last_address_write <= current_address_write;
 		end if;
 
 	END IF;
@@ -916,7 +880,6 @@ begin
 
 end process p_AVM_Write_statemachine;
 current_chipselect_write <= not avm_m0_write_n;
-current_byteenable_write_b <= '1' when (write_state=write_1 or write_state=write_2) and avm_m0_waitrequest='0' else '0';
 
 
 
