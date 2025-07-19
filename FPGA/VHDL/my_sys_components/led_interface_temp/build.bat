@@ -3,7 +3,7 @@ REM Build script for a vhdl module using ghdl
 REM set MODULE with your module name
 Set MODULE=led_interface
 REM Don't touch following:
-Set FILES=%MODULE%.vhd %MODULE%_tb.vhd %MODULE%_verify.vhd led_interface_gamma_corr.vhd
+Set FILES=%MODULE%.vhd %MODULE%_tb.vhd %MODULE%_verify.vhd
 
 
 ghdl -v
