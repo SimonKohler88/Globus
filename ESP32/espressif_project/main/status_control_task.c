@@ -27,7 +27,6 @@ static gptimer_handle_t gptimer       = NULL;
 
 volatile uint8_t line_toggle = 0;
 
-// static bool frame_request_timer_isr_cb( gptimer_handle_t timer, const gptimer_alarm_event_data_t* edata, void* user_ctx )
 static bool IRAM_ATTR frame_request_timer_isr_cb( gptimer_handle_t timer, const gptimer_alarm_event_data_t* edata, void* user_ctx )
 {
     gpio_set_level( STAT_CTRL_PIN_RESERVE_3, line_toggle );
@@ -44,13 +43,6 @@ void status_control_init( status_control_status_t* status_ptr, command_control_t
     internal_status_ptr->status = status_ptr;
     status                      = internal_status_ptr;
     status->task_handles        = task_handles;
-
-    // gpio_config_t config = {
-    //     .intr_type = GPIO_INTR_POSEDGE, .mode = GPIO_MODE_INPUT, .pull_up_en = 1, .pin_bit_mask = 1 << STAT_CTRL_PIN_FRAME_REQUEST };
-    //
-    // ESP_ERROR_CHECK( gpio_config( &config ) );
-
-    /* FPGA Control Lanes */
 
     /* GPIO Directions */
     ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_RESERVE_1, GPIO_MODE_OUTPUT ) );
@@ -87,12 +79,6 @@ void status_control_init( status_control_status_t* status_ptr, command_control_t
     ESP_ERROR_CHECK( gptimer_enable( gptimer ) );
     ESP_ERROR_CHECK( gptimer_start( gptimer ) );
 
-    // #ifndef DEVELOPMENT_SET_QSPI_STATIC
-    /* frame triggered from status control in static mode */
-
-    // #endif
-
-    /* init led */
     init_led( &internal_status_ptr->led );
 }
 
@@ -141,7 +127,6 @@ void status_control_task( void* pvParameter )
     uint32_t ulNotifyValueJPEG = 0;
     uint32_t ulNotifyValueHTTP = 0;
     uint32_t ulNotifyValueWIFI = 0;
-    uint64_t count;
 
 
     set_led_cyan( &status->led );
