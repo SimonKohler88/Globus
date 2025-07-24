@@ -101,7 +101,8 @@ architecture rtl of led_interface is
 	constant PIX_OUT_PER_SPI: integer:= 30;
 	constant BIT_PER_LED_FRAME :integer := 32;
 	constant BIT_PER_SPI_START_END_FRAME: integer:= 32;
-	constant BRIGHTNESS_1  : std_logic_vector(4 downto 0) := "01000";
+	-- constant BRIGHTNESS_1  : std_logic_vector(4 downto 0) := "01000";
+	constant BRIGHTNESS_1  : std_logic_vector(4 downto 0) := "10000";
 	constant BRIGHTNESS_2 : std_logic_vector(4 downto 0) := "10000";
 	-- constant BRIGHTNESS : std_logic_vector(4 downto 0) := "01111";
 	-- 01000: 8 out of 32 == 1/4
@@ -315,13 +316,13 @@ begin
 			if asi_in0_valid = '1' and asi_in0_ready ='1' and pix_in_counter_A < PIX_PER_STREAM_IN then
 				if clear_led_prohibit_fire='0' then
 					-- incoming RGB Pixel -> switch Bytes for BGR and gamma correct
-					in_buffer_stream_A( pix_in_counter_A ) <= lookup_gamma( to_integer(unsigned(asi_in0_data(7 downto 0)))) &
-															lookup_gamma( to_integer(unsigned(asi_in0_data(15 downto 8)))) &
-															lookup_gamma( to_integer(unsigned(asi_in0_data(23 downto 16))));
+					-- in_buffer_stream_A( pix_in_counter_A ) <= lookup_gamma( to_integer(unsigned(asi_in0_data(7 downto 0)))) &
+					-- 										lookup_gamma( to_integer(unsigned(asi_in0_data(15 downto 8)))) &
+					-- 										lookup_gamma( to_integer(unsigned(asi_in0_data(23 downto 16))));
 					-- verify purpose
-					-- in_buffer_stream_A( pix_in_counter_A ) <= asi_in0_data(7 downto 0) &
-					-- 										  asi_in0_data(15 downto 8) &
-					-- 										  asi_in0_data(23 downto 16);
+					in_buffer_stream_A( pix_in_counter_A ) <= asi_in0_data(7 downto 0) &
+															  asi_in0_data(15 downto 8) &
+															  asi_in0_data(23 downto 16);
 				else
 					in_buffer_stream_A( pix_in_counter_A ) <= x"000000";
 				end if;
@@ -345,13 +346,13 @@ begin
 
 				if clear_led_prohibit_fire='0' then
 					-- incoming RGB Pixel -> switch Bytes for BGR and gamma correct
-					in_buffer_stream_B( pix_in_counter_B ) <= lookup_gamma( to_integer(unsigned(asi_in1_data(7 downto 0)))) &
-															lookup_gamma( to_integer(unsigned(asi_in1_data(15 downto 8)))) &
-															lookup_gamma( to_integer(unsigned(asi_in1_data(23 downto 16))));
+					-- in_buffer_stream_B( pix_in_counter_B ) <= lookup_gamma( to_integer(unsigned(asi_in1_data(7 downto 0)))) &
+					-- 										lookup_gamma( to_integer(unsigned(asi_in1_data(15 downto 8)))) &
+					-- 										lookup_gamma( to_integer(unsigned(asi_in1_data(23 downto 16))));
 					-- verify purpose
-					-- in_buffer_stream_B( pix_in_counter_B ) <= asi_in1_data(7 downto 0) &
-					-- 										  asi_in1_data(15 downto 8) &
-					-- 										  asi_in1_data(23 downto 16);
+					in_buffer_stream_B( pix_in_counter_B ) <= asi_in1_data(7 downto 0) &
+															  asi_in1_data(15 downto 8) &
+															  asi_in1_data(23 downto 16);
 				else
 					in_buffer_stream_B( pix_in_counter_B ) <= x"000000";
 				end if;
