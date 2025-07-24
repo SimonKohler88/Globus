@@ -65,7 +65,8 @@ architecture rtl of led_interface is
 	constant PIX_OUT_PER_SPI: integer:= 30;
 	constant BIT_PER_LED_FRAME :integer := 32;
 	constant BIT_PER_SPI_START_END_FRAME: integer:= 32;
-	constant BRIGHTNESS : std_logic_vector(4 downto 0) := "01000";
+	-- constant BRIGHTNESS : std_logic_vector(4 downto 0) := "01000";
+	constant BRIGHTNESS : std_logic_vector(4 downto 0) := "11110";
 	-- constant BRIGHTNESS : std_logic_vector(4 downto 0) := "01111";
 	-- 01000: 8 out of 32 == 1/4
 	-- 10000: 16 == 1/2
