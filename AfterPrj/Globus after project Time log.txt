@@ -8,25 +8,37 @@ Item                               Date               time     work done
 1 Kill motor feep implementation                      3h       reworked timer frequency for motor pwm
 1 Test motor freq feep kill                           0.5h     its ok
 
+
 2 Anfangsstromproblem
 2 FPGA: shutdown LEDs              16.07.2025         3h       implemented LED-clearing every ~10ms until 5 posEdge of QSPI-CS are received
 2 Testing					       17.7.2025          2h       hardening code after deployment: edge-deadtime, grounding rotor-pcb
 
 
 3 Optimize Induction
+3 Playing with Freq and deadtime   24.07.2025         3h       1.8 A @ 4.8V (500ns deadtime). Somewhat lower than expected...      
+
 
 4 Increase Brightness
+4 Trying Full trotthle after Nr 3  24.07.2025         1h       Works. Seems to be reliable.
+
 
 5 GUI Motor Control
 5 Rework Motor Control GUI         16.07.2025         3h       facelift: slider for set speed, current speed view, emergency btn, emergency ack btn
 5 Test Motor Control GUI           17.7.2025          1h       works, sometimes set 0 not seen by webpage
 5 Bugfix                           17.7.2025          1h       reset duty cycle fixed
 
+
 6 Search and destroy PicBug
+6 Reassesment                      24.07.2025         1h       Speed dependent (400-600 bad). looks like ESP Problem 
+                                                               - when in twitch, resetting FPGA doesnt help, but resetting esp does
+															   - uploading picture helps recovering
+
 
 7 Conn Quality ESP<->Raspi
+7 Looked at RSSI                   24.07.2025         1h       ESP->Raspi -35 dB, PC->Raspi -44 dB, all good.
 
 8 Raspi Os
+
 
 Setup Rotor PCB Comm 2           15.07.2025         1h       soldered second PCB for communication ESP<->FPGA communication
 
