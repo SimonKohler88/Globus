@@ -23,7 +23,7 @@
 
 /* internal structure instances */
 static command_control_task_t* status = NULL;
-gptimer_handle_t gptimer              = NULL;
+static gptimer_handle_t gptimer       = NULL;
 
 volatile uint8_t line_toggle = 0;
 
@@ -44,16 +44,9 @@ void status_control_init( status_control_status_t* status_ptr, command_control_t
     status                      = internal_status_ptr;
     status->task_handles        = task_handles;
 
-    gpio_config_t config = {
-        .intr_type = GPIO_INTR_POSEDGE, .mode = GPIO_MODE_INPUT, .pull_up_en = 1, .pin_bit_mask = 1 << STAT_CTRL_PIN_FRAME_REQUEST };
-
-    ESP_ERROR_CHECK( gpio_config( &config ) );
-
-    /* FPGA Control Lanes */
-
     /* GPIO Directions */
     ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_RESERVE_1, GPIO_MODE_OUTPUT ) );
-    ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_RESERVE_2, GPIO_MODE_INPUT ) );
+    ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_RESERVE_2, GPIO_MODE_OUTPUT ) );
     ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_RESERVE_3, GPIO_MODE_OUTPUT ) );
     ESP_ERROR_CHECK( gpio_set_direction( STAT_CTRL_PIN_RESET_FPGA, GPIO_MODE_OUTPUT ) );
 
@@ -67,12 +60,15 @@ void status_control_init( status_control_status_t* status_ptr, command_control_t
 
     /* init timer with callback for QSPI-thread start */
     gptimer_config_t timer_config = {
-        .clk_src       = GPTIMER_CLK_SRC_DEFAULT,
-        .direction     = GPTIMER_COUNT_UP,
-        .resolution_hz = TIMER_RESOLUTION,
-        .intr_priority = 3,
+        .clk_src = GPTIMER_CLK_SRC_DEFAULT, .direction = GPTIMER_COUNT_UP, .resolution_hz = TIMER_RESOLUTION,
+        // .intr_priority = 3,
     };
     ESP_ERROR_CHECK( gptimer_new_timer( &timer_config, &gptimer ) );
+
+    gptimer_event_callbacks_t cbs = {
+        .on_alarm = frame_request_timer_isr_cb,  // register user callback
+    };
+    ESP_ERROR_CHECK( gptimer_register_event_callbacks( gptimer, &cbs, NULL ) );
 
     gptimer_alarm_config_t alarm_config = {
         .reload_count               = 0,                                                                  // counter will reload with 0 on alarm event
@@ -80,18 +76,9 @@ void status_control_init( status_control_status_t* status_ptr, command_control_t
         .flags.auto_reload_on_alarm = true,                                                               // enable auto-reload
     };
     ESP_ERROR_CHECK( gptimer_set_alarm_action( gptimer, &alarm_config ) );
-
-    gptimer_event_callbacks_t cbs = {
-        .on_alarm = frame_request_timer_isr_cb,  // register user callback
-    };
-    ESP_ERROR_CHECK( gptimer_register_event_callbacks( gptimer, &cbs, NULL ) );
-
-#ifndef DEVELOPMENT_SET_QSPI_STATIC
-    /* frame triggered from status control in static mode */
     ESP_ERROR_CHECK( gptimer_enable( gptimer ) );
-#endif
+    ESP_ERROR_CHECK( gptimer_start( gptimer ) );
 
-    /* init led */
     init_led( &internal_status_ptr->led );
 }
 
@@ -141,11 +128,12 @@ void status_control_task( void* pvParameter )
     uint32_t ulNotifyValueHTTP = 0;
     uint32_t ulNotifyValueWIFI = 0;
 
+
     set_led_cyan( &status->led );
 
 #ifdef DEVELOPMENT_SET_QSPI_STATIC
     TickType_t xLastWakeTime    = xTaskGetTickCount();
-    const TickType_t xPeriod_ms = 60;
+    const TickType_t xPeriod_ms = 200;
 #endif
 
     TickType_t last_frame_time_used = 0;
@@ -158,8 +146,9 @@ void status_control_task( void* pvParameter )
     while ( status->task_handles->http_task_handle == NULL || status->task_handles->FPGA_QSPI_task_handle == NULL ||
             status->task_handles->JPEG_task_handle == NULL || status->task_handles->WIFI_task_handle == NULL )
     {
-        void set_led_cyan( led_state_t * led );
-        vTaskDelay( 10 );
+        set_led_magenta( &status->led );
+        ESP_LOGE( STAT_CTRL_TAG, "A Task Handle is NULL");
+        vTaskDelay( 100 );
     }
 #ifndef DEVELOPMENT_SET_QSPI_STATIC
     uint64_t time_us_start = 0;
@@ -219,10 +208,8 @@ void status_control_task( void* pvParameter )
             {
 
 #ifdef DEVELOPMENT_SET_QSPI_STATIC
-                if ( status->led.toggle_state ) set_led_red( &status->led );
+                if ( status->led.toggle_state ) set_led_yellow( &status->led );
                 else clear_led( &status->led );
-                gpio_set_level( STAT_CTRL_PIN_RESERVE_3, status->led.toggle_state );
-                qspi_request_frame( 0 );
 
 #else
                 set_led_red( &status->led );

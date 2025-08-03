@@ -1,12 +1,12 @@
 [*]
 [*] GTKWave Analyzer v3.3.100 (w)1999-2019 BSI
-[*] Thu Jul 17 13:05:03 2025
+[*] Fri Jul 18 19:32:03 2025
 [*]
 [dumpfile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\led_interface_temp\func.ghw"
-[dumpfile_mtime] "Thu Jul 17 13:04:53 2025"
-[dumpfile_size] 1074124
+[dumpfile_mtime] "Fri Jul 18 19:30:51 2025"
+[dumpfile_size] 1072256
 [savefile] "D:\GitHub\Globus\FPGA\VHDL\my_sys_components\led_interface_temp\wave_save.gtkw"
-[timestart] 0
+[timestart] 69396
 [size] 1920 1017
 [pos] -1 -1
 *-10.000000 1710 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1

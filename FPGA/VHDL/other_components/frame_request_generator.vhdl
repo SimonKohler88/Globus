@@ -35,7 +35,6 @@ architecture rtl of frame_request_generator is
 	 signal enable_pin_input_intern : std_logic;
 	 signal pin_input_intern_re : std_logic;
 
-	 signal pulse_out_counter_intern : std_logic;
 	 signal pulse_out_pin_in_intern : std_logic;
 
 	 signal dbg_enc_counter : integer range 0 to dbg_enc_after_req0_clocks;
@@ -54,8 +53,6 @@ begin
             counter <= counter + 1;
 		end if;
 	end process;
-
-   pulse_out_counter_intern <= '1' when counter < on_clocks else '0';
 	
 	-- double flopping in input signals
 	p_in_flooping: process(all)
@@ -74,11 +71,8 @@ begin
 
 	enable_pin_input_intern <= enable_pin_input_ff(1);
 	pin_input_intern_re <= pin_input_ff(0) and not pin_input_ff(1);
-	dbg_enc_enable_intern <= enable_dbg_enc_ff(1);
 	
 	pulse_out <= '0';
-	dbg_enc_pulse_out_intern <=  '0'; 
-	pulse_out_pin_in_intern <=  '0'; 
 	
 	
 	p_count_enc_counter: process(all)
@@ -116,8 +110,6 @@ begin
 		end if;
 	end process;
 
-	-- dbg_enc_pulse_out_intern <=  '1' when dbg_enc_counter=dbg_enc_after_req0_clocks or dbg_enc_counter=dbg_enc_counter_first_pulse else '0';
-	-- dbg_enc_out <= '1' when dbg_enc_enable_intern and dbg_enc_counter= else '0';
 end architecture;
 
 

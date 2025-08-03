@@ -72,9 +72,6 @@ architecture rtl of new_encoder is
 	signal debounce_counter :integer range 0 to debounce_cycles;
 	signal debounce_counter_index :integer range 0 to debounce_cycles;
 	
-	signal dbg_led_firepulse: std_logic;
-
-
 	type state_test is (none, t1, t2);
 	signal test_state         : state_test;
 
@@ -91,13 +88,14 @@ begin
 				conduit_debug_enc_enc_dbg_out_2(31 downto 0) <= (others => '0');
 
 			when t1 =>
+				conduit_debug_enc_enc_dbg_out_2(31 downto 0) <= (others => '0');
 				conduit_debug_enc_enc_dbg_out <= (others => '0');
 				conduit_debug_enc_enc_dbg_out(9 downto 1) <= conduit_intern_col_nr(8 downto 0);
 				conduit_debug_enc_enc_dbg_out(0) <= conduit_intern_col_fire;
-				--conduit_debug_enc_enc_dbg_out(10) <= dbg_led_firepulse;
+
 			when t2 =>
+				conduit_debug_enc_enc_dbg_out_2(31 downto 0) <= (others => '0');
 				conduit_debug_enc_enc_dbg_out <= (others => '0');
-				-- conduit_debug_enc_enc_dbg_out(0) <= conduit_intern_col_fire;
 				conduit_debug_enc_enc_dbg_out(0) <= sync_i;
 				conduit_debug_enc_enc_dbg_out(9 downto 1) <= conduit_intern_col_nr(8 downto 0);
 				conduit_debug_enc_enc_dbg_out(10) <= enc_clk;
@@ -105,8 +103,6 @@ begin
 				conduit_debug_enc_enc_dbg_out(12) <= sync_a_reg(2);
 				conduit_debug_enc_enc_dbg_out(13) <= sync_sim_sw_reg(2);
 				conduit_debug_enc_enc_dbg_out(14) <= sync_sim_pulse_reg(2);
-				--sync_a_reg(2) when sync_sim_sw_reg(2)='0' else sync_sim_pulse_reg(2);
-				
 				
 			when others =>
 				conduit_debug_enc_enc_dbg_out(31 downto 0) <= (others => '0');
@@ -115,27 +111,13 @@ begin
 		end case;
 	end process;
 	
-	dbg_fp_proc: process(all)
-	begin
-		if reset_reset = '1' then
-			dbg_led_firepulse <= '0';
-		elsif rising_edge(clock_clk) then
-			if debounce_counter > 0 and column_counter(0)='1' then
-				dbg_led_firepulse <= '1';
-			else
-				dbg_led_firepulse <= '0';
-			end if;
-		end if;
-		
-	end process;
-
 	-- sync in encoder inputs
 	sync_proc: process(reset_reset, clock_clk)
 	begin
 		if reset_reset = '1' then
 			sync_a_reg <= (others => '0');
 			sync_b_reg <= (others => '0');
-			sync_i_reg <= (others => '1'); -- TODO: must change if enc_index changed to positive
+			sync_i_reg <= (others => '1');
 			sync_sim_pulse_reg <= (others => '0');
 			sync_sim_sw_reg <= (others => '0');
 
