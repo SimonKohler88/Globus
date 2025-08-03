@@ -63,7 +63,8 @@ def get_target_speed():
 @app.route('/frame/<int:delta_t_ms>')
 def get_frame(delta_t_ms):
     pic = globus.get_frame(delta_t_ms)
-    return Response(pic, mimetype='image/jpeg')
+    # return Response(pic, mimetype='image/jpeg')
+    return Response(pic, mimetype='image/bmp')
 
 
 def __allowed_file(filename):
@@ -110,5 +111,6 @@ def show_globe_video():
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1')
+    # app.run(host='127.0.0.1')
+    app.run(host='192.168.0.92', port=5000)
     # app.run(host = '192.168.137.1', port=8123)

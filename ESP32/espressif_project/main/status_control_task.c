@@ -77,7 +77,7 @@ void status_control_init( status_control_status_t* status_ptr, command_control_t
     };
     ESP_ERROR_CHECK( gptimer_set_alarm_action( gptimer, &alarm_config ) );
     ESP_ERROR_CHECK( gptimer_enable( gptimer ) );
-    ESP_ERROR_CHECK( gptimer_start( gptimer ) );
+    // ESP_ERROR_CHECK( gptimer_start( gptimer ) );
 
     init_led( &internal_status_ptr->led );
 }
@@ -124,7 +124,7 @@ void status_control_task( void* pvParameter )
         ESP_LOGE( STAT_CTRL_TAG, "No status struct initialized" );
         return;
     }
-    uint32_t ulNotifyValueJPEG = 0;
+    // uint32_t ulNotifyValueJPEG = 0;
     uint32_t ulNotifyValueHTTP = 0;
     uint32_t ulNotifyValueWIFI = 0;
 
@@ -144,10 +144,13 @@ void status_control_task( void* pvParameter )
 
     /* wait until all tasks have a handle */
     while ( status->task_handles->http_task_handle == NULL || status->task_handles->FPGA_QSPI_task_handle == NULL ||
-            status->task_handles->JPEG_task_handle == NULL || status->task_handles->WIFI_task_handle == NULL )
+            status->task_handles->WIFI_task_handle == NULL )
     {
         set_led_magenta( &status->led );
         ESP_LOGE( STAT_CTRL_TAG, "A Task Handle is NULL");
+        if (status->task_handles->http_task_handle == NULL) ESP_LOGE( STAT_CTRL_TAG, "Task Handle HTTP is NULL");
+        if (status->task_handles->FPGA_QSPI_task_handle == NULL) ESP_LOGE( STAT_CTRL_TAG, "Task Handle QSPI is NULL");
+        if (status->task_handles->WIFI_task_handle == NULL) ESP_LOGE( STAT_CTRL_TAG, "Task Handle WIFI is NULL");
         vTaskDelay( 100 );
     }
 #ifndef DEVELOPMENT_SET_QSPI_STATIC
@@ -189,7 +192,7 @@ void status_control_task( void* pvParameter )
             else last_frame_time_used = 0;
 
             time_us_start = esp_timer_get_time();
-            // ESP_LOGI( STAT_CTRL_TAG, "freeframes: %" PRIu8, num_free_frames );
+            if ( CTRL_TASK_VERBOSE )  ESP_LOGI( STAT_CTRL_TAG, "freeframes: %" PRIu8, num_free_frames );
             xTaskNotifyIndexed( status->task_handles->http_task_handle, TASK_NOTIFY_HTTP_START_BIT, last_frame_time_used, eSetBits );
         }
 #endif
@@ -227,7 +230,7 @@ void status_control_task( void* pvParameter )
             // wait_notify_result = xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_HTTP_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueQSPI, portMAX_DELAY
             // );
             wait_notify_result =
-                xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_HTTP_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueHTTP, pdMS_TO_TICKS( 120 ) );
+                xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_HTTP_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueHTTP, pdMS_TO_TICKS( 2500 ) );
             if ( wait_notify_result == pdFALSE )
             {
                 ESP_LOGW( STAT_CTRL_TAG, "Fell through HTTP Finished Waiting" );
@@ -236,13 +239,13 @@ void status_control_task( void* pvParameter )
             /* Wait for JPEG
              * No Clear on Entry, clear on Exit
              */
-            wait_notify_result =
-                xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueJPEG, pdMS_TO_TICKS( 70 ) );
+            // wait_notify_result =
+            //     xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueJPEG, pdMS_TO_TICKS( 70 ) );
 
-            if ( wait_notify_result == pdFALSE )
-            {
-                ESP_LOGW( STAT_CTRL_TAG, "Fell through JPEG Finished Waiting" );
-            }
+            // if ( wait_notify_result == pdFALSE )
+            // {
+            //     ESP_LOGW( STAT_CTRL_TAG, "Fell through JPEG Finished Waiting" );
+            // }
         }
         else vTaskDelay( pdMS_TO_TICKS( 10 ) );
 

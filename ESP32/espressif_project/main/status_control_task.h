@@ -27,7 +27,7 @@ struct
     // TaskHandle_t FPGA_ctrl_task_handle;
     TaskHandle_t status_control_task_handle;
     TaskHandle_t FPGA_QSPI_task_handle;
-    TaskHandle_t JPEG_task_handle;
+    // TaskHandle_t JPEG_task_handle;
     TaskHandle_t WIFI_task_handle;
 
 } typedef task_handles_t;

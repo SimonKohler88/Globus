@@ -92,8 +92,8 @@
 #define ENC_PIN_EXP_3       ( 47 )
 
 /* Task Verbosity */
-#define HTTP_TASK_VERBOSE   ( 0 )
-#define QSPI_TASK_VERBOSE   ( 1 )
+#define HTTP_TASK_VERBOSE   ( 1 )
+#define QSPI_TASK_VERBOSE   ( 0 )
 #define CTRL_TASK_VERBOSE   ( 1 )
 #define JPEG_TASK_VERBOSE   ( 0 )
 #define FIFO_VERBOSE        ( 0 )
@@ -105,11 +105,11 @@
 #define HTTP_PATH           "/frame"
 #define WIFI_CONN_MAX_RETRY ( 6 )
 
-#define WHERE               ( 3 )
+#define WHERE               ( 1 )
 #if ( WHERE == 1 )
     #define CONFIG_WIFI_SSID      "UPCF611258"
     #define CONFIG_WIFI_PASSWORD  "Fs4nzkzne4tu"
-    #define CONFIG_WIFI_IPV4_ADDR "192.168.0.178"
+    #define CONFIG_WIFI_IPV4_ADDR "192.168.0.92"
     #define HTTP_PORT             "5000"
 #endif
 

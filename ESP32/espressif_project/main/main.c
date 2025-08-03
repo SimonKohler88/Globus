@@ -77,7 +77,7 @@ void init_system()
 
     init_http_stat( &task_handles );
 
-    jpeg_init( &task_handles );
+    //jpeg_init( &task_handles );
     // gpio_dump_io_configuration(stdout, SOC_GPIO_VALID_GPIO_MASK );
     // wifi_receive_init();
 
@@ -99,18 +99,6 @@ void app_main( void )
                                        0 );                             /* Core which executes the task*/
 
 
-    task_handles.status_control_task_handle =
-        xTaskCreateStaticPinnedToCore( status_control_task,             /* Function that implements the task. */
-                                       "stat_ctrl_task",                /* Text name for the task. */
-                                       FREERTOS_STACK_SIZE_STATUS_CTRL, /* Number of indexes in the xStack array. */
-                                       ( void* ) 1,                     /* Parameter passed into the task. */
-                                       tskIDLE_PRIORITY + 5,            /* Priority at which the task is created. */
-                                       xStatusControlStack,             /* Array to use as the task's stack. */
-                                       &xStatusControlTaskBuffer,       /* Variable to hold the task's data structure. */
-                                       0 );                             /* Core which executes the task*/
-
-
-
     task_handles.FPGA_QSPI_task_handle = xTaskCreateStaticPinnedToCore( fpga_qspi_task,           /* Function that implements the task. */
                                                                         "fpga_qspi_task",         /* Text name for the task. */
                                                                         FREERTOS_STACK_SIZE_QSPI, /* Number of indexes in the xStack array. */
@@ -119,7 +107,6 @@ void app_main( void )
                                                                         xFPGAQSPIStack,           /* Array to use as the task's stack. */
                                                                         &xFPGAQSPITaskBuffer,     /* Variable to hold the task's data structure. */
                                                                         0 );                      /* Core which executes the task*/
-
 
 
     task_handles.http_task_handle = xTaskCreateStaticPinnedToCore( http_task,                /* Function that implements the task. */
@@ -132,14 +119,15 @@ void app_main( void )
                                                                    0 );                      /* Core which executes the task*/
 
 
-    task_handles.JPEG_task_handle = xTaskCreateStaticPinnedToCore( jpeg_task,                /* Function that implements the task. */
-                                                                   "jpeg_task",              /* Text name for the task. */
-                                                                   FREERTOS_STACK_SIZE_JPEG, /* Number of indexes in the xStack array. */
-                                                                   ( void* ) 1,              /* Parameter passed into the task. */
-                                                                   tskIDLE_PRIORITY + 6,     /* Priority at which the task is created. */
-                                                                   xJPEGStack,               /* Array to use as the task's stack. */
-                                                                   &xJPEGTaskBuffer,         /* Variable to hold the task's data structure. */
-                                                                   1 );
+    task_handles.status_control_task_handle =
+        xTaskCreateStaticPinnedToCore( status_control_task,             /* Function that implements the task. */
+                                       "stat_ctrl_task",                /* Text name for the task. */
+                                       FREERTOS_STACK_SIZE_STATUS_CTRL, /* Number of indexes in the xStack array. */
+                                       ( void* ) 1,                     /* Parameter passed into the task. */
+                                       tskIDLE_PRIORITY + 5,            /* Priority at which the task is created. */
+                                       xStatusControlStack,             /* Array to use as the task's stack. */
+                                       &xStatusControlTaskBuffer,       /* Variable to hold the task's data structure. */
+                                       0 );                             /* Core which executes the task*/
 }
 
 void vApplicationIdleHook( void ) {}
