@@ -23,7 +23,8 @@
 #include "sdkconfig.h"
 
 #include "hw_settings.h"
-#include "pic_buffer.h"
+// #include "pic_buffer.h"
+#include "psram_fifo.h"
 
 #define WEB_SERVER CONFIG_WIFI_IPV4_ADDR
 #define WEB_PORT   HTTP_PORT
@@ -39,7 +40,7 @@ struct
     struct addrinfo* res;
     struct in_addr* addr;
     int s, r;
-    char recv_buf[ 1024 ];
+    char recv_buf[ 2048 ];
     task_handles_t* task_handles;
 } typedef http_stat_t;
 
@@ -107,30 +108,29 @@ static uint8_t set_socket_timeout( http_stat_t* stat )
     return 1;
 }
 
-static uint32_t receive_frame( http_stat_t* stat, eth_rx_buffer_t* eth_buff )
+static uint32_t receive_frame( http_stat_t* stat, fifo_frame_t* eth_buff )
 {
-    uint32_t data_size     = 0;
-    uint8_t* buff_ptr      = eth_buff->buff_start_ptr;
+    uint32_t data_size = 0;
+    uint8_t* buff_ptr  = eth_buff->frame_start_ptr;
     /* Read HTTP response */
     do
     {
         bzero( stat->recv_buf, sizeof( stat->recv_buf ) );
         stat->r = read( stat->s, stat->recv_buf, sizeof( stat->recv_buf ) - 1 );
         data_size += stat->r;
-        if ( data_size > IMAGE_JPEG_SIZE_BYTES )
+        if ( data_size > IMAGE_TOTAL_BYTE_SIZE )
         {
-            ESP_LOGE( TAG, "File size More than %" PRIu32, ( uint32_t ) IMAGE_JPEG_SIZE_BYTES );
+            ESP_LOGE( TAG, "File size More than %" PRIu32, ( uint32_t ) IMAGE_TOTAL_BYTE_SIZE );
             return 0;
         }
         /* last sanity check */
-        if (buff_ptr == NULL || stat->r > sizeof( stat->recv_buf ) - 1)
+        if ( buff_ptr == NULL || stat->r > sizeof( stat->recv_buf ) - 1 )
         {
-            ESP_LOGE( TAG, "Sanity fail: bf_ptr: 0x%" PRIx32", r: %i", ( uint32_t ) buff_ptr, stat->r );
+            ESP_LOGE( TAG, "Sanity fail: bf_ptr: 0x%" PRIx32 ", r: %i", ( uint32_t ) buff_ptr, stat->r );
             return 0;
         }
-        if (stat->r > 0) memcpy( buff_ptr, stat->recv_buf, stat->r );
+        if ( stat->r > 0 ) memcpy( buff_ptr, stat->recv_buf, stat->r );
         buff_ptr += stat->r;
-
 
     } while ( stat->r > 0 );
     return data_size;
@@ -148,7 +148,8 @@ void http_task( void* pvParameters )
 
     uint32_t last_frame_time_used;
 
-    eth_rx_buffer_t* eth_buff;
+    // eth_rx_buffer_t* eth_buff;
+    fifo_frame_t* dst_ptr;
 
     while ( 1 )
     {
@@ -165,18 +166,31 @@ void http_task( void* pvParameters )
         if ( HTTP_TASK_VERBOSE ) ESP_LOGI( TAG, "HTTP Req Start: dT %" PRIu32, last_frame_time_used );
 
         /* Get Buffer */
-        eth_buff = buff_ctrl_get_eth_buff();
-
-        /* Notify JPEG Task to start conversion */
-        xTaskNotifyIndexed( http_stat.task_handles->JPEG_task_handle, TASK_NOTIFY_JPEG_START_BIT, 0, eSetBits );
-
+        // eth_buff = buff_ctrl_get_eth_buff();
         time_start = xTaskGetTickCount();
 
-        ret = lookup_dns( &http_stat );
+        /* Get Frame Buffer from FIFO */
+
+        dst_ptr = fifo_get_free_frame();
+
+        if ( dst_ptr == NULL )
+        {
+            ESP_LOGE( TAG, "No FIFO frame" );
+            vTaskDelay( pdMS_TO_TICKS( 10 ) );
+            ret = 0;
+        }
+        else ret = 1;
+        if ( HTTP_TASK_VERBOSE ) ESP_LOGI( TAG, "Has Frame: %"PRIu8, ret);
+
+        /* Notify JPEG Task to start conversion */
+        // xTaskNotifyIndexed( http_stat.task_handles->JPEG_task_handle, TASK_NOTIFY_JPEG_START_BIT, 0, eSetBits );
+
+        if ( ret ) ret = lookup_dns( &http_stat );
         if ( !ret )
         {
             vTaskDelay( pdMS_TO_TICKS( 10 ) );
         }
+        if ( HTTP_TASK_VERBOSE ) ESP_LOGI( TAG, "Has DNS: %"PRIu8, ret);
 
         if ( ret )
         {
@@ -189,6 +203,8 @@ void http_task( void* pvParameters )
                 vTaskDelay( pdMS_TO_TICKS( 10 ) );
             }
         }
+        if ( HTTP_TASK_VERBOSE ) ESP_LOGI( TAG, "Has Socket: %"PRIu8, ret);
+
         if ( ret )
         {
             ret = connect_socket( &http_stat );
@@ -197,6 +213,7 @@ void http_task( void* pvParameters )
                 vTaskDelay( pdMS_TO_TICKS( 10 ) );
             }
         }
+        if ( HTTP_TASK_VERBOSE ) ESP_LOGI( TAG, "Has Socket Connected: %"PRIu8, ret);
         freeaddrinfo( http_stat.res );  //?
         if ( ret )
         {
@@ -210,6 +227,7 @@ void http_task( void* pvParameters )
                 vTaskDelay( pdMS_TO_TICKS( 10 ) );
             }
         }
+        if ( HTTP_TASK_VERBOSE ) ESP_LOGI( TAG, "Has Sent Request: %"PRIu8, ret);
 
         if ( ret )
         {
@@ -219,27 +237,33 @@ void http_task( void* pvParameters )
                 vTaskDelay( pdMS_TO_TICKS( 10 ) );
             }
         }
+        if ( HTTP_TASK_VERBOSE ) ESP_LOGI( TAG, "Has Sock Timeout Set: %"PRIu8, ret);
 
         data_size = 0;
         if ( ret )
         {
-            data_size = receive_frame( &http_stat, eth_buff );
+            data_size = receive_frame( &http_stat, dst_ptr );
             if ( !data_size )
             {
                 ret = 0;
                 vTaskDelay( pdMS_TO_TICKS( 10 ) );
             }
         }
+        if ( HTTP_TASK_VERBOSE ) ESP_LOGI( TAG, "Has Rec Frame: %"PRIu8, ret);
         close( http_stat.s );
 
-        uint32_t time = pdTICKS_TO_MS( xTaskGetTickCount() - time_start );
 
         /* set buffer valid if more than 0 data received */
-        buff_ctrl_set_eth_buff_done( data_size );
+        if (ret) fifo_mark_free_frame_done();
+        else fifo_return_free_frame();
+        // buff_ctrl_set_eth_buff_done( data_size );
 
-        if ( HTTP_TASK_VERBOSE ) ESP_LOGI( TAG, "http time=%" PRIu32, time );
+        if (!ret) vTaskDelay( pdMS_TO_TICKS( 100 ) );
 
-        // Start QSPI Task
+        uint32_t time = pdTICKS_TO_MS( xTaskGetTickCount() - time_start );
+        if ( HTTP_TASK_VERBOSE ) ESP_LOGI( TAG, "http time=%"PRIu32 ", success: %"PRIu8 , time, ret );
+
+        // Notify Status Control Task
         xTaskNotifyIndexed( http_stat.task_handles->status_control_task_handle, TASK_NOTIFY_CTRL_HTTP_FINISHED_BIT, data_size, eSetBits );
     }
 }
