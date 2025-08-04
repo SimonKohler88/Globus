@@ -7,7 +7,7 @@ import globus_video_utils.image_processor as img_proc
 
 GIF_PATH = os.path.join(os.path.dirname(__file__), 'gifs')
 
-USE_STATIC_PIC = False
+USE_STATIC_PIC = True
 
 
 class GlobusServer:
@@ -24,9 +24,10 @@ class GlobusServer:
             img = cv2.imread(pic_bmp)
             # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             # Compress, 80% quality
-            encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 80]
+            encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
             _, buffer = cv2.imencode(".jpg", img, encode_param)
             self.__pic3 = buffer.tobytes()
+            print(len(self.__pic3))
 
         self.__vids = video_processor.VideoPlayer(GIF_PATH)
         self.__vids.play()

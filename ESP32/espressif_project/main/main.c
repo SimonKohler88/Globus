@@ -99,17 +99,6 @@ void app_main( void )
                                        0 );                             /* Core which executes the task*/
 
 
-    task_handles.status_control_task_handle =
-        xTaskCreateStaticPinnedToCore( status_control_task,             /* Function that implements the task. */
-                                       "stat_ctrl_task",                /* Text name for the task. */
-                                       FREERTOS_STACK_SIZE_STATUS_CTRL, /* Number of indexes in the xStack array. */
-                                       ( void* ) 1,                     /* Parameter passed into the task. */
-                                       tskIDLE_PRIORITY + 5,            /* Priority at which the task is created. */
-                                       xStatusControlStack,             /* Array to use as the task's stack. */
-                                       &xStatusControlTaskBuffer,       /* Variable to hold the task's data structure. */
-                                       0 );                             /* Core which executes the task*/
-
-
 
     task_handles.FPGA_QSPI_task_handle = xTaskCreateStaticPinnedToCore( fpga_qspi_task,           /* Function that implements the task. */
                                                                         "fpga_qspi_task",         /* Text name for the task. */
@@ -140,6 +129,16 @@ void app_main( void )
                                                                    xJPEGStack,               /* Array to use as the task's stack. */
                                                                    &xJPEGTaskBuffer,         /* Variable to hold the task's data structure. */
                                                                    1 );
+
+    task_handles.status_control_task_handle =
+        xTaskCreateStaticPinnedToCore( status_control_task,             /* Function that implements the task. */
+                                       "stat_ctrl_task",                /* Text name for the task. */
+                                       FREERTOS_STACK_SIZE_STATUS_CTRL, /* Number of indexes in the xStack array. */
+                                       ( void* ) 1,                     /* Parameter passed into the task. */
+                                       tskIDLE_PRIORITY + 5,            /* Priority at which the task is created. */
+                                       xStatusControlStack,             /* Array to use as the task's stack. */
+                                       &xStatusControlTaskBuffer,       /* Variable to hold the task's data structure. */
+                                       0 );                             /* Core which executes the task*/
 }
 
 void vApplicationIdleHook( void ) {}

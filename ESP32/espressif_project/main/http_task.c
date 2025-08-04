@@ -38,8 +38,8 @@ struct
     struct addrinfo hints;
     struct addrinfo* res;
     struct in_addr* addr;
-    int s, r;
-    char recv_buf[ 1024 ];
+    int32_t s, r;
+    char recv_buf[ 12288 ];
     task_handles_t* task_handles;
 } typedef http_stat_t;
 
@@ -125,7 +125,7 @@ static uint32_t receive_frame( http_stat_t* stat, eth_rx_buffer_t* eth_buff )
         /* last sanity check */
         if (buff_ptr == NULL || stat->r > sizeof( stat->recv_buf ) - 1)
         {
-            ESP_LOGE( TAG, "Sanity fail: bf_ptr: 0x%" PRIx32", r: %i", ( uint32_t ) buff_ptr, stat->r );
+            ESP_LOGE( TAG, "Sanity fail: bf_ptr: 0x%" PRIx32", r: %"PRIi32, ( uint32_t ) buff_ptr, stat->r );
             return 0;
         }
         if (stat->r > 0) memcpy( buff_ptr, stat->recv_buf, stat->r );
