@@ -8,6 +8,8 @@ import numpy as np
 import shutil
 import PIL
 
+from .common_definitions import JPEG_ENCODE_PARAM
+
 
 class VideoPlayer:
     """
@@ -143,7 +145,7 @@ class Video:
         if height != 120 or width != 256:
             raise ValueError(f'Image size is not 120x256, w:{width}, h:{height}')
 
-        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 100]
+        encode_param = JPEG_ENCODE_PARAM
 
         for i in range(self.__total_frames):
             frame_exists, frame = cap.read()

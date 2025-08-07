@@ -4,6 +4,7 @@ import os
 import cv2
 import globus_video_utils.video_processor as video_processor
 import globus_video_utils.image_processor as img_proc
+from globus_video_utils.common_definitions import JPEG_ENCODE_PARAM
 
 GIF_PATH = os.path.join(os.path.dirname(__file__), 'gifs')
 
@@ -24,7 +25,7 @@ class GlobusServer:
             img = cv2.imread(pic_bmp)
             # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             # Compress, 80% quality
-            encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
+            encode_param = JPEG_ENCODE_PARAM
             _, buffer = cv2.imencode(".jpg", img, encode_param)
             self.__pic3 = buffer.tobytes()
             print(len(self.__pic3))
@@ -57,7 +58,7 @@ class GlobusServer:
 
     def set_image(self, image):
         pic = img_proc.scale_crop_image(image)
-        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 80]
+        encode_param = JPEG_ENCODE_PARAM
         _, buffer = cv2.imencode(".jpg", pic, encode_param)
         self.__pic3 = buffer.tobytes()
 
