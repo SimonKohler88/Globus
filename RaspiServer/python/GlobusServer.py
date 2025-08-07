@@ -8,7 +8,8 @@ from globus_video_utils.common_definitions import JPEG_ENCODE_PARAM
 
 GIF_PATH = os.path.join(os.path.dirname(__file__), 'gifs')
 
-USE_STATIC_PIC = True
+# When enabled, Server gives always the same picture back. its good for ESP/FPGA debugging
+USE_STATIC_PIC = False
 
 
 class GlobusServer:
@@ -28,7 +29,6 @@ class GlobusServer:
             encode_param = JPEG_ENCODE_PARAM
             _, buffer = cv2.imencode(".jpg", img, encode_param)
             self.__pic3 = buffer.tobytes()
-            print(len(self.__pic3))
 
         self.__vids = video_processor.VideoPlayer(GIF_PATH)
         self.__vids.play()

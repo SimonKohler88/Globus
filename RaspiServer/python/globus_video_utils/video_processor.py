@@ -8,7 +8,7 @@ import numpy as np
 import shutil
 import PIL
 
-from .common_definitions import JPEG_ENCODE_PARAM
+from .common_definitions import JPEG_ENCODE_PARAM, JPEG_PARM_CUSTOM_OVERRIDE
 
 
 class VideoPlayer:
@@ -145,7 +145,12 @@ class Video:
         if height != 120 or width != 256:
             raise ValueError(f'Image size is not 120x256, w:{width}, h:{height}')
 
-        encode_param = JPEG_ENCODE_PARAM
+        if self.__name in JPEG_PARM_CUSTOM_OVERRIDE:
+            encode_param = JPEG_PARM_CUSTOM_OVERRIDE[self.__name]
+        else:
+            encode_param = JPEG_ENCODE_PARAM
+
+        print(f'Compress Quality: {encode_param[1]}')
 
         for i in range(self.__total_frames):
             frame_exists, frame = cap.read()
@@ -160,6 +165,11 @@ class Video:
 
                 print('.', end='')
         print('done')
+
+        # calculate sizes to print
+        single_sz = [len(self.__frames[i]) for i in range(len(self.__frames))]
+        print(f'Sizes: Min: {min(single_sz)} Bytes,  Max: {max(single_sz)} Bytes')
+        print()
 
     def get_frame_circular(self, idx):
         """

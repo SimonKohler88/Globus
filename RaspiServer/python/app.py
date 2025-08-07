@@ -110,6 +110,8 @@ def show_globe_video():
 
 
 if __name__ == '__main__':
+    # to run on Local PC, set LOCAL = True in speeddriver
+
     # app.run(host='127.0.0.1')
     app.run(host='192.168.0.92', port=5000)
     # app.run(host = '192.168.137.1', port=8123)
