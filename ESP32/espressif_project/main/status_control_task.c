@@ -77,7 +77,7 @@ void status_control_init( status_control_status_t* status_ptr, command_control_t
     };
     ESP_ERROR_CHECK( gptimer_set_alarm_action( gptimer, &alarm_config ) );
     ESP_ERROR_CHECK( gptimer_enable( gptimer ) );
-    ESP_ERROR_CHECK( gptimer_start( gptimer ) );
+    // ESP_ERROR_CHECK( gptimer_start( gptimer ) );
 
     init_led( &internal_status_ptr->led );
 }
@@ -227,7 +227,7 @@ void status_control_task( void* pvParameter )
             // wait_notify_result = xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_HTTP_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueQSPI, portMAX_DELAY
             // );
             wait_notify_result =
-                xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_HTTP_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueHTTP, pdMS_TO_TICKS( 120 ) );
+                xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_HTTP_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueHTTP, pdMS_TO_TICKS( 1000 ) );
             if ( wait_notify_result == pdFALSE )
             {
                 ESP_LOGW( STAT_CTRL_TAG, "Fell through HTTP Finished Waiting" );
@@ -237,7 +237,7 @@ void status_control_task( void* pvParameter )
              * No Clear on Entry, clear on Exit
              */
             wait_notify_result =
-                xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueJPEG, pdMS_TO_TICKS( 70 ) );
+                xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_JPEG_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueJPEG, pdMS_TO_TICKS( 100 ) );
 
             if ( wait_notify_result == pdFALSE )
             {
