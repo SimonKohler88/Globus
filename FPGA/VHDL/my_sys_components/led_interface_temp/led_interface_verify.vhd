@@ -77,11 +77,12 @@ procedure avalon_stream_out_write_many_pixel(
         constant c_start_line: in integer
 
     ) is
-        file input_file : text open read_mode is "./row_col_num.txt";
-        -- file input_file_2 : text open read_mode is "./Earth_relief_120x256_raw2_inverted.txt";
+        -- file input_file : text open read_mode is "./row_col_num.txt";
+        file input_file_2 : text open read_mode is "./Earth_relief_120x256_raw2.txt";
         variable v_input_data : std_ulogic_vector(23 downto 0);
         variable v_input_line : line;
         variable pix_count : integer := 0;
+        variable out_data : std_ulogic_vector(31 downto 0);
     begin
 
 		for i in 0 to c_start_line-1 loop
@@ -94,6 +95,9 @@ procedure avalon_stream_out_write_many_pixel(
 			readline(input_file, v_input_line);
 
             hread(v_input_line, v_input_data);
+
+            for j in 0 to 2 loop
+
 
             if in_ready = '0' then
                 wait until rising_edge(in_ready);
@@ -111,6 +115,7 @@ procedure avalon_stream_out_write_many_pixel(
                 packet_start <= '1';
             end if;
 
+
             if i=c_num-1 then
                 packet_end <= '1';
             end if;
@@ -123,6 +128,7 @@ procedure avalon_stream_out_write_many_pixel(
             valid <= '0';
             packet_start <= '0';
             packet_end <= '0';
+            end loop;
 
             wait for 10 ns;
             --qspi_write_pixel(v_input_data, clk, qspi_clk, data );

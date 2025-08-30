@@ -32,12 +32,15 @@ Item                               Date               time     work done
 6 Reassesment                      24.07.2025         1h       Speed dependent (400-600 bad). looks like ESP Problem 
                                                                - when in twitch, resetting FPGA doesnt help, but resetting esp does
 															   - uploading picture helps recovering
+								   23.08.2025		  3h       Grounded the Rotor PDB well.
+								                                - on 500 rpm, no Pictransmissions and twitchg
+																- other speeds, no problems seen
 
 
 7 Conn Quality ESP<->Raspi
 7 Looked at RSSI                   24.07.2025         1h       ESP->Raspi -35 dB, PC->Raspi -44 dB, all good.
 
-8 Raspi Os
+8 Raspi Os                          ?                 1h       Use of WIFI Dongle. ESP connects seamlessly within seconds now
 
 
 Setup Rotor PCB Comm 2           15.07.2025         1h       soldered second PCB for communication ESP<->FPGA communication

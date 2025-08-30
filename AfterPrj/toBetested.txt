@@ -1,0 +1,4 @@
+
+Notes 30.08.2025
+- ESP auf devserver -> still dead @ 500 ?
+- Release Belt -> still dead @ 500? -> Measure QSPI, El.Fields, VCC
