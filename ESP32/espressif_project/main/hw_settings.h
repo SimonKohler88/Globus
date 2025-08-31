@@ -36,7 +36,7 @@
 #define STAT_CTRL_PIN_RESET_FPGA        ( 7 )
 #define STAT_CTRL_ENABLE_LED            ( 1 )
 // #define STAT_CTRL_QSPI_FRAME_RATE       ( 16 )  // Oscilloscope: 17 fps
-#define STAT_CTRL_QSPI_FRAME_RATE       ( 10 )
+#define STAT_CTRL_QSPI_FRAME_RATE       ( 14 )
 #define T_GROUP_0                       ( TIMER_GROUP_0 )
 #define T_ID                            ( TIMER_0 )
 
@@ -62,7 +62,7 @@
 #define SPI_CMD_QUEUE_SIZE              ( 10 )
 
 /* FIFO */
-#define FIFO_NUMBER_OF_FRAMES           ( 10 )
+#define FIFO_NUMBER_OF_FRAMES           ( 20 )
 
 /* Image */
 #define IMAGE_MAX_PIXEL_HEIGHT          ( 120 )
@@ -75,7 +75,7 @@
  * in YCrCb Color format: ~8900 bytes,
  * in RGB Color Format: ~16000 bytes
  * JPEG in-buffer must be 16byte aligned*/
-#define IMAGE_JPEG_SIZE_BYTES           ( 20000 )
+#define IMAGE_JPEG_SIZE_BYTES           ( 14600 )
 
 /* LED */
 #define CONFIG_BLINK_GPIO               ( 48 )
@@ -95,7 +95,7 @@
 /* Task Verbosity */
 #define HTTP_TASK_VERBOSE   ( 0 )
 #define QSPI_TASK_VERBOSE   ( 0 )
-#define CTRL_TASK_VERBOSE   ( 1 )
+#define CTRL_TASK_VERBOSE   ( 0 )
 #define JPEG_TASK_VERBOSE   ( 0 )
 #define FIFO_VERBOSE        ( 0 )
 #define PIC_BUFF_VERBOSE    ( 0 )
