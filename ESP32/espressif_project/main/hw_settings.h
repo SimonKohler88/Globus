@@ -106,15 +106,8 @@
 #define HTTP_PATH           "/frame"
 #define WIFI_CONN_MAX_RETRY ( 6 )
 
-#define WHERE               ( 1 )
+#define WHERE               ( 2 )
 #if ( WHERE == 1 )
-    #define CONFIG_WIFI_SSID      "UPCF611258"
-    #define CONFIG_WIFI_PASSWORD  "Fs4nzkzne4tu"
-    #define CONFIG_WIFI_IPV4_ADDR "192.168.0.92"
-    #define HTTP_PORT             "5000"
-#endif
-
-#if ( WHERE == 2 )
     #define CONFIG_WIFI_SSID      "DESKTOP-P96TM8B 9415"
     #define CONFIG_WIFI_PASSWORD  "5716Jt3/"
     // #define CONFIG_WIFI_IPV4_ADDR "192.168.50.20"
@@ -123,7 +116,7 @@
     #define HTTP_PORT             "80"
 #endif
 
-#if ( WHERE == 3 )
+#if ( WHERE == 2 )
     #define CONFIG_WIFI_SSID      "GlobusAP"
     #define CONFIG_WIFI_PASSWORD  "12345678"
     #define HTTP_PORT             "80"
