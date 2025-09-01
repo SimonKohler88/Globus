@@ -45,3 +45,6 @@ Item                               Date               time     work done
 
 Setup Rotor PCB Comm 2           15.07.2025         1h       soldered second PCB for communication ESP<->FPGA communication
 
+Optimize TCP                     31.08.2025         2h        New parameters to sdkconfig to reduce long responsetime
+                                  1.09.2025         2h        Testing: params ok, Searched for reason of Twitch (nothing found)
+

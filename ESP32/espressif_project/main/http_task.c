@@ -98,7 +98,7 @@ static uint8_t set_socket_timeout( http_stat_t* stat )
 {
     struct timeval receiving_timeout;
     receiving_timeout.tv_sec  = 0;
-    receiving_timeout.tv_usec = 400000;
+    receiving_timeout.tv_usec = 500000;
     if ( setsockopt( stat->s, SOL_SOCKET, SO_RCVTIMEO, &receiving_timeout, sizeof( receiving_timeout ) ) < 0 )
     {
         ESP_LOGE( TAG, "failed to set socket receiving timeout" );
@@ -109,8 +109,8 @@ static uint8_t set_socket_timeout( http_stat_t* stat )
 
 static uint32_t receive_frame( http_stat_t* stat, eth_rx_buffer_t* eth_buff )
 {
-    uint32_t data_size     = 0;
-    uint8_t* buff_ptr      = eth_buff->buff_start_ptr;
+    uint32_t data_size = 0;
+    uint8_t* buff_ptr  = eth_buff->buff_start_ptr;
     /* Read HTTP response */
     do
     {
@@ -123,14 +123,13 @@ static uint32_t receive_frame( http_stat_t* stat, eth_rx_buffer_t* eth_buff )
             return 0;
         }
         /* last sanity check */
-        if (buff_ptr == NULL || stat->r > sizeof( stat->recv_buf ) - 1)
+        if ( buff_ptr == NULL || stat->r > sizeof( stat->recv_buf ) - 1 )
         {
-            ESP_LOGE( TAG, "Sanity fail: bf_ptr: 0x%" PRIx32", r: %"PRIi32, ( uint32_t ) buff_ptr, stat->r );
+            ESP_LOGE( TAG, "Sanity fail: bf_ptr: 0x%" PRIx32 ", r: %" PRIi32, ( uint32_t ) buff_ptr, stat->r );
             return 0;
         }
-        if (stat->r > 0) memcpy( buff_ptr, stat->recv_buf, stat->r );
+        if ( stat->r > 0 ) memcpy( buff_ptr, stat->recv_buf, stat->r );
         buff_ptr += stat->r;
-
 
     } while ( stat->r > 0 );
     return data_size;
@@ -145,6 +144,9 @@ void http_task( void* pvParameters )
     uint8_t ret         = 0;
     uint32_t data_size  = 0;
     uint32_t time_start = 0;
+    uint32_t time       = 0;
+    uint32_t dt_time       = 0;
+    uint32_t temp_time       = 0;
 
     uint32_t last_frame_time_used;
 
@@ -173,10 +175,6 @@ void http_task( void* pvParameters )
         time_start = xTaskGetTickCount();
 
         ret = lookup_dns( &http_stat );
-        if ( !ret )
-        {
-            vTaskDelay( pdMS_TO_TICKS( 10 ) );
-        }
 
         if ( ret )
         {
@@ -184,40 +182,39 @@ void http_task( void* pvParameters )
             http_stat.addr = &( ( struct sockaddr_in* ) http_stat.res->ai_addr )->sin_addr;
 
             ret = create_socket( &http_stat );
-            if ( !ret )
-            {
-                vTaskDelay( pdMS_TO_TICKS( 10 ) );
-            }
         }
         if ( ret )
         {
-            ret = connect_socket( &http_stat );
-            if ( !ret )
+            if (HTTP_TASK_VERBOSE)
             {
-                vTaskDelay( pdMS_TO_TICKS( 10 ) );
+                temp_time = pdTICKS_TO_MS( xTaskGetTickCount() - time_start );
+                ESP_LOGI( TAG, "create socket=%" PRIu32, dt_time );
             }
+            ret = connect_socket( &http_stat );
         }
         freeaddrinfo( http_stat.res );  //?
         if ( ret )
         {
+            if (HTTP_TASK_VERBOSE)
+            {
+                temp_time = pdTICKS_TO_MS( xTaskGetTickCount() - time_start);
+                ESP_LOGI( TAG, "connect socket=%" PRIu32, temp_time );
+            }
             snprintf( request_buffer, 88,
                       "GET " WEB_PATH "/%" PRIu32 " HTTP/1.0\r\nHost: " WEB_SERVER ":" WEB_PORT "\r\nUser-Agent: esp-idf/1.0 esp32\r\n\r\n",
                       last_frame_time_used );
 
             ret = send_request( &http_stat );
-            if ( !ret )
-            {
-                vTaskDelay( pdMS_TO_TICKS( 10 ) );
-            }
         }
 
         if ( ret )
         {
-            ret = set_socket_timeout( &http_stat );
-            if ( !ret )
+            if (HTTP_TASK_VERBOSE)
             {
-                vTaskDelay( pdMS_TO_TICKS( 10 ) );
+                temp_time = pdTICKS_TO_MS( xTaskGetTickCount() - time_start );
+                ESP_LOGI( TAG, "send req=%" PRIu32, temp_time );
             }
+            ret = set_socket_timeout( &http_stat );
         }
 
         data_size = 0;
@@ -227,12 +224,24 @@ void http_task( void* pvParameters )
             if ( !data_size )
             {
                 ret = 0;
-                vTaskDelay( pdMS_TO_TICKS( 10 ) );
+            }
+            if (HTTP_TASK_VERBOSE)
+            {
+                temp_time = pdTICKS_TO_MS( xTaskGetTickCount() - time_start );
+                ESP_LOGI( TAG, "recv=%" PRIu32, temp_time );
             }
         }
+        // shutdown(http_stat.s, 2);
         close( http_stat.s );
+        // vTaskDelay( pdMS_TO_TICKS( 10 ) );
 
-        uint32_t time = pdTICKS_TO_MS( xTaskGetTickCount() - time_start );
+        if (HTTP_TASK_VERBOSE)
+        {
+            temp_time = pdTICKS_TO_MS( xTaskGetTickCount() - time_start );
+            ESP_LOGI( TAG, "close=%" PRIu32, temp_time );
+        }
+
+        time = pdTICKS_TO_MS( xTaskGetTickCount() - time_start );
 
         /* set buffer valid if more than 0 data received */
         buff_ctrl_set_eth_buff_done( data_size );
@@ -240,6 +249,6 @@ void http_task( void* pvParameters )
         if ( HTTP_TASK_VERBOSE ) ESP_LOGI( TAG, "http time=%" PRIu32, time );
 
         // Start QSPI Task
-        xTaskNotifyIndexed( http_stat.task_handles->status_control_task_handle, TASK_NOTIFY_CTRL_HTTP_FINISHED_BIT, data_size, eSetBits );
+        xTaskNotifyIndexed( http_stat.task_handles->status_control_task_handle, TASK_NOTIFY_CTRL_HTTP_FINISHED_BIT, time, eSetBits );
     }
 }

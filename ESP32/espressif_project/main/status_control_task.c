@@ -224,10 +224,10 @@ void status_control_task( void* pvParameter )
             /* Wait for QSPI
              * No Clear on Entry, clear on Exit
              */
-            // wait_notify_result = xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_HTTP_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueQSPI, portMAX_DELAY
-            // );
-            wait_notify_result =
-                xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_HTTP_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueHTTP, pdMS_TO_TICKS( 1000 ) );
+            wait_notify_result = xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_HTTP_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueHTTP, portMAX_DELAY
+            );
+            // wait_notify_result =
+            //     xTaskNotifyWaitIndexed( TASK_NOTIFY_CTRL_HTTP_FINISHED_BIT, pdFALSE, ULONG_MAX, &ulNotifyValueHTTP, pdMS_TO_TICKS( 200 ) );
             if ( wait_notify_result == pdFALSE )
             {
                 ESP_LOGW( STAT_CTRL_TAG, "Fell through HTTP Finished Waiting" );

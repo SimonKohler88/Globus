@@ -1,4 +1,5 @@
 
 Notes 30.08.2025
-- ESP auf devserver -> still dead @ 500 ?
-- Release Belt -> still dead @ 500? -> Measure QSPI, El.Fields, VCC
+- ESP auf devserver -> still dead @ 500 ? --> currently not possible to setup laptop
+- Release Belt -> still dead @ 500? -> Measure QSPI, El.Fields, VCC --> there is 34 kHz schwabbel on all lines, but not dependend on speed
+- Test stream consistency with newest fw-> seems to be ok
