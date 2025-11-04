@@ -52,12 +52,12 @@ def motor_control(cmd):
 
 @app.route('/motor_speed', methods=['GET'])
 def get_speed():
-    return str(speed.read_speed())
+    return jsonify({
+        'speed': speed.read_speed(),
+        'target_speed': speed.read_target_speed(),
+        'enabled': speed.is_motor_enabled()
+    })
 
-
-@app.route('/motor_target_speed', methods=['GET'])
-def get_target_speed():
-    return str(speed.read_target_speed())
 
 
 @app.route('/frame/<int:delta_t_ms>')
@@ -110,8 +110,6 @@ def show_globe_video():
 
 
 if __name__ == '__main__':
-    # to run on Local PC, set LOCAL = True in speeddriver
-
-    # app.run(host='127.0.0.1')
-    app.run(host='192.168.0.92', port=5000)
+	# to run on Local PC, set LOCAL = True in speeddriver
+    app.run(host='127.0.0.1')
     # app.run(host = '192.168.137.1', port=8123)

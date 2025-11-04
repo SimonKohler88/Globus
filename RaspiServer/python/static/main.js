@@ -1,127 +1,155 @@
-//let /const, kein var!!
+// Interval ID for motor speed updates
+let speedUpdateInterval = null;
 
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function () {
+    startSpeedUpdates();
+});
 
-function submit_motor_control(command) {
-    // (B1) GET HTML FORM DATA
-    let form = new FormData(document.getElementById("id_mot_ctrl_form"));
-
-    // (B2) SUBMIT FORM VIA POST
-    fetch(`motor_control/${command}`, {
-        method: "GET",
-        // body: form
-    })
-        .then(res => res.text())
-        .then(txt => {
-            // DO SOMETHING ON SERVER RESPONSE
-            console.log(txt);
-        })
-        .catch(e => console.error(e));
-
-    // (B3) STOP FORM SUBMIT
-    return false;
-}
-
-
-function submit_jpeg() {
-    // (B1) GET HTML FORM DATA
-    let form = new FormData(document.getElementById("id_jpeg_upload_form"));
-
-    // (B2) SUBMIT FORM VIA POST
-    fetch("upload", {
-        method: "POST",
-        body: form
-    })
-        .then(res => res.text())
-        .then(txt => {
-            // DO SOMETHING ON SERVER RESPONSE
-            console.log(txt);
-        })
-        .catch(e => console.error(e));
-
-    // (B3) STOP FORM SUBMIT
-    return false;
-}
-
-
-function submit_globe_view() {
-    // (B1) GET HTML FORM DATA
-    let form = new FormData(document.getElementById("id_globe_selector"));
-
-    // (B2) SUBMIT FORM VIA POST
-    fetch("show_globe_video", {
-        method: "POST",
-        body: form
-    })
-        .then(res => res.text())
-        .then(txt => {
-            // DO SOMETHING ON SERVER RESPONSE
-            console.log(txt);
-        })
-        .catch(e => console.error(e));
-
-    // (B3) STOP FORM SUBMIT
-    return false;
-}
-
-
-
-function get_motor_target_speed() {
-    // (B1) GET HTML FORM DATA
-    let form = new FormData(document.getElementById("id_mot_ctrl_form"));
-
-    // (B2) SUBMIT FORM VIA POST
-    fetch(`motor_target_speed`, {
-        method: "GET",
-        // body: form
-    })
-        .then(res => res.text())
-        .then(txt => {
-            // DO SOMETHING ON SERVER RESPONSE
-            console.log(txt);
-            // DO SOMETHING ON SERVER RESPONSE
-            document.getElementById("mySlider").value = parseInt(txt);
-            document.getElementById("sliderValueBg").innerText = txt;
-            // document.getElementById("curr_speed").innerHTML = txt;
-        })
-        .catch(e => console.error(e));
-
-    // (B3) STOP FORM SUBMIT
-    return false;
-}
-
-window.onload = () => {
-    //let's go
-    console.log("doc ready");
-    get_motor_target_speed();
-
-    // Slider value background logic
-    const slider = document.getElementById("mySlider");
-    const sliderValueBg = document.getElementById("sliderValueBg");
-    if (slider && sliderValueBg) {
-        slider.addEventListener("input", () => {
-            sliderValueBg.innerText = slider.value;
-        });
+// Start periodic speed updates
+function startSpeedUpdates(intervalMs = 500) {
+    // Clear any existing interval
+    if (speedUpdateInterval) {
+        clearInterval(speedUpdateInterval);
     }
 
+    // Fetch speed immediately
+    updateMotorSpeed();
 
-    let intervalId = setInterval(function () {
-        // alert("Interval reached every 5s")
-        fetch(`motor_speed`, {
-            method: "GET",
-            // body: form
+    // Set up periodic updates
+    speedUpdateInterval = setInterval(updateMotorSpeed, intervalMs);
+}
+
+// Stop periodic speed updates
+function stopSpeedUpdates() {
+    if (speedUpdateInterval) {
+        clearInterval(speedUpdateInterval);
+        speedUpdateInterval = null;
+    }
+}
+
+// Fetch and update motor speed from server
+async function updateMotorSpeed() {
+    try {
+        const response = await fetch('/motor_speed');
+        if (!response.ok) {
+            console.error('Failed to fetch motor speed');
+            return;
+        }
+
+        const data = await response.json();
+
+        // Update current speed display
+        const currSpeedElement = document.getElementById('curr_speed');
+        if (currSpeedElement) {
+            currSpeedElement.textContent = data.speed;
+        }
+
+        // Update speed meter
+        const speedMeterElement = document.getElementById('speed_meter');
+        if (speedMeterElement) {
+            speedMeterElement.value = data.speed;
+        }
+
+        // Update slider position
+        const sliderElement = document.getElementById('mySlider');
+        if (sliderElement) {
+            sliderElement.value = data.target_speed;
+        }
+
+        // Update slider value background display
+        const sliderValueBgElement = document.getElementById('sliderValueBg');
+        if (sliderValueBgElement) {
+            sliderValueBgElement.textContent = data.target_speed;
+        }
+        
+        // Update button states based on enabled status
+        updateButtonStates(data.enabled);
+        
+    } catch (error) {
+        console.error('Error updating motor speed:', error);
+    }
+}
+
+// Update button enable/disable states based on motor enabled status
+function updateButtonStates(enabled) {
+    const eStopButton = document.getElementById('eStopButton');
+    const resetButton = document.getElementById('resetButton');
+    
+    if (enabled) {
+        // Motor is enabled: E-Stop active, Reset inactive
+        if (eStopButton) {
+            eStopButton.classList.remove('btn-disabled');
+            eStopButton.classList.add('btn-enabled');
+            eStopButton.disabled = false;
+        }
+        if (resetButton) {
+            resetButton.classList.remove('btn-enabled');
+            resetButton.classList.add('btn-disabled');
+            resetButton.disabled = true;
+        }
+    } else {
+        // Motor is disabled: E-Stop inactive, Reset active
+        if (eStopButton) {
+            eStopButton.classList.remove('btn-enabled');
+            eStopButton.classList.add('btn-disabled');
+            eStopButton.disabled = true;
+        }
+        if (resetButton) {
+            resetButton.classList.remove('btn-disabled');
+            resetButton.classList.add('btn-enabled');
+            resetButton.disabled = false;
+        }
+    }
+}
+
+// Submit motor control command
+function submit_motor_control(cmd) {
+    fetch(`/motor_control/${cmd}`)
+        .then(response => {
+            if (!response.ok) {
+                console.error('Motor control command failed');
+            }
         })
-            .then(res => res.text())
-            .then(txt => {
-                // DO SOMETHING ON SERVER RESPONSE
-                // console.log(txt);
-                document.getElementById("speed_meter").value = parseInt(txt);
-                document.getElementById("curr_speed").innerText = txt;
+        .catch(error => console.error('Error:', error));
+    return false;
+}
 
-            })
-            .catch(e => console.error(e));
+// Submit JPEG upload form
+function submit_jpeg() {
+    const form = document.getElementById('id_jpeg_upload_form');
+    const formData = new FormData(form);
 
-        // (B3) STOP FORM SUBMIT
-        return false;
-    }, 1000);
-};
+    fetch('/upload', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => {
+            if (!response.ok) {
+                console.error('Upload failed');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+
+    return false;
+}
+
+// Submit globe view selection
+function submit_globe_view() {
+    const form = document.getElementById('id_globe_selector');
+    const formData = new FormData(form);
+
+    fetch('/show_globe_video', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => {
+            if (!response.ok) {
+                console.error('Globe view submission failed');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+
+    return false;
+}
 

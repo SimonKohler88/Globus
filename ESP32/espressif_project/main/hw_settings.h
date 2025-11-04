@@ -117,14 +117,14 @@
 #endif
 
 #if ( WHERE == 2 )
-    #define CONFIG_WIFI_SSID      "GlobusAP"
+    #define CONFIG_WIFI_SSID      "GlobusESP"
     #define CONFIG_WIFI_PASSWORD  "12345678"
     #define HTTP_PORT             "80"
     // #define CONFIG_WIFI_IPV4_ADDR "192.168.68.127"
     // #define CONFIG_WIFI_IPV4_ADDR "192.168.103.100"
     // #define CONFIG_WIFI_IPV4_ADDR "10.42.0.1"
     // #define CONFIG_WIFI_IPV4_ADDR "192.168.1.1"
-    #define CONFIG_WIFI_IPV4_ADDR "192.168.52.124"
+    #define CONFIG_WIFI_IPV4_ADDR "192.168.50.124"
     // #define AP_BSSID              { 0xd8, 0x3a, 0xdd, 0xb2, 0xda, 0x04 }  // Mac of access point, raspi intern  d8:3a:dd:b2:da:04
     // #define AP_BSSID              { 0x94, 0x18, 0x65, 0xcd, 0xb0, 0x51 }  // Mac of access point, raspi extern
 #endif

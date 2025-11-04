@@ -44,8 +44,7 @@ class SpeedDriver:
                 # Lese ein Byte von der angegebenen Registeradresse
                 value = self._bus.read_word_data(SpeedDriver.NUCLEO_I2C_ADDRESS, register)
             else:
-                value = int(20 * math.sin(2 * math.pi * 0.3 * self.speed_t / 10) + 30)
-                self.speed_t += 1
+                value = self.speed_t
             print(f"Wert {value} aus Register {register} gelesen.")
             return value
         except Exception as e:
@@ -59,6 +58,11 @@ class SpeedDriver:
                 # Schreibe den Wert an das angegebene Register
                 # bus.pec = 1 # enables Packet Error Checking (PEC) Keine Ahnung was das ist aber klingt gut
                 self._bus.write_word_data(SpeedDriver.NUCLEO_I2C_ADDRESS, register, value)
+            else:
+                if register == SpeedDriver.I2C_ADDR_MOT_DUTY_RESET:
+                    self.speed_t = 0
+                else:
+                    self.speed_t = value
 
             print(f"Erfolgreich Wert {value} an Register {register} geschrieben.")
         except Exception as e:
@@ -122,6 +126,9 @@ class SpeedDriver:
 
         if not LOCAL:
             GPIO.output(22, GPIO.LOW)
+
+    def is_motor_enabled(self):
+        return self.mot_enabled
 
     def __del__(self):
         if not LOCAL:

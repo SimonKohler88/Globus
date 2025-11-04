@@ -26,21 +26,27 @@
     <label>Current Speed:</label>
     <label style="font-size:30px;font-weight:bold;" id="curr_speed">0 </label>
     <br>
-    <meter class="meter_cls" id="speed_meter" min="0" max="2000" value="0">
+    <meter class="meter_cls" id="speed_meter" min="0" max="1000" value="0">
         at 50/100
     </meter>
     <form id="id_mot_ctrl_form" action="/motor_control" method="post">
         <div class="ov_container">
             <div class="sliderValueBg" id="sliderValueBg">0</div>
-            <input class="slider" id="mySlider" type="range" min="0" max="2000" value="0"
+            <input class="slider" id="mySlider" type="range" min="0" max="1000" value="0"
                    onchange="return submit_motor_control(value);">
         </div>
 
-        <button type="button" style="background-color: red;"
-                onclick="return submit_motor_control('off');">E-Stop
-        </button>
-        <button type="button" onclick="return submit_motor_control('on');">Reset E-Stop</button>
-    </form>
+            <div class="button-container">
+                <button type="button" id="eStopButton" class="btn-estop btn-disabled"
+                        onclick="return submit_motor_control('off');">
+                    🛑 E-Stop
+                </button>
+                <button type="button" id="resetButton" class="btn-reset btn-enabled"
+                        onclick="return submit_motor_control('on');">
+                    ✓ Reset E-Stop
+                </button>
+            </div>
+        </form>
 
     <h2>Bild hochladen</h2>
     <form id="id_jpeg_upload_form" action="/upload" method="POST" onsubmit="return submit_jpeg();"
