@@ -45,7 +45,7 @@ class SpeedDriver:
                 value = self._bus.read_word_data(SpeedDriver.NUCLEO_I2C_ADDRESS, register)
             else:
                 value = self.speed_t
-            print(f"Wert {value} aus Register {register} gelesen.")
+            # print(f"Wert {value} aus Register {register} gelesen.")
             return value
         except Exception as e:
             print(f"Fehler beim Lesen von Register {register}: {e}")

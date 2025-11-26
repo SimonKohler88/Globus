@@ -6,6 +6,26 @@ document.addEventListener('DOMContentLoaded', function () {
     startSpeedUpdates();
 });
 
+// Send device time to server when page loads
+window.addEventListener('DOMContentLoaded', function () {
+    const currentTime = new Date().toString();
+
+    fetch('/device_time', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({time: currentTime})
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Time sent successfully:', data);
+        })
+        .catch(error => {
+            console.error('Error sending time:', error);
+        });
+});
+
 // Start periodic speed updates
 function startSpeedUpdates(intervalMs = 500) {
     // Clear any existing interval
@@ -62,10 +82,10 @@ async function updateMotorSpeed() {
         if (sliderValueBgElement) {
             sliderValueBgElement.textContent = data.target_speed;
         }
-        
+
         // Update button states based on enabled status
         updateButtonStates(data.enabled);
-        
+
     } catch (error) {
         console.error('Error updating motor speed:', error);
     }
@@ -75,7 +95,7 @@ async function updateMotorSpeed() {
 function updateButtonStates(enabled) {
     const eStopButton = document.getElementById('eStopButton');
     const resetButton = document.getElementById('resetButton');
-    
+
     if (enabled) {
         // Motor is enabled: E-Stop active, Reset inactive
         if (eStopButton) {

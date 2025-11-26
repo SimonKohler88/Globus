@@ -17,6 +17,7 @@ JPEG_ENCODE_PARAM = [int(cv2.IMWRITE_JPEG_QUALITY), 80]
 # The info is printed from Video when loading, use development server to show.
 JPEG_PARM_CUSTOM_OVERRIDE = {
     'fhnw_double_logo_small': [int(cv2.IMWRITE_JPEG_QUALITY), 100],
+    'fhnw_double_logo_small_dark1': [int(cv2.IMWRITE_JPEG_QUALITY), 100],
 }
 
 if __name__ == '__main__':

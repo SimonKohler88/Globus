@@ -4,6 +4,7 @@
 import os
 import cv2
 import numpy as np
+import imageio
 
 
 def scale_crop_image(image_jpeg):
@@ -61,12 +62,16 @@ def scale_crop_image(image_jpeg):
     # return img_resized
 
 
-def gifify(image_np, output_name, col_shift):
+from PIL import Image
+
+
+def gifify(image_np, output_name):
     """
     creates a gif in this directory with given name which shifts the
     picture a col_shift column per frame
 
     :param image_np: numpy array with dimension 120x256x3
+    :param output_name: name of the output gif file
     :return: gif, image shifted 1 column per frame
     """
 
@@ -78,20 +83,35 @@ def gifify(image_np, output_name, col_shift):
     height = image_np.shape[0]
     width = image_np.shape[1]
 
-    # cap = cv2.VideoWriter()
-    # cap = cv2.VideoCapture()
-    # for i in range(image_np.shape[1]):
-    #     np.roll()
+    # Create list to store PIL Image frames
+    frames = []
+
+    # Generate frames by rolling columns
+    for i in range(width):
+        # Roll the image by i columns
+        rolled_image = np.roll(image_np, shift=i, axis=1)
+        # Convert numpy array to PIL Image
+        pil_image = Image.fromarray(rolled_image.astype('uint8'))
+        frames.append(pil_image)
+
+    # Write frames to gif
+    if not output_name.endswith('.gif'):
+        output_file = output_name + '.gif'
+    else:
+        output_file = output_name
+
+    frames[0].save(output_file, save_all=True, append_images=frames[1:],
+                   duration=33, loop=0)
+
+    print(f"GIF saved as {output_file}")
 
 
 if __name__ == '__main__':
     p = r'D:\Downloads'
     # pic = os.path.join(p, 'Black_Panther3.jpg')
-    pic = os.path.join(p, 'kittyKat.jpg')
-    print(pic)
-    print(os.path.exists(pic))
+    pic = os.path.join(p, 'fhnw_double_logo_small_dark1.bmp')
 
-    img = scale_crop_image(pic)
+    img = cv2.imread(pic, cv2.IMREAD_COLOR_RGB)
 
-    cv2.imshow('frame', img)
-    cv2.waitKey(0)
+    gifify(img, os.path.join(p, 'test.gif'))
+
