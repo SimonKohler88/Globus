@@ -4,7 +4,7 @@
 import os
 import cv2
 import numpy as np
-import imageio
+from PIL import Image
 
 
 def scale_crop_image(image_jpeg):
@@ -22,22 +22,22 @@ def scale_crop_image(image_jpeg):
     """
     if not os.path.exists(image_jpeg):
         raise FileExistsError(f'Image not existing: {image_jpeg}')
-    img = cv2.imread(image_jpeg)
+    img = cv2.imread(image_jpeg, cv2.IMREAD_COLOR_RGB)
 
     if len(img.shape) == 2:
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
 
-    print(img.shape)
+    print('Incoming Image shape: ', img.shape)
     # Syntax: cv2.resize(source, dsize, dest, fx, fy, interpolation)
     # keep aspect ratio
     y_size = 120
     y_factor = y_size / img.shape[0]
-    x_size = int(round(img.shape[1] * y_factor))
+    x_size = int(np.round(img.shape[1] * y_factor))
 
     img_resized = cv2.resize(img, (x_size, y_size))
 
     # print(img_resized.shape, expand_x)
-    print(img_resized.shape)
+    print('Image resized shape: ', img_resized.shape)
 
     # extend to 120x256
     if img_resized.shape[1] < 256:
@@ -49,20 +49,18 @@ def scale_crop_image(image_jpeg):
             n = 256 - img_expanded.shape[1]
             arr = np.zeros((120, n, 3), dtype=np.uint8)
             img_expanded = np.append(img_expanded, arr, axis=1)
-    elif img_resized.shape[1] > x_size:
-        print('crop')
-        n = img_resized.shape[1] - x_size
+
+    elif img_resized.shape[1] > 256:
+        n = np.abs(img_resized.shape[1] - 256)
+        print(f'cropping {n} cols')
         img_expanded = img_resized[:, :-n, :]
     else:
         img_expanded = img_resized
 
-    print(img_expanded.shape)
+    print('final Image dimensions: ', img_expanded.shape)
     # TODO: if grayscale, extend dimension
     return img_expanded
     # return img_resized
-
-
-from PIL import Image
 
 
 def gifify(image_np, output_name):
@@ -79,13 +77,14 @@ def gifify(image_np, output_name):
         raise TypeError('image_np must be a numpy array')
     if image_np.shape != (120, 256, 3):
         raise ValueError(
-            f'Image size is not 120x256x3, w:{image_np.shape[1]}, h:{image_np[0]}, pix bytes: {image_np.shape[2]}')
+            f'Image size is not 120x256x3, w:{image_np.shape[1]}, h:{image_np.shape[0]}, pix bytes: {image_np.shape[2]}')
     height = image_np.shape[0]
     width = image_np.shape[1]
 
     # Create list to store PIL Image frames
     frames = []
 
+    print('Gifify: start rolling')
     # Generate frames by rolling columns
     for i in range(width):
         # Roll the image by i columns

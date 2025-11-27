@@ -30,6 +30,9 @@ class VideoPlayer:
     def __init__(self, video_directory_path):
         # current idx of active video to get frames from
         self.__current_video_idx = 0
+        # whether we played a gif from an uploaded pic
+        self.__is_temporary_video = False
+        self.__temporary_video = None
         # whether we increase frame idx on "get frame" or not
         self.__is_playing = False
         # remember frame index
@@ -58,9 +61,27 @@ class VideoPlayer:
             self.__locked_video_idx = self.__current_video_idx
 
             self.__lock = True
+            self.__is_temporary_video = False
             self.__current_frame_idx = initial_frame if initial_frame is not None else self.__current_frame_idx
             self.__current_video_idx = idx
             self.__lock = False
+
+    def set_temporary_video(self, video_abs_path):
+        """
+        Sets a temporary video for processing and locks the current frame
+        and video indices. The temporary video can be used for operations
+        that require switching from the current context temporarily.
+
+        """
+        self.__locked_frame_index = self.__current_frame_idx
+        self.__locked_video_idx = self.__current_video_idx
+
+        self.__temporary_video = Video(video_abs_path)
+
+        self.__lock = True
+        self.__current_frame_idx = 0
+        self.__is_temporary_video = True
+        self.__lock = False
 
     def get_available_video_names(self):
         """
@@ -78,8 +99,12 @@ class VideoPlayer:
         if self.__lock:
             return self.__videos[self.__locked_video_idx].get_frame(self.__locked_frame_index)
         else:
-            frame, self.__current_frame_idx = self.__videos[self.__current_video_idx].get_frame_circular(
-                self.__current_frame_idx)
+            if not self.__is_temporary_video:
+                frame, self.__current_frame_idx = self.__videos[self.__current_video_idx].get_frame_circular(
+                    self.__current_frame_idx)
+            else:
+                frame, self.__current_frame_idx = self.__temporary_video.get_frame_circular(self.__current_frame_idx)
+
             if next_frame > 0 and self.__is_playing:
                 self.__current_frame_idx += 1
 
@@ -127,8 +152,6 @@ class Video:
     def __load_video(self, video_path):
         """
          * opens given .gif
-         * converts all images to YcrCb color space
-         * compressing to jpeg 90%
          * saves as bytes, ready for esp
 
         :param video_path: absolute path to video

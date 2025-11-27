@@ -56,6 +56,21 @@ class GlobusServer:
             return self.__pic3
         return self.__vids.get_frame(time_used_prev_frame)
 
+    def set_gif_from_image(self, imagepath):
+        """TODO: not done yet. task: from received image, img_proc.gifify, extend VideoPlayer for temporal Gif"""
+        pic = img_proc.scale_crop_image(imagepath)
+        encode_param = JPEG_ENCODE_PARAM
+        # try:
+        abs_dir = os.path.dirname(os.path.abspath(imagepath))
+        temp_gif_name = os.path.join(abs_dir, 'temp.gif')
+        img_proc.gifify(pic, temp_gif_name)
+        print('gifified')
+        self.__vids.set_temporary_video(temp_gif_name)
+        self.__is_image_showing = False
+        # except:
+        #     print('gifify failed')
+        #     return
+
     def set_image(self, image):
         pic = img_proc.scale_crop_image(image)
         encode_param = JPEG_ENCODE_PARAM
